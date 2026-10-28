@@ -20,6 +20,7 @@ import LevelEditorPage from './pages/LevelEditorPage.jsx';
 import ProfilePage from './pages/ProfilePage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
 import HelpPage from './pages/HelpPage.jsx';
+import AdminPage from './pages/AdminPage.jsx';
 import { useUserStore } from './store/useUserStore';
 
 // Protected route guard: auto-initializes guest if unauthenticated so all features remain accessible
@@ -58,6 +59,7 @@ const AppContent = () => {
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/help" element={<HelpPage />} />
+          <Route path="/admin" element={<AdminPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

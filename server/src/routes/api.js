@@ -4,6 +4,7 @@ import * as authCtrl from '../controllers/authController.js';
 import * as gameCtrl from '../controllers/gameController.js';
 import * as levelCtrl from '../controllers/levelController.js';
 import * as socialCtrl from '../controllers/socialController.js';
+import * as adminCtrl from '../controllers/adminController.js';
 
 const router = express.Router();
 
@@ -47,5 +48,12 @@ router.post('/daily-challenge/complete', protectRoute, socialCtrl.completeDailyC
 // Visual Level Editor (State-Modifying Endpoint protected by protectRoute)
 router.post('/editor/save', protectRoute, socialCtrl.saveCustomLevel);
 router.get('/editor/levels', socialCtrl.getCustomLevels);
+
+// Admin Portal Endpoints
+router.get('/admin/stats', adminCtrl.getAdminStats);
+router.get('/admin/users', adminCtrl.getAllUsers);
+router.get('/admin/users/:id', adminCtrl.getUserById);
+router.delete('/admin/users/:id', adminCtrl.deleteUser);
+router.post('/admin/cleanup-test-users', adminCtrl.cleanupTestUsers);
 
 export default router;

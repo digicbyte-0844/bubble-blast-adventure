@@ -18,6 +18,7 @@ import {
   Settings,
   HelpCircle,
   LayoutDashboard,
+  ShieldCheck,
   User,
   LogIn,
   LogOut,
@@ -41,7 +42,8 @@ export const Navbar: React.FC = () => {
     { to: '/achievements', label: 'Badges', icon: Trophy, color: 'text-purple-400' },
     { to: '/editor', label: 'Editor', icon: Sparkles, color: 'text-emerald-400' },
     { to: '/help', label: 'Academy', icon: HelpCircle, color: 'text-cyan-400' },
-    { to: '/settings', label: 'Settings', icon: Settings, color: 'text-slate-400' }
+    { to: '/settings', label: 'Settings', icon: Settings, color: 'text-slate-400' },
+    { to: '/admin', label: 'Admin', icon: ShieldCheck, color: 'text-rose-400' }
   ];
 
   const closeDrawer = () => setDrawerOpen(false);
