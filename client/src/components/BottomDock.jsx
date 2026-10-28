@@ -99,7 +99,7 @@ export const BottomDock = () => {
   const nextFill = COLOR_MAP[nextBubble] || '#EC4899';
 
   return (
-    <footer className="w-full flex-shrink-0 select-none pb-[max(env(safe-area-inset-bottom),1rem)] pt-1 px-3 max-w-[440px] mx-auto z-20 flex flex-col items-center">
+    <div className="w-full flex-shrink-0 select-none pb-[max(env(safe-area-inset-bottom),1rem)] pt-1 px-3 max-w-[440px] mx-auto z-20 flex flex-col items-center">
       
       {/* Upper Control Bar: Launcher Pod, Swap Tray & Ammo Counter (poking slightly into canvas) */}
       <div className="-mt-7 w-full flex items-center justify-between px-3 py-1.5 rounded-2xl bg-slate-900/95 border border-slate-800 backdrop-blur-md shadow-2xl mb-2">
@@ -188,7 +188,7 @@ export const BottomDock = () => {
         })}
       </div>
 
-    </footer>
+    </div>
   );
 };
 
