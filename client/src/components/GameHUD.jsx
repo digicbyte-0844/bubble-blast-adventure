@@ -4,11 +4,11 @@
  */
 
 import React, { useMemo } from 'react';
-import { Pause, Undo2, Star, Sparkles, AlertCircle } from 'lucide-react';
+import { Pause, Undo2, Star, Sparkles, AlertCircle, Menu, ChevronLeft } from 'lucide-react';
 import { useGameStore } from '../store/useGameStore.js';
 import { calculateStarProgress, calculateStars } from '../game/scoreManager.js';
 
-export const GameHUD = ({ onPause, onRestart }) => {
+export const GameHUD = ({ onPause, onRestart, onQuitToMap }) => {
   const {
     levelId,
     levelData,
@@ -59,22 +59,25 @@ export const GameHUD = ({ onPause, onRestart }) => {
   return (
     <header className="w-full h-16 flex-shrink-0 select-none pt-[max(env(safe-area-inset-top),0.5rem)] px-3 max-w-[440px] mx-auto z-20 flex items-center">
       <div className="w-full h-12 px-3 bg-slate-900/90 border border-slate-800 rounded-2xl backdrop-blur-md shadow-xl flex items-center justify-between gap-2">
-        {/* Left: Compact Level Indicator Badge */}
-        <div className="flex flex-col flex-shrink-0">
-          <div className="flex items-center gap-1.5">
-            <span className="w-8 h-8 rounded-xl bg-gradient-to-b from-sky-400 to-sky-600 border border-sky-400/40 flex items-center justify-center font-display font-black text-xs text-slate-950 shadow-sm">
-              {levelId}
+        {/* Left: Tactical Level Indicator / Back to Map Trigger */}
+        <button
+          onClick={onQuitToMap}
+          className="flex items-center gap-1.5 p-1 -ml-1 rounded-xl hover:bg-slate-800/80 active:scale-95 transition-all flex-shrink-0"
+          title="Back to Saga Map"
+          aria-label="Back to map"
+        >
+          <span className="w-8 h-8 rounded-xl bg-gradient-to-b from-sky-400 to-sky-600 border border-sky-400/40 flex items-center justify-center font-display font-black text-xs text-slate-950 shadow-sm">
+            {levelId}
+          </span>
+          <div className="flex flex-col text-left">
+            <span className="font-display font-black text-xs text-white leading-none">
+              LVL {levelId}
             </span>
-            <div className="flex flex-col">
-              <span className="font-display font-black text-xs text-white leading-none">
-                LVL {levelId}
-              </span>
-              <span className="font-body text-xs text-slate-400 font-semibold truncate max-w-[70px]">
-                {levelData?.world || 'Reef'}
-              </span>
-            </div>
+            <span className="font-body text-[10px] text-amber-400 font-bold tracking-tight">
+              ‹ Map
+            </span>
           </div>
-        </div>
+        </button>
 
         {/* Center: Objective Pill + Live 3-Star Micro-Bar */}
         <div className="flex-1 flex flex-col items-center justify-center max-w-[190px]">
@@ -104,7 +107,7 @@ export const GameHUD = ({ onPause, onRestart }) => {
           </div>
         </div>
 
-        {/* Right: Tactile Utility Controls (Undo & Pause) */}
+        {/* Right: Tactile Utility Controls (Undo & In-Game Menu) */}
         <div className="flex items-center gap-1.5 flex-shrink-0">
           {/* Undo Action Button */}
           <button
@@ -121,14 +124,15 @@ export const GameHUD = ({ onPause, onRestart }) => {
             <Undo2 className="w-4 h-4" />
           </button>
 
-          {/* Pause Action Button */}
+          {/* Menu / Pause Action Button */}
           <button
             onClick={onPause}
-            className="w-9 h-9 btn-arcade-slate rounded-xl flex items-center justify-center text-slate-300 hover:text-white transition-all active:scale-95"
-            title="Pause Game"
-            aria-label="Pause game"
+            className="h-9 px-2 btn-arcade-slate rounded-xl flex items-center justify-center gap-1 text-amber-300 hover:text-white transition-all active:scale-95 border border-slate-700/60"
+            title="Game Menu"
+            aria-label="Pause and open menu"
           >
-            <Pause className="w-4 h-4" />
+            <Menu className="w-4 h-4 text-amber-400" />
+            <span className="text-[10px] font-display font-black tracking-tight uppercase">Menu</span>
           </button>
         </div>
       </div>

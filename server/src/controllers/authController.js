@@ -174,6 +174,17 @@ export const getProfile = async (req, res) => {
 
 export const getProgress = async (req, res) => {
   try {
+    if (!req.user?.id) {
+      return res.json({
+        success: true,
+        data: {
+          progress: [{ levelId: 1, isUnlocked: true, stars: 0, highScore: 0 }],
+          coins: 500,
+          energy: 5,
+          boosters: {}
+        }
+      });
+    }
     const user = await StoreService.findUserById(req.user.id);
     res.json({
       success: true,

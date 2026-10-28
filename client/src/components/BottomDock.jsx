@@ -180,7 +180,7 @@ export const BottomDock = () => {
               <Icon className={`w-5 h-5 ${item.isActive ? 'text-amber-300' : item.accent}`} />
 
               {/* Label */}
-              <span className="text-xs font-display font-bold text-slate-300 leading-tight mt-0.5 truncate max-w-[48px]">
+              <span className="text-[10px] sm:text-xs font-display font-bold text-slate-300 leading-tight mt-0.5 truncate max-w-full text-center px-0.5">
                 {item.name}
               </span>
             </button>

@@ -17,8 +17,8 @@ router.get('/auth/me', protectRoute, authCtrl.getMe);
 router.post('/auth/logout', authCtrl.logout);
 router.post('/auth/guest', authCtrl.guest);
 router.get('/user/profile', protectRoute, authCtrl.getProfile);
-router.get('/user/progress', protectRoute, authCtrl.getProgress);
-router.get('/player/progress', protectRoute, authCtrl.getProgress);
+router.get('/user/progress', optionalAuth, authCtrl.getProgress);
+router.get('/player/progress', optionalAuth, authCtrl.getProgress);
 
 // Level Catalog Routes
 // GET /api/levels — Fetch unlocked levels & star ratings

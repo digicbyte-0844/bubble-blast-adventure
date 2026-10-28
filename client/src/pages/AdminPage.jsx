@@ -25,11 +25,21 @@ import {
   ArrowLeft,
   X,
   FileCode,
-  ShieldCheck
+  ShieldCheck,
+  Lock,
+  Key,
+  LogIn
 } from 'lucide-react';
 import { API_URL } from '../config/gameConfig';
+import { useUserStore } from '../store/useUserStore';
 
 export const AdminPage = () => {
+  const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
+  const [adminUsername, setAdminUsername] = useState('admin');
+  const [adminPassword, setAdminPassword] = useState('');
+  const [authError, setAuthError] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
+
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
   const [totalUsers, setTotalUsers] = useState(0);
@@ -88,12 +98,57 @@ export const AdminPage = () => {
   };
 
   useEffect(() => {
-    fetchStats();
-  }, []);
+    if (isAdminUnlocked) {
+      fetchStats();
+    }
+  }, [isAdminUnlocked]);
 
   useEffect(() => {
-    fetchUsers();
-  }, [searchTerm, filterType]);
+    if (isAdminUnlocked) {
+      fetchUsers();
+    }
+  }, [isAdminUnlocked, searchTerm, filterType]);
+
+  const handleVerifyAdmin = async (e) => {
+    e.preventDefault();
+    setAuthError('');
+    setIsVerifying(true);
+    try {
+      const res = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: adminUsername,
+          password: adminPassword
+        })
+      });
+      const data = await res.json();
+      const userPayload = data.user || data.data?.user;
+      const token = data.token || data.data?.token;
+      const isAdmin = userPayload?.role === 'admin' || userPayload?.username === 'admin' || userPayload?.username === 'Always_Prabhu';
+
+      if (data.success && isAdmin && token) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('bba_token', token);
+          localStorage.setItem('bba_user', JSON.stringify(userPayload));
+        }
+        useUserStore.setState({ user: userPayload, token, isAuthenticated: true });
+        setIsAdminUnlocked(true);
+        setStatusMessage({ type: 'success', text: `Administrator session verified for ${userPayload.username}. Atlas database unlocked.` });
+      } else {
+        setAuthError(data.message || 'Access denied: Valid administrator credentials required.');
+      }
+    } catch (err) {
+      setAuthError('Connection error: Unable to reach authentication server. Please check network.');
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  const handleLockAdmin = () => {
+    setIsAdminUnlocked(false);
+    setAdminPassword('');
+  };
 
   const handleInspectUser = async (user) => {
     setSelectedUser(user);
@@ -163,6 +218,91 @@ export const AdminPage = () => {
     }
   };
 
+  if (!isAdminUnlocked) {
+    return (
+      <div className="min-h-screen bg-[#0B0F19] text-white flex items-center justify-center p-4 select-none">
+        <div className="w-full max-w-md clay-card p-6 md:p-8 rounded-3xl border border-rose-500/30 text-center shadow-2xl relative overflow-hidden">
+          {/* Ambient Glow */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-20 bg-rose-500/15 rounded-full blur-2xl pointer-events-none" />
+
+          {/* Shield Icon Badge */}
+          <div className="w-16 h-16 rounded-3xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-3xl mx-auto mb-3 shadow-lg text-rose-400">
+            <ShieldCheck className="w-8 h-8" />
+          </div>
+
+          <h2 className="text-2xl font-display font-black text-white uppercase tracking-tight text-shadow-arcade">
+            Mission Command
+          </h2>
+          <span className="text-xs font-body font-semibold text-slate-400 block mb-6">
+            Cloud MongoDB Atlas • Administrator Access Gate
+          </span>
+
+          {authError && (
+            <div className="mb-4 p-3 rounded-2xl bg-rose-950/60 border border-rose-500/40 text-rose-300 text-xs font-bold flex items-center gap-2 text-left">
+              <AlertTriangle className="w-4 h-4 flex-shrink-0 text-rose-400" />
+              <span>{authError}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleVerifyAdmin} className="space-y-4 text-left">
+            <div>
+              <label className="block text-xs font-display font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
+                Admin Username
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={adminUsername}
+                  onChange={(e) => setAdminUsername(e.target.value)}
+                  className="w-full h-11 px-3.5 pl-10 rounded-xl bg-slate-950/90 border border-slate-700/80 text-white font-display font-bold text-sm focus:outline-none focus:border-amber-400"
+                  placeholder="admin"
+                  required
+                />
+                <Key className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-display font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
+                Admin Password
+              </label>
+              <div className="relative">
+                <input
+                  type="password"
+                  value={adminPassword}
+                  onChange={(e) => setAdminPassword(e.target.value)}
+                  className="w-full h-11 px-3.5 pl-10 rounded-xl bg-slate-950/90 border border-slate-700/80 text-white font-display font-bold text-sm focus:outline-none focus:border-amber-400"
+                  placeholder="••••••••••••"
+                  required
+                />
+                <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isVerifying}
+              className="w-full h-12 btn-arcade-gold rounded-2xl flex items-center justify-center gap-2 text-slate-950 font-display font-black text-sm tracking-wide uppercase active:translate-y-1 mt-6 disabled:opacity-50"
+            >
+              <LogIn className="w-4 h-4 text-slate-950" />
+              <span>{isVerifying ? 'Verifying...' : 'Unlock Mission Command'}</span>
+            </button>
+          </form>
+
+          <div className="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between text-xs">
+            <Link to="/levels" className="text-slate-400 hover:text-white font-bold flex items-center gap-1">
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Map</span>
+            </Link>
+            <span className="text-[10px] text-slate-500 font-mono">
+              Atlas AWS ap-south-1
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#0B0F19] text-slate-100 p-4 md:p-8 max-w-7xl mx-auto space-y-6">
       
@@ -191,8 +331,8 @@ export const AdminPage = () => {
           </p>
         </div>
 
-        {/* Database Status Badge */}
-        <div className="flex items-center gap-3">
+        {/* Database Status Badge & Action Controls */}
+        <div className="flex items-center gap-2.5">
           <div className="px-3.5 py-2 rounded-2xl bg-slate-900 border border-slate-800 flex items-center gap-2.5 shadow-lg">
             <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
             <div className="flex flex-col">
@@ -210,6 +350,15 @@ export const AdminPage = () => {
             title="Refresh All Data"
           >
             <RefreshCw className="w-4 h-4" />
+          </button>
+
+          <button
+            onClick={handleLockAdmin}
+            className="px-3 py-2 rounded-2xl bg-rose-950/50 hover:bg-rose-900/50 border border-rose-500/40 text-rose-300 font-display font-bold text-xs flex items-center gap-1.5 active:scale-95 transition-all shadow-md"
+            title="Lock Admin Session"
+          >
+            <Lock className="w-3.5 h-3.5" />
+            <span>Lock Gate</span>
           </button>
         </div>
       </div>

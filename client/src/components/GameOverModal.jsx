@@ -10,7 +10,11 @@ import { useGameStore } from '../store/useGameStore.js';
 import { useUserStore } from '../store/useUserStore';
 import CharacterMascot from './CharacterMascot.jsx';
 
-export const GameOverModal = ({ onRetry, onBackToMap }) => {
+export const GameOverModal = ({ onRetry, onBackToMap, onSelectLevel, onQuit }) => {
+  const handleMapAction = onBackToMap || onSelectLevel || onQuit || (() => {
+    if (typeof window !== 'undefined') window.location.href = '/levels';
+  });
+
   const {
     score,
     levelId,
@@ -117,7 +121,7 @@ export const GameOverModal = ({ onRetry, onBackToMap }) => {
           </button>
 
           <button
-            onClick={onBackToMap}
+            onClick={handleMapAction}
             className="py-2 btn-arcade-slate rounded-2xl flex items-center justify-center gap-1.5 text-xs font-display font-bold text-slate-300"
           >
             <Home className="w-3.5 h-3.5" />

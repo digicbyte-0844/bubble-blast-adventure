@@ -59,21 +59,21 @@ export const Navbar: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-50 h-[56px] pt-safe bg-[#0B0F19]/95 backdrop-blur-md border-b border-slate-800/80 px-3 md:px-6 select-none flex items-center justify-between">
+      <header className="sticky top-0 z-50 h-[56px] pt-safe bg-[#0B0F19]/95 backdrop-blur-md border-b border-slate-800/80 px-2.5 sm:px-4 md:px-6 select-none flex items-center justify-between gap-2">
         {/* Left: Mascot Icon + Dynamic GAME_NAME */}
         <Link
           to="/"
           onClick={closeDrawer}
-          className="flex items-center gap-2 group flex-shrink-0 min-h-[48px] items-center"
+          className="flex items-center gap-1.5 sm:gap-2 group flex-shrink-0 min-h-[44px]"
         >
-          <div className="w-9 h-9 rounded-2xl bg-gradient-to-b from-amber-400 to-amber-500 border border-amber-300 shadow-md shadow-black/40 flex items-center justify-center text-lg transform group-hover:scale-105 active:scale-95 transition-all">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-2xl bg-gradient-to-b from-amber-400 to-amber-500 border border-amber-300 shadow-md shadow-black/40 flex items-center justify-center text-base sm:text-lg transform group-hover:scale-105 active:scale-95 transition-all flex-shrink-0">
             🫧
           </div>
-          <div className="flex flex-col">
-            <h1 className="font-display font-black text-sm md:text-base text-amber-400 tracking-tight leading-none text-shadow-arcade flex items-center gap-1">
-              <span>{GAME_NAME}</span>
+          <div className="flex flex-col min-w-0">
+            <h1 className="font-display font-black text-xs sm:text-sm md:text-base text-amber-400 tracking-tight leading-none text-shadow-arcade truncate max-w-[110px] xs:max-w-[150px] sm:max-w-none">
+              {GAME_NAME}
             </h1>
-            <span className="text-xs font-body font-bold text-slate-400 tracking-wider uppercase">
+            <span className="hidden sm:block text-[10px] sm:text-xs font-body font-bold text-slate-400 tracking-wider uppercase">
               Arcade Puzzle
             </span>
           </div>
@@ -102,28 +102,28 @@ export const Navbar: React.FC = () => {
         </nav>
 
         {/* Right: Currency / Stat Pills + Audio Controls + Drawer Trigger */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
           {/* Energy / Lives Pill */}
           <div
             className="flex items-center gap-1 bg-slate-900/90 border border-slate-800/80 px-2 py-1 rounded-full text-xs font-display font-black text-rose-400 shadow-inner"
             title="Lives & Energy"
           >
-            <Heart className="w-3.5 h-3.5 fill-rose-500 text-rose-500" />
+            <Heart className="w-3.5 h-3.5 fill-rose-500 text-rose-500 flex-shrink-0" />
             <span>{energy}</span>
-            <span className="text-xs text-slate-400 font-body font-semibold">/5</span>
+            <span className="hidden sm:inline text-xs text-slate-400 font-body font-semibold">/5</span>
           </div>
 
           {/* Coin Balance Pill */}
           <div
-            className="flex items-center gap-1 bg-slate-900/90 border border-slate-800/80 px-2.5 py-1 rounded-full text-xs font-display font-black text-amber-300 shadow-inner"
+            className="flex items-center gap-1 bg-slate-900/90 border border-slate-800/80 px-2 sm:px-2.5 py-1 rounded-full text-xs font-display font-black text-amber-300 shadow-inner"
             title="Coins"
           >
-            <Coins className="w-3.5 h-3.5 text-amber-400 fill-amber-400/30" />
+            <Coins className="w-3.5 h-3.5 text-amber-400 fill-amber-400/30 flex-shrink-0" />
             <span>{coins.toLocaleString()}</span>
           </div>
 
-          {/* Audio Synthesizer Toggles */}
-          <div className="flex items-center gap-1 bg-slate-900/90 border border-slate-800/80 p-0.5 rounded-full">
+          {/* Audio Synthesizer Toggles (Visible on md+ screens; also inside Drawer) */}
+          <div className="hidden md:flex items-center gap-1 bg-slate-900/90 border border-slate-800/80 p-0.5 rounded-full">
             <button
               onClick={toggleSfx}
               title={sfxMuted ? 'Unmute Sound Effects' : 'Mute Sound Effects'}
@@ -144,13 +144,14 @@ export const Navbar: React.FC = () => {
             </button>
           </div>
 
-          {/* Hamburger Drawer Trigger (Min 48px Touch Target) */}
+          {/* Tactile Mobile & Desktop Menu Trigger Button */}
           <button
             onClick={() => setDrawerOpen(!drawerOpen)}
-            className="w-10 h-10 rounded-2xl bg-slate-800/90 hover:bg-slate-700/90 border border-slate-700/60 flex items-center justify-center text-slate-200 transition-all active:scale-95 ml-0.5"
+            className="flex-shrink-0 w-10 h-10 rounded-2xl bg-slate-800/90 hover:bg-slate-700/90 border border-amber-400/40 hover:border-amber-400 flex items-center justify-center text-amber-400 transition-all active:scale-95 shadow-md"
             aria-label="Toggle navigation drawer"
+            title="Open Menu"
           >
-            {drawerOpen ? <X className="w-5 h-5 text-amber-400" /> : <Menu className="w-5 h-5" />}
+            {drawerOpen ? <X className="w-5 h-5 text-amber-400" /> : <Menu className="w-5 h-5 text-amber-400" />}
           </button>
         </div>
       </header>
@@ -224,6 +225,32 @@ export const Navbar: React.FC = () => {
                 )}
               </div>
 
+              {/* Quick Audio Controls in Drawer */}
+              <div className="mb-4 p-2 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between gap-2">
+                <button
+                  onClick={toggleSfx}
+                  className={`flex-1 py-1.5 px-2 rounded-xl flex items-center justify-center gap-1.5 text-xs font-display font-bold transition-all ${
+                    sfxMuted
+                      ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                      : 'bg-sky-500/20 text-sky-300 border border-sky-400/30'
+                  }`}
+                >
+                  {sfxMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                  <span>SFX {sfxMuted ? 'OFF' : 'ON'}</span>
+                </button>
+                <button
+                  onClick={toggleMusic}
+                  className={`flex-1 py-1.5 px-2 rounded-xl flex items-center justify-center gap-1.5 text-xs font-display font-bold transition-all ${
+                    musicMuted
+                      ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                      : 'bg-amber-500/20 text-amber-300 border border-amber-400/30'
+                  }`}
+                >
+                  <Music className="w-4 h-4" />
+                  <span>Music {musicMuted ? 'OFF' : 'ON'}</span>
+                </button>
+              </div>
+
               {/* Navigation Links Grid */}
               <div className="space-y-1.5 font-display font-bold text-sm">
                 {navLinks.map((item) => {
@@ -287,6 +314,92 @@ export const Navbar: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Mobile-Only Bottom App Navigation Dock (Thumb-Friendly, iOS Safe-Area Padded) */}
+      <nav
+        aria-label="Mobile Navigation Dock"
+        className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-[#0B0F19]/95 border-t border-slate-800/90 backdrop-blur-xl shadow-[0_-4px_24px_rgba(0,0,0,0.6)] px-2 pt-1.5 pb-[max(env(safe-area-inset-bottom),0.5rem)] flex items-center justify-around select-none"
+      >
+        {/* Tab 1: Map */}
+        <Link
+          to="/levels"
+          onClick={closeDrawer}
+          className={`flex-1 min-h-[48px] py-1 flex flex-col items-center justify-center gap-0.5 rounded-xl transition-all ${
+            location.pathname === '/levels'
+              ? 'text-amber-400 font-black'
+              : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <div className={`p-1 rounded-xl transition-all ${location.pathname === '/levels' ? 'bg-amber-400/15 ring-1 ring-amber-400/40 text-amber-400' : ''}`}>
+            <Map className="w-5 h-5" />
+          </div>
+          <span className="text-[10px] font-display font-bold tracking-tight">Map</span>
+        </Link>
+
+        {/* Tab 2: Dashboard */}
+        <Link
+          to="/dashboard"
+          onClick={closeDrawer}
+          className={`flex-1 min-h-[48px] py-1 flex flex-col items-center justify-center gap-0.5 rounded-xl transition-all ${
+            location.pathname === '/dashboard'
+              ? 'text-amber-400 font-black'
+              : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <div className={`p-1 rounded-xl transition-all ${location.pathname === '/dashboard' ? 'bg-amber-400/15 ring-1 ring-amber-400/40 text-amber-400' : ''}`}>
+            <LayoutDashboard className="w-5 h-5" />
+          </div>
+          <span className="text-[10px] font-display font-bold tracking-tight">HQ</span>
+        </Link>
+
+        {/* Tab 3: Ranks */}
+        <Link
+          to="/leaderboard"
+          onClick={closeDrawer}
+          className={`flex-1 min-h-[48px] py-1 flex flex-col items-center justify-center gap-0.5 rounded-xl transition-all ${
+            location.pathname === '/leaderboard'
+              ? 'text-amber-400 font-black'
+              : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <div className={`p-1 rounded-xl transition-all ${location.pathname === '/leaderboard' ? 'bg-amber-400/15 ring-1 ring-amber-400/40 text-amber-400' : ''}`}>
+            <Award className="w-5 h-5" />
+          </div>
+          <span className="text-[10px] font-display font-bold tracking-tight">Ranks</span>
+        </Link>
+
+        {/* Tab 4: Badges */}
+        <Link
+          to="/achievements"
+          onClick={closeDrawer}
+          className={`flex-1 min-h-[48px] py-1 flex flex-col items-center justify-center gap-0.5 rounded-xl transition-all ${
+            location.pathname === '/achievements'
+              ? 'text-amber-400 font-black'
+              : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <div className={`p-1 rounded-xl transition-all ${location.pathname === '/achievements' ? 'bg-amber-400/15 ring-1 ring-amber-400/40 text-amber-400' : ''}`}>
+            <Trophy className="w-5 h-5" />
+          </div>
+          <span className="text-[10px] font-display font-bold tracking-tight">Badges</span>
+        </Link>
+
+        {/* Tab 5: Menu / More Drawer Trigger */}
+        <button
+          onClick={() => setDrawerOpen(!drawerOpen)}
+          className={`flex-1 min-h-[48px] py-1 flex flex-col items-center justify-center gap-0.5 rounded-xl transition-all ${
+            drawerOpen
+              ? 'text-amber-400 font-black'
+              : 'text-slate-400 hover:text-slate-200'
+          }`}
+          aria-label="Toggle all menus"
+        >
+          <div className={`p-1 rounded-xl transition-all ${drawerOpen ? 'bg-amber-400/15 ring-1 ring-amber-400/40 text-amber-400' : ''}`}>
+            {drawerOpen ? <X className="w-5 h-5 text-amber-400" /> : <Menu className="w-5 h-5" />}
+          </div>
+          <span className="text-[10px] font-display font-bold tracking-tight">Menu</span>
+        </button>
+      </nav>
     </>
   );
 };

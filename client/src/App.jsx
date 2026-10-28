@@ -59,7 +59,7 @@ const AppContent = () => {
   return (
     <div className="h-[100dvh] max-h-[100dvh] w-full overflow-hidden bg-[#0B0F19] text-slate-100 flex flex-col font-['Nunito',sans-serif] select-none">
       {!isGameRoute && <Navbar />}
-      <main className="flex-1 w-full h-full min-h-0 overflow-y-auto">
+      <main className={`flex-1 w-full h-full min-h-0 overflow-y-auto ${!isGameRoute ? 'pb-16 md:pb-0' : ''}`}>
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -74,7 +74,7 @@ const AppContent = () => {
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/help" element={<HelpPage />} />
-          <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
+          <Route path="/admin" element={<AdminPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

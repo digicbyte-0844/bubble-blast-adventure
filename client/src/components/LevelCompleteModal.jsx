@@ -11,7 +11,18 @@ import { useGameStore } from '../store/useGameStore.js';
 import { calculateStars } from '../game/scoreManager.js';
 import { soundEngine } from '../game/soundEngine.js';
 
-export const LevelCompleteModal = ({ onNextLevel, onReplay, onLevelSelect }) => {
+export const LevelCompleteModal = ({
+  onNextLevel,
+  onReplay,
+  onLevelSelect,
+  onSelectLevel,
+  onBackToMap,
+  onQuit
+}) => {
+  const handleMapAction = onLevelSelect || onSelectLevel || onBackToMap || onQuit || (() => {
+    if (typeof window !== 'undefined') window.location.href = '/levels';
+  });
+
   const {
     levelId,
     score,
@@ -157,7 +168,7 @@ export const LevelCompleteModal = ({ onNextLevel, onReplay, onLevelSelect }) => 
               <span>Replay</span>
             </button>
             <button
-              onClick={onLevelSelect}
+              onClick={handleMapAction}
               className="py-2.5 btn-arcade-slate rounded-2xl flex items-center justify-center gap-1.5 text-xs font-display font-bold text-slate-200"
             >
               <Map className="w-3.5 h-3.5" />

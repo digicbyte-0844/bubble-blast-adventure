@@ -174,7 +174,7 @@ export const LevelSelectPage = () => {
       </div>
 
       {/* Sticky Floating Quick-Play Bottom Dock */}
-      <div className="fixed bottom-3 inset-x-0 z-40 max-w-sm mx-auto px-4 pointer-events-auto">
+      <div className="fixed bottom-[68px] md:bottom-4 inset-x-0 z-30 max-w-sm mx-auto px-4 pointer-events-auto">
         <button
           onClick={() => navigate(`/game/${unlockedUpTo}`)}
           className="w-full h-14 btn-arcade-gold rounded-2xl flex items-center justify-between px-5 text-slate-950 font-display font-black text-base shadow-2xl active:translate-y-1"

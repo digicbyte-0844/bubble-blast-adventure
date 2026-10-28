@@ -51,6 +51,8 @@ export const GamePage = () => {
   };
 
   const handleQuitToMap = () => {
+    setIsPaused(false);
+    setGameStatus(GAME_STATES.READY);
     navigate('/levels');
   };
 

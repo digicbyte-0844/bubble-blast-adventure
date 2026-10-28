@@ -29,7 +29,7 @@ export const GameLayout = ({
   return (
     <div className="w-full h-[100dvh] max-h-[100dvh] overflow-hidden flex flex-col justify-between bg-[#0B0F19] text-white select-none touch-none overscroll-none relative">
       {/* Tier A: Fixed Top HUD (Safe area padded) */}
-      <GameHUD onPause={onPause} onRestart={onRestart} />
+      <GameHUD onPause={onPause} onRestart={onRestart} onQuitToMap={onQuitToMap} />
 
       {/* Tier B: Middle Canvas Container (Absorbs 100% of remaining vertical space) */}
       <BoardWrapper />
@@ -43,6 +43,8 @@ export const GameLayout = ({
           onResume={onResume}
           onRestart={onRestart}
           onQuit={onQuitToMap}
+          onBackToMap={onQuitToMap}
+          onSelectLevel={onQuitToMap}
         />
       )}
 
@@ -51,6 +53,9 @@ export const GameLayout = ({
           onNextLevel={onNextLevel}
           onReplay={onRestart}
           onSelectLevel={onQuitToMap}
+          onLevelSelect={onQuitToMap}
+          onBackToMap={onQuitToMap}
+          onQuit={onQuitToMap}
         />
       )}
 
@@ -58,6 +63,9 @@ export const GameLayout = ({
         <GameOverModal
           onRetry={onRestart}
           onSelectLevel={onQuitToMap}
+          onBackToMap={onQuitToMap}
+          onQuit={onQuitToMap}
+          onLevelSelect={onQuitToMap}
         />
       )}
     </div>

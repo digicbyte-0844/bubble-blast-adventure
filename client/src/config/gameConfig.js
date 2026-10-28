@@ -3,9 +3,13 @@ export const GAME_NAME = (typeof import.meta !== 'undefined' && import.meta.env 
   || (typeof process !== 'undefined' && process.env && process.env.VITE_GAME_NAME)
   || "BUBBLE BLAST ADVENTURE";
 
+const isProductionDomain = typeof window !== 'undefined' && 
+  window.location.hostname !== 'localhost' && 
+  window.location.hostname !== '127.0.0.1';
+
 export const API_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL)
   || (typeof process !== 'undefined' && process.env && process.env.VITE_API_URL)
-  || "http://localhost:5000/api";
+  || (isProductionDomain ? "https://bubble-blast-adventure-api.onrender.com/api" : "http://localhost:5000/api");
 
 export default {
   GAME_NAME,

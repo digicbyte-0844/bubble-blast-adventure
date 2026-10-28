@@ -8,7 +8,10 @@ import { Play, RotateCcw, Home, Volume2, VolumeX, Music, Settings, X } from 'luc
 import { useGameStore } from '../store/useGameStore.js';
 import { useAudioStore } from '../store/useAudioStore';
 
-export const PauseModal = ({ onResume, onRestart, onQuit }) => {
+export const PauseModal = ({ onResume, onRestart, onQuit, onBackToMap, onSelectLevel }) => {
+  const handleQuitAction = onQuit || onBackToMap || onSelectLevel || (() => {
+    if (typeof window !== 'undefined') window.location.href = '/levels';
+  });
   const { levelId, score } = useGameStore();
   const { sfxMuted, musicMuted, toggleSfx, toggleMusic } = useAudioStore();
 
@@ -73,7 +76,7 @@ export const PauseModal = ({ onResume, onRestart, onQuit }) => {
           </button>
 
           <button
-            onClick={onQuit}
+            onClick={handleQuitAction}
             className="w-full py-2.5 btn-arcade-slate rounded-2xl flex items-center justify-center gap-2 text-xs font-display font-bold text-slate-200"
           >
             <Home className="w-3.5 h-3.5" />

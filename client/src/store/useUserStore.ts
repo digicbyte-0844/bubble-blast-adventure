@@ -130,13 +130,27 @@ export const useUserStore = create<UserState>((set, get) => {
           }
         }
 
-        const res = await ApiService.getProgress();
-        if (res.success && res.data?.progress) {
-          set({ progress: res.data.progress, coins: res.data.coins, energy: res.data.energy });
-          localStorage.setItem('bba_player_progress', JSON.stringify(res.data.progress));
+        if (token) {
+          const res = await ApiService.getProgress();
+          if (res.success && res.data?.progress) {
+            set({
+              progress: res.data.progress,
+              coins: res.data.coins ?? get().coins,
+              energy: res.data.energy ?? get().energy
+            });
+            localStorage.setItem('bba_player_progress', JSON.stringify(res.data.progress));
+          }
+        } else {
+          const saved = localStorage.getItem('bba_player_progress');
+          if (saved) {
+            try {
+              const parsed = JSON.parse(saved);
+              set({ progress: parsed });
+            } catch (e) {}
+          }
         }
       } catch (e) {
-        // Use local storage
+        // Fallback to local storage
       }
     },
 
