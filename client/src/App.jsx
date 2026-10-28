@@ -37,6 +37,21 @@ const ProtectedRoute = ({ children }) => {
   return <>{children}</>;
 };
 
+// Admin route guard: strictly restricts access to verified administrators
+const AdminRoute = ({ children }) => {
+  const { user, isAuthenticated } = useUserStore();
+  const isAdmin = Boolean(
+    isAuthenticated &&
+      (user?.role === 'admin' || user?.username === 'admin' || user?.username === 'Always_Prabhu')
+  );
+
+  if (!isAuthenticated || !isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <>{children}</>;
+};
+
 const AppContent = () => {
   const location = useLocation();
   const isGameRoute = location.pathname.startsWith('/game');
@@ -59,7 +74,7 @@ const AppContent = () => {
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/help" element={<HelpPage />} />
-          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

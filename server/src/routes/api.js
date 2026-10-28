@@ -1,5 +1,5 @@
 import express from 'express';
-import { protectRoute, optionalAuth } from '../middleware/auth.js';
+import { protectRoute, optionalAuth, requireAdmin } from '../middleware/auth.js';
 import * as authCtrl from '../controllers/authController.js';
 import * as gameCtrl from '../controllers/gameController.js';
 import * as levelCtrl from '../controllers/levelController.js';
@@ -49,11 +49,11 @@ router.post('/daily-challenge/complete', protectRoute, socialCtrl.completeDailyC
 router.post('/editor/save', protectRoute, socialCtrl.saveCustomLevel);
 router.get('/editor/levels', socialCtrl.getCustomLevels);
 
-// Admin Portal Endpoints
-router.get('/admin/stats', adminCtrl.getAdminStats);
-router.get('/admin/users', adminCtrl.getAllUsers);
-router.get('/admin/users/:id', adminCtrl.getUserById);
-router.delete('/admin/users/:id', adminCtrl.deleteUser);
-router.post('/admin/cleanup-test-users', adminCtrl.cleanupTestUsers);
+// Admin Portal Endpoints (Protected by requireAdmin)
+router.get('/admin/stats', requireAdmin, adminCtrl.getAdminStats);
+router.get('/admin/users', requireAdmin, adminCtrl.getAllUsers);
+router.get('/admin/users/:id', requireAdmin, adminCtrl.getUserById);
+router.delete('/admin/users/:id', requireAdmin, adminCtrl.deleteUser);
+router.post('/admin/cleanup-test-users', requireAdmin, adminCtrl.cleanupTestUsers);
 
 export default router;

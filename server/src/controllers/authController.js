@@ -4,8 +4,13 @@ import StoreService from '../services/store.js';
 
 const generateToken = (user) => {
   return jwt.sign(
-    { id: user._id || user.id, username: user.username, isGuest: user.isGuest },
-    process.env.JWT_SECRET || 'super_secret_jwt_key_velooppuzzle_capstone_2026',
+    {
+      id: user._id || user.id,
+      username: user.username,
+      isGuest: user.isGuest,
+      role: user.role || (user.username === 'admin' || user.username === 'Always_Prabhu' ? 'admin' : 'user')
+    },
+    process.env.JWT_SECRET || 'super_secure_jwt_secret_key_minimum_64_characters_long',
     { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
   );
 };
@@ -41,6 +46,8 @@ export const register = async (req, res) => {
       name: user.name || user.username,
       username: user.username,
       email: user.email,
+      role: user.role || (user.username === 'admin' || user.username === 'Always_Prabhu' ? 'admin' : 'user'),
+      isGuest: Boolean(user.isGuest),
       currentLevel: user.levelIndex || 1,
       totalScore: user.totalScore || 0,
       totalStars: user.cumulativeStars || 0,
@@ -94,6 +101,8 @@ export const login = async (req, res) => {
       name: user.name || user.username,
       username: user.username,
       email: user.email,
+      role: user.role || (user.username === 'admin' || user.username === 'Always_Prabhu' ? 'admin' : 'user'),
+      isGuest: Boolean(user.isGuest),
       currentLevel: user.levelIndex || 1,
       totalScore: user.totalScore || 0,
       totalStars: user.cumulativeStars || 0,
@@ -137,7 +146,7 @@ export const guest = async (req, res) => {
       success: true,
       data: {
         token,
-        user: { id: user._id || user.id, username: user.username, coins: user.coins, energy: user.energy, isGuest: true }
+        user: { id: user._id || user.id, username: user.username, role: 'user', coins: user.coins, energy: user.energy, isGuest: true }
       }
     });
   } catch (err) {

@@ -42,9 +42,19 @@ export const AdminPage = () => {
   const [inspectData, setInspectData] = useState(null);
   const [statusMessage, setStatusMessage] = useState(null);
 
+  const getAuthHeaders = () => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('bba_token') : null;
+    return {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
+    };
+  };
+
   const fetchStats = async () => {
     try {
-      const res = await fetch(`${API_URL}/admin/stats`);
+      const res = await fetch(`${API_URL}/admin/stats`, {
+        headers: getAuthHeaders()
+      });
       const data = await res.json();
       if (data.success) {
         setStats(data.data);
@@ -62,7 +72,9 @@ export const AdminPage = () => {
       if (filterType !== 'all') params.append('filter', filterType);
       params.append('limit', '100');
 
-      const res = await fetch(`${API_URL}/admin/users?${params.toString()}`);
+      const res = await fetch(`${API_URL}/admin/users?${params.toString()}`, {
+        headers: getAuthHeaders()
+      });
       const data = await res.json();
       if (data.success) {
         setUsers(data.users);
@@ -88,7 +100,9 @@ export const AdminPage = () => {
     setInspectModalOpen(true);
     setInspectLoading(true);
     try {
-      const res = await fetch(`${API_URL}/admin/users/${user._id || user.id}`);
+      const res = await fetch(`${API_URL}/admin/users/${user._id || user.id}`, {
+        headers: getAuthHeaders()
+      });
       const data = await res.json();
       if (data.success) {
         setInspectData(data);
@@ -110,7 +124,8 @@ export const AdminPage = () => {
 
     try {
       const res = await fetch(`${API_URL}/admin/users/${user._id || user.id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: getAuthHeaders()
       });
       const data = await res.json();
       if (data.success) {
@@ -132,7 +147,8 @@ export const AdminPage = () => {
 
     try {
       const res = await fetch(`${API_URL}/admin/cleanup-test-users`, {
-        method: 'POST'
+        method: 'POST',
+        headers: getAuthHeaders()
       });
       const data = await res.json();
       if (data.success) {

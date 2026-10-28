@@ -26,17 +26,23 @@ interface UserState {
 }
 
 export const useUserStore = create<UserState>((set, get) => {
-  const token = localStorage.getItem('bba_token');
-  const savedProgressRaw = localStorage.getItem('bba_player_progress');
+  const token = typeof window !== 'undefined' ? localStorage.getItem('bba_token') : null;
+  const savedUserRaw = typeof window !== 'undefined' ? localStorage.getItem('bba_user') : null;
+  let initialUser = null;
+  try {
+    if (savedUserRaw) initialUser = JSON.parse(savedUserRaw);
+  } catch (e) {}
+
+  const savedProgressRaw = typeof window !== 'undefined' ? localStorage.getItem('bba_player_progress') : null;
   const defaultProgress: ProgressRecord[] = savedProgressRaw
     ? JSON.parse(savedProgressRaw)
     : [{ levelId: 1, stars: 0, highScore: 0, isUnlocked: true }];
 
   return {
-    user: null,
+    user: initialUser,
     token,
-    coins: 500,
-    energy: 5,
+    coins: initialUser?.coins ?? 500,
+    energy: initialUser?.energy ?? 5,
     progress: defaultProgress,
     boosters: {
       SUPER_AIM: 3,
@@ -51,17 +57,20 @@ export const useUserStore = create<UserState>((set, get) => {
       try {
         const res = await ApiService.guestLogin();
         if (res.success) {
-          localStorage.setItem('bba_token', res.data.token);
+          const userObj = res.user || res.data?.user;
+          const tokenStr = res.token || res.data?.token;
+          if (tokenStr) localStorage.setItem('bba_token', tokenStr);
+          if (userObj) localStorage.setItem('bba_user', JSON.stringify(userObj));
           set({
-            user: res.data.user,
-            token: res.data.token,
+            user: userObj,
+            token: tokenStr,
             isAuthenticated: true,
-            coins: res.data.user.coins || 500
+            coins: userObj?.coins || 500
           });
         }
       } catch (err) {
         // Fallback offline guest
-        const guestUser = { id: 'offline_guest', username: 'StarlightExplorer', isGuest: true };
+        const guestUser = { id: 'offline_guest', username: 'StarlightExplorer', isGuest: true, role: 'user' };
         set({ user: guestUser, isAuthenticated: true });
       }
     },
@@ -69,12 +78,15 @@ export const useUserStore = create<UserState>((set, get) => {
     login: async (username: string, pass?: string) => {
       const res = await ApiService.login(username, pass);
       if (res.success) {
-        localStorage.setItem('bba_token', res.data.token);
+        const userObj = res.user || res.data?.user;
+        const tokenStr = res.token || res.data?.token;
+        if (tokenStr) localStorage.setItem('bba_token', tokenStr);
+        if (userObj) localStorage.setItem('bba_user', JSON.stringify(userObj));
         set({
-          user: res.data.user,
-          token: res.data.token,
+          user: userObj,
+          token: tokenStr,
           isAuthenticated: true,
-          coins: res.data.user.coins || 500
+          coins: userObj?.coins || 500
         });
       }
     },
@@ -82,25 +94,44 @@ export const useUserStore = create<UserState>((set, get) => {
     register: async (username: string, email: string, pass?: string) => {
       const res = await ApiService.register(username, email, pass);
       if (res.success) {
-        localStorage.setItem('bba_token', res.data.token);
+        const userObj = res.user || res.data?.user;
+        const tokenStr = res.token || res.data?.token;
+        if (tokenStr) localStorage.setItem('bba_token', tokenStr);
+        if (userObj) localStorage.setItem('bba_user', JSON.stringify(userObj));
         set({
-          user: res.data.user,
-          token: res.data.token,
+          user: userObj,
+          token: tokenStr,
           isAuthenticated: true,
-          coins: res.data.user.coins || 500
+          coins: userObj?.coins || 500
         });
       }
     },
 
     logout: () => {
       localStorage.removeItem('bba_token');
+      localStorage.removeItem('bba_user');
       set({ user: null, token: null, isAuthenticated: false });
     },
 
     loadProgress: async () => {
       try {
+        const token = localStorage.getItem('bba_token');
+        if (token && !get().user) {
+          const profileRes = await ApiService.getProfile();
+          if (profileRes.success && (profileRes.data || profileRes.user)) {
+            const u = profileRes.data || profileRes.user;
+            localStorage.setItem('bba_user', JSON.stringify(u));
+            set({
+              user: u,
+              isAuthenticated: true,
+              coins: u.coins ?? 500,
+              energy: u.energy ?? 5
+            });
+          }
+        }
+
         const res = await ApiService.getProgress();
-        if (res.success && res.data.progress) {
+        if (res.success && res.data?.progress) {
           set({ progress: res.data.progress, coins: res.data.coins, energy: res.data.energy });
           localStorage.setItem('bba_player_progress', JSON.stringify(res.data.progress));
         }

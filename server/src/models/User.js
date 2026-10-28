@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true }, // bcrypt hash
   passwordHash: { type: String },
   isGuest: { type: Boolean, default: false },
+  role: { type: String, enum: ['user', 'admin'], default: 'user', index: true },
 
   // Progression Metrics
   currentLevel: { type: Number, default: 1, index: true },

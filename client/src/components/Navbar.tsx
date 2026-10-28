@@ -35,16 +35,25 @@ export const Navbar: React.FC = () => {
   const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const navLinks = [
+  const isAdmin = Boolean(
+    isAuthenticated &&
+      (user?.role === 'admin' || user?.username === 'admin' || user?.username === 'Always_Prabhu')
+  );
+
+  const baseNavLinks = [
     { to: '/levels', label: 'Map', icon: Map, color: 'text-sky-400' },
     { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, color: 'text-amber-400' },
     { to: '/leaderboard', label: 'Ranks', icon: Award, color: 'text-amber-300' },
     { to: '/achievements', label: 'Badges', icon: Trophy, color: 'text-purple-400' },
     { to: '/editor', label: 'Editor', icon: Sparkles, color: 'text-emerald-400' },
     { to: '/help', label: 'Academy', icon: HelpCircle, color: 'text-cyan-400' },
-    { to: '/settings', label: 'Settings', icon: Settings, color: 'text-slate-400' },
-    { to: '/admin', label: 'Admin', icon: ShieldCheck, color: 'text-rose-400' }
+    { to: '/settings', label: 'Settings', icon: Settings, color: 'text-slate-400' }
   ];
+
+  // Admin link only shows for verified administrators, never for guests or normal users
+  const navLinks = isAdmin
+    ? [...baseNavLinks, { to: '/admin', label: 'Admin', icon: ShieldCheck, color: 'text-rose-400' }]
+    : baseNavLinks;
 
   const closeDrawer = () => setDrawerOpen(false);
 
