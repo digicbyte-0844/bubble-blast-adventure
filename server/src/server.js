@@ -23,12 +23,18 @@ const allowedOrigins = [
   'http://localhost:5000',
   'https://bubble-blast-adventure-alpha.vercel.app',
   'https://bubble-blast-adventure.vercel.app',
+  'https://bubble-blast-adventure.onrender.com',
   process.env.CLIENT_URL
 ].filter(Boolean);
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+    if (
+      !origin ||
+      allowedOrigins.includes(origin) ||
+      origin.endsWith('.vercel.app') ||
+      origin.endsWith('.onrender.com')
+    ) {
       callback(null, true);
     } else {
       callback(null, true);
@@ -146,8 +152,8 @@ const startServer = async () => {
   } catch (err) {
     console.warn('⚠️ MongoDB connection failed, running with In-Memory store fallback:', err.message);
   } finally {
-    app.listen(PORT, () => {
-      console.log(`🚀 [${GAME_NAME}] Server running on http://localhost:${PORT}`);
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`🚀 [${GAME_NAME}] Server running on port ${PORT}`);
     });
   }
 };

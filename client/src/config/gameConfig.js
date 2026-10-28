@@ -7,9 +7,14 @@ const isProductionDomain = typeof window !== 'undefined' &&
   window.location.hostname !== 'localhost' && 
   window.location.hostname !== '127.0.0.1';
 
+const isRenderDomain = typeof window !== 'undefined' && 
+  window.location.hostname.endsWith('.onrender.com');
+
 export const API_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL)
   || (typeof process !== 'undefined' && process.env && process.env.VITE_API_URL)
-  || (isProductionDomain ? "/api" : "http://localhost:5000/api");
+  || (isRenderDomain
+      ? "https://bubble-blast-adventure-api.onrender.com/api"
+      : (isProductionDomain ? "/api" : "http://localhost:5000/api"));
 
 export default {
   GAME_NAME,

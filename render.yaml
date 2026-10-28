@@ -1,20 +1,42 @@
 services:
+  # 1. Authoritative Backend Anti-Cheat & REST API Service
   - type: web
     name: bubble-blast-adventure-api
-    runtime: node
+    env: node
+    plan: free
     rootDir: server
     buildCommand: npm install
     startCommand: npm start
+    healthCheckPath: /api/health
     envVars:
-      - key: PORT
-        value: 5000
       - key: NODE_ENV
         value: production
       - key: GAME_NAME
         value: BUBBLE BLAST ADVENTURE
+      - key: PORT
+        value: 5000
       - key: MONGODB_URI
         sync: false
       - key: JWT_SECRET
-        sync: false
+        generateValue: true
       - key: ANTI_CHEAT_STRICT_MODE
         value: "true"
+      - key: CLIENT_URL
+        value: https://bubble-blast-adventure-alpha.vercel.app
+
+  # 2. Production Vite Client Static Site (Render Mirror)
+  - type: static
+    name: bubble-blast-adventure
+    plan: free
+    rootDir: client
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_GAME_NAME
+        value: BUBBLE BLAST ADVENTURE
+      - key: VITE_API_URL
+        value: https://bubble-blast-adventure-api.onrender.com/api
