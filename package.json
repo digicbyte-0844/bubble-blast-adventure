@@ -1,0 +1,23 @@
+{
+  "name": "bubble-blast-adventure",
+  "version": "1.0.0",
+  "description": "Full-Stack Mobile-First Hexagonal Physics Web Game & Anti-Cheat Engine",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev",
+    "build:client": "npm --prefix client run build",
+    "test": "node scripts/test_engine.mjs && node scripts/test_backend.mjs",
+    "test:db": "npm --prefix server run test:db"
+  },
+  "keywords": [
+    "bubble-shooter",
+    "puzzle-bobble",
+    "hexagonal-grid",
+    "anti-cheat",
+    "react-19",
+    "web-audio-api"
+  ],
+  "author": "Prabhuteja Koda <prabhutejakoda@gmail.com> (https://github.com/digicbyte-0844)",
+  "license": "MIT"
+}
