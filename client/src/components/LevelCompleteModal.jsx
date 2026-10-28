@@ -96,7 +96,7 @@ export const LevelCompleteModal = ({ onNextLevel, onReplay, onLevelSelect }) => 
                 <Star
                   className={`w-12 h-12 transition-all ${
                     isEarned && isVisible
-                      ? 'text-amber-400 fill-amber-400 animate-bounce'
+                      ? 'text-amber-400 fill-amber-400 animate-beacon'
                       : 'text-slate-700 fill-slate-800'
                   }`}
                   style={{ animationDuration: '1.2s' }}

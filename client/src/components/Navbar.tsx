@@ -55,14 +55,14 @@ export const Navbar: React.FC = () => {
           onClick={closeDrawer}
           className="flex items-center gap-2 group flex-shrink-0 min-h-[48px] items-center"
         >
-          <div className="w-9 h-9 rounded-2xl bg-gradient-to-b from-amber-400 to-amber-500 border border-amber-300 shadow-md shadow-amber-500/20 flex items-center justify-center text-lg transform group-hover:scale-105 active:scale-95 transition-all">
+          <div className="w-9 h-9 rounded-2xl bg-gradient-to-b from-amber-400 to-amber-500 border border-amber-300 shadow-md shadow-black/40 flex items-center justify-center text-lg transform group-hover:scale-105 active:scale-95 transition-all">
             🫧
           </div>
           <div className="flex flex-col">
             <h1 className="font-display font-black text-sm md:text-base text-amber-400 tracking-tight leading-none text-shadow-arcade flex items-center gap-1">
               <span>{GAME_NAME}</span>
             </h1>
-            <span className="text-[9px] font-body font-bold text-slate-400 tracking-wider uppercase">
+            <span className="text-xs font-body font-bold text-slate-400 tracking-wider uppercase">
               Arcade Puzzle
             </span>
           </div>
@@ -99,7 +99,7 @@ export const Navbar: React.FC = () => {
           >
             <Heart className="w-3.5 h-3.5 fill-rose-500 text-rose-500" />
             <span>{energy}</span>
-            <span className="text-[9px] text-slate-500 font-body font-semibold">/5</span>
+            <span className="text-xs text-slate-400 font-body font-semibold">/5</span>
           </div>
 
           {/* Coin Balance Pill */}

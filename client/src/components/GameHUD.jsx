@@ -62,14 +62,14 @@ export const GameHUD = ({ onPause, onRestart }) => {
         {/* Left: Compact Level Indicator Badge */}
         <div className="flex flex-col flex-shrink-0">
           <div className="flex items-center gap-1.5">
-            <span className="w-8 h-8 rounded-xl bg-gradient-to-b from-sky-400 to-sky-600 border-b-2 border-sky-700 flex items-center justify-center font-display font-black text-xs text-slate-950 shadow-sm">
+            <span className="w-8 h-8 rounded-xl bg-gradient-to-b from-sky-400 to-sky-600 border border-sky-400/40 flex items-center justify-center font-display font-black text-xs text-slate-950 shadow-sm">
               {levelId}
             </span>
             <div className="flex flex-col">
               <span className="font-display font-black text-xs text-white leading-none">
                 LVL {levelId}
               </span>
-              <span className="font-body text-[9px] text-slate-400 font-semibold truncate max-w-[65px]">
+              <span className="font-body text-xs text-slate-400 font-semibold truncate max-w-[70px]">
                 {levelData?.world || 'Reef'}
               </span>
             </div>
@@ -79,7 +79,7 @@ export const GameHUD = ({ onPause, onRestart }) => {
         {/* Center: Objective Pill + Live 3-Star Micro-Bar */}
         <div className="flex-1 flex flex-col items-center justify-center max-w-[190px]">
           {/* Objective Pill */}
-          <div className="w-full text-center py-0.5 px-2 rounded-full bg-slate-950/80 border border-slate-800 text-[11px] font-display font-black text-amber-300 truncate shadow-inner">
+          <div className="w-full text-center py-0.5 px-2 rounded-full bg-slate-950/80 border border-slate-800 text-xs font-display font-black text-amber-300 truncate shadow-inner">
             {objectiveText}
           </div>
 

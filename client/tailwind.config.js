@@ -8,7 +8,7 @@ export default {
     extend: {
       fontFamily: {
         display: ['Fredoka', 'system-ui', 'sans-serif'],
-        body: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif']
+        body: ['Nunito', 'system-ui', 'sans-serif']
       },
       colors: {
         obsidian: {

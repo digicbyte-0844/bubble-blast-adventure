@@ -78,7 +78,7 @@ export const BoosterBar = () => {
               disabled={item.disabled}
               className={`relative flex flex-col items-center justify-center w-12 h-12 rounded-xl transition-all duration-100 min-w-[48px] min-h-[48px] ${
                 item.isActive
-                  ? 'bg-amber-400/20 border-2 border-amber-400 ring-2 ring-amber-400/50 shadow-[0_0_12px_rgba(245,158,11,0.5)] transform scale-105'
+                  ? 'bg-amber-400/20 border-2 border-amber-400 ring-2 ring-amber-400/50 shadow-md shadow-black/40 transform scale-105'
                   : item.disabled
                   ? 'opacity-35 bg-slate-950/60 border border-slate-800/40 cursor-not-allowed'
                   : 'btn-arcade-slate hover:border-slate-600 active:translate-y-0.5'
@@ -88,10 +88,10 @@ export const BoosterBar = () => {
             >
               {/* Count Badge */}
               <span
-                className={`absolute -top-1.5 -right-1 text-[9px] font-display font-black px-1.5 py-0.2 rounded-full border shadow-sm ${
+                className={`absolute -top-1.5 -right-1 text-xs font-display font-black px-1.5 py-0.5 rounded-full border shadow-sm ${
                   item.count > 0
                     ? 'bg-amber-400 text-slate-950 border-amber-300'
-                    : 'bg-slate-800 text-slate-500 border-slate-700'
+                    : 'bg-slate-800 text-slate-400 border-slate-700'
                 }`}
               >
                 x{item.count}
@@ -101,7 +101,7 @@ export const BoosterBar = () => {
               <Icon className={`w-5 h-5 ${item.isActive ? 'text-amber-300' : item.accent}`} />
 
               {/* Label */}
-              <span className="text-[9px] font-display font-bold text-slate-300 leading-tight mt-0.5 truncate max-w-[44px]">
+              <span className="text-xs font-display font-bold text-slate-300 leading-tight mt-0.5 truncate max-w-[48px]">
                 {item.name}
               </span>
             </button>

@@ -69,29 +69,23 @@ export const LandingPage = () => {
           <div className="flex items-center gap-1.5 font-display font-bold">
             <Flame className="w-4 h-4 text-amber-400 fill-amber-400" />
             <span>Day 4 Streak</span>
-            <span className="text-slate-500">•</span>
-            <span className="font-body text-[11px] text-slate-300">
+            <span className="text-slate-400">•</span>
+            <span className="font-body text-xs text-slate-300">
               {claimedReward ? 'Claimed! +50 Coins' : 'Claim 50 Coins & 1 Bomb'}
             </span>
           </div>
-          <Gift className={`w-4 h-4 ${claimedReward ? 'text-slate-500' : 'text-amber-400'}`} />
+          <Gift className={`w-4 h-4 ${claimedReward ? 'text-slate-400' : 'text-amber-400'}`} />
         </button>
       </div>
 
-      {/* 2. CENTER ZONE: Bobbing Bloopi Mascot & 3D Title Badge */}
+      {/* 2. CENTER ZONE: Bobbing Bloopi Mascot & 3D Title */}
       <div className="relative z-10 flex flex-col items-center justify-center my-auto text-center">
         {/* Floating Animated Bloopi Mascot */}
-        <div className="animate-mascot-bob mb-2 cursor-pointer transform hover:scale-105 transition-transform">
+        <div className="animate-mascot-bob mb-3 cursor-pointer transform hover:scale-105 transition-transform">
           <CharacterMascot emotion="celebrate" size="lg" speech="Aim, match & pop!" />
         </div>
 
-        {/* Dynamic Game Name Badge with 3D Drop Glow */}
-        <div className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-slate-800/80 border border-slate-700/60 text-[10px] font-display font-black uppercase tracking-wider text-amber-400 mb-1">
-          <Sparkles className="w-3 h-3 text-amber-400" />
-          <span>Mobile Saga Edition</span>
-        </div>
-
-        <h1 className="font-display font-black text-3xl sm:text-4xl md:text-5xl text-amber-400 tracking-tight leading-tight uppercase text-shadow-glow">
+        <h1 className="font-display font-black text-3xl sm:text-4xl md:text-5xl text-amber-400 tracking-tight leading-tight uppercase text-shadow-arcade">
           {GAME_NAME}
         </h1>
 
@@ -149,7 +143,7 @@ export const LandingPage = () => {
           className="flex flex-col items-center justify-center py-2 px-1 rounded-2xl bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800 hover:border-slate-700 transition-all active:scale-95 shadow-sm min-h-[48px]"
         >
           <Map className="w-5 h-5 text-sky-400 mb-0.5" />
-          <span className="font-display font-bold text-[10px] text-slate-300">Map</span>
+          <span className="font-display font-bold text-xs text-slate-300">Map</span>
         </Link>
 
         <Link
@@ -157,23 +151,23 @@ export const LandingPage = () => {
           className="flex flex-col items-center justify-center py-2 px-1 rounded-2xl bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800 hover:border-slate-700 transition-all active:scale-95 shadow-sm min-h-[48px]"
         >
           <Award className="w-5 h-5 text-amber-400 mb-0.5" />
-          <span className="font-display font-bold text-[10px] text-slate-300">Ranks</span>
+          <span className="font-display font-bold text-xs text-slate-300">Ranks</span>
         </Link>
 
         <Link
           to="/achievements"
           className="flex flex-col items-center justify-center py-2 px-1 rounded-2xl bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800 hover:border-slate-700 transition-all active:scale-95 shadow-sm min-h-[48px]"
         >
-          <Trophy className="w-5 h-5 text-purple-400 mb-0.5" />
-          <span className="font-display font-bold text-[10px] text-slate-300">Badges</span>
+          <Trophy className="w-5 h-5 text-emerald-400 mb-0.5" />
+          <span className="font-display font-bold text-xs text-slate-300">Badges</span>
         </Link>
 
         <Link
           to="/editor"
           className="flex flex-col items-center justify-center py-2 px-1 rounded-2xl bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800 hover:border-slate-700 transition-all active:scale-95 shadow-sm min-h-[48px]"
         >
-          <Sparkles className="w-5 h-5 text-emerald-400 mb-0.5" />
-          <span className="font-display font-bold text-[10px] text-slate-300">Editor</span>
+          <Sparkles className="w-5 h-5 text-amber-400 mb-0.5" />
+          <span className="font-display font-bold text-xs text-slate-300">Editor</span>
         </Link>
       </div>
     </div>

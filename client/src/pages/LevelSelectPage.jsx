@@ -15,7 +15,7 @@ import CharacterMascot from '../components/CharacterMascot.jsx';
 // 4 Themed Biomes
 const BIOMES = [
   { name: 'Celestial Reef', subtitle: 'Coral Shallows', range: [1, 10], color: 'from-sky-500/10 to-teal-500/10', border: 'border-sky-500/30', badge: '🌿 Biome 1' },
-  { name: 'Crystal Caves', subtitle: 'Prismatic Depths', range: [11, 20], color: 'from-purple-500/10 to-indigo-500/10', border: 'border-purple-500/30', badge: '💎 Biome 2' },
+  { name: 'Crystal Caves', subtitle: 'Prismatic Depths', range: [11, 20], color: 'from-emerald-500/10 to-teal-500/10', border: 'border-emerald-500/30', badge: '💎 Biome 2' },
   { name: 'Starlight Sky', subtitle: 'Luminescent Orbit', range: [21, 30], color: 'from-blue-500/10 to-cyan-500/10', border: 'border-blue-500/30', badge: '🌌 Biome 3' },
   { name: 'Supernova Core', subtitle: 'Solar Apex', range: [31, 40], color: 'from-amber-500/10 to-rose-500/10', border: 'border-amber-500/30', badge: '☀️ Biome 4' }
 ];
@@ -65,19 +65,16 @@ export const LevelSelectPage = () => {
       {/* Top Header Bar */}
       <div className="sticky top-[56px] z-30 w-full bg-[#0B0F19]/90 backdrop-blur-md border-b border-slate-800/80 px-4 py-3 flex items-center justify-between max-w-lg mx-auto">
         <div>
-          <span className="text-[10px] font-display font-black text-amber-400 uppercase tracking-widest block">
-            Saga Roadmap
-          </span>
-          <h2 className="font-display font-black text-base text-white">
-            Sector Progression
-          </h2>
+          <h1 className="font-display font-black text-xl text-white">
+            Saga Sector Roadmap
+          </h1>
         </div>
 
         {/* Cumulative Stars Counter */}
         <div className="flex items-center gap-1.5 bg-slate-900 border border-amber-500/30 px-3 py-1.5 rounded-full shadow-inner">
           <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
           <span className="font-display font-black text-sm text-amber-300">{totalStars}</span>
-          <span className="text-[10px] font-body text-slate-400">/ 120</span>
+          <span className="text-xs font-body text-slate-300">/ 120</span>
         </div>
       </div>
 
@@ -92,14 +89,14 @@ export const LevelSelectPage = () => {
           return (
             <div key={bIdx} className="w-full flex flex-col items-center my-4">
               {/* Biome Themed Banner Header */}
-              <div className={`w-full max-w-xs py-2 px-4 rounded-2xl bg-gradient-to-r ${biome.color} border ${biome.border} backdrop-blur-md mb-8 text-center shadow-lg`}>
-                <span className="text-[10px] font-display font-bold uppercase tracking-wider text-slate-400 block">
+              <div className={`w-full max-w-xs py-2.5 px-4 rounded-2xl bg-gradient-to-r ${biome.color} border ${biome.border} backdrop-blur-md mb-8 text-center shadow-lg`}>
+                <span className="text-xs font-display font-bold uppercase tracking-wider text-slate-300 block">
                   {biome.badge}
                 </span>
-                <h3 className="font-display font-black text-sm text-white">
+                <h2 className="font-display font-black text-lg text-white">
                   {biome.name}
-                </h3>
-                <span className="text-[10px] font-body text-slate-400">
+                </h2>
+                <span className="text-xs font-body text-slate-300">
                   {biome.subtitle} • Sectors {biome.range[0]}–{biome.range[1]}
                 </span>
               </div>
@@ -120,11 +117,11 @@ export const LevelSelectPage = () => {
                     >
                       {/* Current Level Pulsing Beacon & Mascot Avatar */}
                       {isCurrent && (
-                        <div className="absolute -top-12 flex flex-col items-center z-20 pointer-events-none animate-bounce">
+                        <div className="absolute -top-12 flex flex-col items-center z-20 pointer-events-none animate-mascot-bob">
                           <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-400 to-amber-500 border border-white flex items-center justify-center text-sm shadow-md">
                             🫧
                           </div>
-                          <span className="text-[9px] font-display font-black bg-amber-400 text-slate-950 px-1.5 py-0.2 rounded-full uppercase tracking-tighter">
+                          <span className="text-xs font-display font-black bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full uppercase tracking-tight">
                             HERE!
                           </span>
                         </div>
@@ -136,7 +133,7 @@ export const LevelSelectPage = () => {
                         disabled={!isUnlocked}
                         className={`w-16 h-16 rounded-full flex flex-col items-center justify-center relative transition-all active:scale-90 min-h-[48px] min-w-[48px] ${
                           isCurrent
-                            ? 'btn-arcade-gold animate-beacon ring-4 ring-amber-400/50 shadow-xl shadow-amber-500/40 text-slate-950'
+                            ? 'btn-arcade-gold animate-beacon ring-4 ring-amber-400/50 shadow-xl text-slate-950'
                             : isUnlocked
                             ? 'btn-arcade-cyan text-white shadow-lg'
                             : 'bg-slate-900 border-2 border-slate-800 text-slate-600 cursor-not-allowed opacity-60 shadow-inner'
@@ -180,7 +177,7 @@ export const LevelSelectPage = () => {
       <div className="fixed bottom-3 inset-x-0 z-40 max-w-sm mx-auto px-4 pointer-events-auto">
         <button
           onClick={() => navigate(`/game/${unlockedUpTo}`)}
-          className="w-full h-14 btn-arcade-gold rounded-2xl flex items-center justify-between px-5 text-slate-950 font-display font-black text-base shadow-2xl shadow-amber-500/30 active:translate-y-1"
+          className="w-full h-14 btn-arcade-gold rounded-2xl flex items-center justify-between px-5 text-slate-950 font-display font-black text-base shadow-2xl active:translate-y-1"
         >
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-slate-950/20 flex items-center justify-center">
@@ -188,7 +185,7 @@ export const LevelSelectPage = () => {
             </div>
             <div className="text-left leading-tight">
               <span className="block text-sm">Resume Sector {unlockedUpTo}</span>
-              <span className="text-[10px] font-body font-bold text-amber-900 uppercase">
+              <span className="text-xs font-body font-black text-slate-950 uppercase tracking-tight">
                 Highest Unlocked
               </span>
             </div>

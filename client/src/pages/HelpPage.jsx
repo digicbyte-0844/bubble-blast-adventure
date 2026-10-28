@@ -44,7 +44,7 @@ export const HelpPage = () => {
       title: 'Rescue Starlight Jellies',
       desc: 'In rescue sectors, baby Mini-Jellies are imprisoned inside celestial crystal capsules. Pop neighboring bubbles or drop their cluster to free them and fulfill mission criteria.',
       badge: 'Primary Objective',
-      color: 'from-purple-400 to-purple-500'
+      color: 'from-rose-400 to-rose-500'
     },
     {
       step: '05',

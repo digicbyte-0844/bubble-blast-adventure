@@ -44,7 +44,7 @@ export const CharacterMascot = ({
     <div className={`relative flex items-center gap-2 select-none ${className}`}>
       {/* Dynamic Speech Bubble */}
       {speechText && (
-        <div className="hidden sm:flex items-center px-3 py-1.5 rounded-2xl bg-cosmic-card/90 border border-cosmic-cyan/40 shadow-lg text-[11px] font-bold text-slate-200 backdrop-blur-md animate-fade-in max-w-[170px]">
+        <div className="hidden sm:flex items-center px-3 py-1.5 rounded-2xl bg-cosmic-card/90 border border-cosmic-cyan/40 shadow-lg text-xs font-bold text-slate-200 backdrop-blur-md animate-fade-in max-w-[170px]">
           <span>{speechText}</span>
         </div>
       )}
@@ -59,7 +59,7 @@ export const CharacterMascot = ({
           height={currentSize.height}
           className={`transition-transform duration-300 ${
             emotion === 'cheering' || emotion === 'celebrate'
-              ? 'animate-bounce'
+              ? 'animate-mascot-bob'
               : emotion === 'worried' || emotion === 'sad'
               ? 'translate-y-1'
               : 'animate-pulse'

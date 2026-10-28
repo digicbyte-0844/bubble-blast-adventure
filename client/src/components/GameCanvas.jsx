@@ -294,7 +294,7 @@ export const GameCanvas = () => {
           ctx.save();
           ctx.globalAlpha = Math.max(0, ft.alpha);
           ctx.fillStyle = ft.color;
-          ctx.font = 'bold 14px "Plus Jakarta Sans", sans-serif';
+          ctx.font = 'bold 14px Nunito, Fredoka, sans-serif';
           ctx.textAlign = 'center';
           ctx.shadowColor = 'rgba(0,0,0,0.8)';
           ctx.shadowBlur = 4;

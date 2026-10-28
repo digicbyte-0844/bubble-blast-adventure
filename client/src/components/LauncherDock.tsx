@@ -71,7 +71,7 @@ export const LauncherDock: React.FC = () => {
         </span>
         <span
           className={`text-2xl font-black tracking-tight ${
-            shotsRemaining <= 5 ? 'text-rose-500 animate-bounce' : 'text-cosmic-gold'
+            shotsRemaining <= 5 ? 'text-rose-500 animate-pulse' : 'text-cosmic-gold'
           }`}
         >
           {shotsRemaining}

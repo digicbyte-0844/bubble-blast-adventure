@@ -24,7 +24,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({ onNextLevel, onRepla
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
       <div className="w-full max-w-sm bg-cosmic-card border-2 border-cosmic-accent p-6 rounded-3xl text-center shadow-2xl relative overflow-hidden animate-in fade-in zoom-in duration-200">
-        <div className="text-4xl mb-2 animate-bounce">🌟</div>
+        <div className="text-4xl mb-2 animate-pulse">🌟</div>
         <h2 className="text-2xl font-black text-white tracking-tight uppercase">Victory!</h2>
         <p className="text-xs text-cosmic-cyan font-bold tracking-wider uppercase mb-4">
           Sector {levelId} Cleared!

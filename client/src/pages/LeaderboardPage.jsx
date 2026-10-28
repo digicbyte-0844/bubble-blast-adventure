@@ -53,9 +53,9 @@ export const LeaderboardPage = () => {
   const remainingPlayers = leaderboard.slice(3);
 
   const podiumColors = [
-    { rank: 1, badge: '🥇 1st Place', bg: 'from-amber-400 to-amber-600', ring: 'ring-amber-400' },
-    { rank: 2, badge: '🥈 2nd Place', bg: 'from-slate-300 to-slate-500', ring: 'ring-slate-300' },
-    { rank: 3, badge: '🥉 3rd Place', bg: 'from-amber-600 to-amber-800', ring: 'ring-amber-600' }
+    { rank: 1, badge: '🥇 1st Place', bg: 'from-amber-300 to-amber-500', textColor: 'text-slate-950', ring: 'ring-amber-400' },
+    { rank: 2, badge: '🥈 2nd Place', bg: 'from-slate-200 to-slate-400', textColor: 'text-slate-950', ring: 'ring-slate-300' },
+    { rank: 3, badge: '🥉 3rd Place', bg: 'from-amber-700 to-amber-900', textColor: 'text-amber-100', ring: 'ring-amber-600' }
   ];
 
   return (
@@ -107,24 +107,31 @@ export const LeaderboardPage = () => {
               return (
                 <div
                   key={player.rank}
-                  className="clay-card p-5 rounded-3xl flex flex-col items-center text-center relative overflow-hidden"
+                  className="clay-card p-5 rounded-3xl flex flex-col justify-between relative overflow-hidden"
                 >
-                  <span className={`px-3 py-0.5 rounded-full text-[10px] font-display font-black text-slate-950 bg-gradient-to-r ${meta.bg} mb-3 shadow`}>
-                    {meta.badge}
-                  </span>
-                  <div className={`w-14 h-14 rounded-2xl bg-slate-950 border-2 ${meta.ring} flex items-center justify-center text-2xl mb-2 shadow-inner`}>
-                    {idx === 0 ? '👑' : idx === 1 ? '🌟' : '🚀'}
+                  <div className="flex items-center gap-3.5 mb-3">
+                    <div className={`w-12 h-12 rounded-2xl bg-slate-950 border-2 ${meta.ring} flex items-center justify-center text-xl flex-shrink-0 shadow-inner`}>
+                      {idx === 0 ? '👑' : idx === 1 ? '🌟' : '🚀'}
+                    </div>
+                    <div className="text-left flex-1 min-w-0">
+                      <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-display font-black ${meta.textColor || 'text-slate-950'} bg-gradient-to-r ${meta.bg} mb-1 shadow-sm`}>
+                        {meta.badge}
+                      </span>
+                      <h2 className="font-display font-black text-base text-white truncate">
+                        {player.name || player.username}
+                      </h2>
+                    </div>
                   </div>
-                  <h3 className="font-display font-black text-base text-white truncate max-w-[170px]">
-                    {player.name || player.username}
-                  </h3>
-                  <span className="font-display font-black text-xl text-amber-300 my-1">
-                    {(player.totalScore || player.score).toLocaleString()} pts
-                  </span>
-                  <div className="flex items-center gap-2 text-xs text-slate-400 font-display font-bold">
-                    <span>{player.totalStars || 3} ★</span>
-                    <span>•</span>
-                    <span>Sector {player.levelsCompleted || 40}</span>
+                  
+                  <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between">
+                    <span className="font-display font-black text-lg text-amber-300">
+                      {(player.totalScore || player.score).toLocaleString()} pts
+                    </span>
+                    <div className="flex items-center gap-1.5 text-xs text-slate-300 font-display font-bold">
+                      <span>{player.totalStars || 3} ★</span>
+                      <span>•</span>
+                      <span>Sec {player.levelsCompleted || 40}</span>
+                    </div>
                   </div>
                 </div>
               );
@@ -133,13 +140,13 @@ export const LeaderboardPage = () => {
 
           {/* Full Standings Table */}
           <div className="p-6 rounded-3xl clay-card mb-6 overflow-hidden">
-            <h3 className="font-display font-black text-xs uppercase text-slate-400 tracking-wider mb-4">
+            <h2 className="font-display font-black text-xs uppercase text-slate-300 tracking-wider mb-4">
               Full Pilot Standings
-            </h3>
+            </h2>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs font-display">
                 <thead>
-                  <tr className="border-b border-slate-800 text-slate-400 uppercase text-[10px] tracking-wider">
+                  <tr className="border-b border-slate-800 text-slate-300 uppercase text-xs tracking-wider">
                     <th className="py-2.5 font-bold">Rank</th>
                     <th className="py-2.5 font-bold">Pilot</th>
                     <th className="py-2.5 font-bold">Verified Score</th>
@@ -163,7 +170,7 @@ export const LeaderboardPage = () => {
                         {item.totalStars || 0} ★
                       </td>
                       <td className="py-3 text-right">
-                        <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[10px] text-emerald-400 font-bold uppercase">
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-400 font-bold uppercase">
                           Clean
                         </span>
                       </td>
