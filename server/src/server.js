@@ -49,6 +49,24 @@ app.get('/', (req, res) => {
   });
 });
 
+// 404 Route Handler
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `Resource not found: ${req.method} ${req.originalUrl || req.url}`
+  });
+});
+
+// Centralized DevSecOps Error Handler (Zero stack trace leaks in production)
+app.use((err, req, res, next) => {
+  console.error('💥 Unhandled Exception:', err.message || err);
+  const statusCode = err.status || err.statusCode || 500;
+  res.status(statusCode).json({
+    success: false,
+    message: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'An unexpected error occurred')
+  });
+});
+
 // Connect to MongoDB with graceful fallback & auto-seeding
 const seedDatabaseIfEmpty = async () => {
   try {

@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Lock, User, Mail, ArrowRight, Sparkles, AlertCircle } from 'lucide-react';
 import { GAME_NAME } from '../config/gameConfig.js';
 import { useUserStore } from '../store/useUserStore';
@@ -19,6 +19,8 @@ export const RegisterPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { register, loginGuest } = useUserStore();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTarget = searchParams.get('redirect') ? decodeURIComponent(searchParams.get('redirect')) : '/levels';
 
   useEffect(() => {
     document.title = `Register — ${GAME_NAME}`;
@@ -40,7 +42,7 @@ export const RegisterPage = () => {
     setIsSubmitting(true);
     try {
       await register(username, email, password);
-      navigate('/levels');
+      navigate(redirectTarget);
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Username or email may already be registered.');
     } finally {

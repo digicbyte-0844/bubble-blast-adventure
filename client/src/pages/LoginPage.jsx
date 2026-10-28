@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Lock, User, ArrowRight, Sparkles, AlertCircle } from 'lucide-react';
 import { GAME_NAME } from '../config/gameConfig.js';
 import { useUserStore } from '../store/useUserStore';
@@ -17,6 +17,8 @@ export const LoginPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login, loginGuest } = useUserStore();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTarget = searchParams.get('redirect') ? decodeURIComponent(searchParams.get('redirect')) : '/levels';
 
   useEffect(() => {
     document.title = `Login — ${GAME_NAME}`;
@@ -28,7 +30,7 @@ export const LoginPage = () => {
     setIsSubmitting(true);
     try {
       await login(username, password);
-      navigate('/levels');
+      navigate(redirectTarget);
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Please verify credentials or continue as Guest.');
     } finally {
@@ -40,9 +42,9 @@ export const LoginPage = () => {
     setIsSubmitting(true);
     try {
       await loginGuest();
-      navigate('/levels');
+      navigate(redirectTarget);
     } catch (e) {
-      navigate('/levels');
+      navigate(redirectTarget);
     } finally {
       setIsSubmitting(false);
     }

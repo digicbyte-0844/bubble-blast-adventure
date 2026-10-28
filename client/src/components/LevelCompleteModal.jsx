@@ -153,7 +153,7 @@ export const LevelCompleteModal = ({
         <div className="flex flex-col gap-2.5">
           <button
             onClick={onNextLevel}
-            className="w-full h-12 btn-arcade-gold rounded-2xl flex items-center justify-center gap-2 text-slate-950 font-display font-black text-sm tracking-wide uppercase active:translate-y-1"
+            className="w-full h-12 min-h-[48px] btn-arcade-gold rounded-2xl flex items-center justify-center gap-2 text-slate-950 font-display font-black text-sm tracking-wide uppercase active:translate-y-1"
           >
             <span>Next Level</span>
             <ArrowRight className="w-4 h-4 text-slate-950" />
@@ -162,14 +162,14 @@ export const LevelCompleteModal = ({
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={onReplay}
-              className="py-2.5 btn-arcade-slate rounded-2xl flex items-center justify-center gap-1.5 text-xs font-display font-bold text-slate-200"
+              className="min-h-[48px] py-2.5 btn-arcade-slate rounded-2xl flex items-center justify-center gap-1.5 text-xs font-display font-bold text-slate-200"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Replay</span>
             </button>
             <button
               onClick={handleMapAction}
-              className="py-2.5 btn-arcade-slate rounded-2xl flex items-center justify-center gap-1.5 text-xs font-display font-bold text-slate-200"
+              className="min-h-[48px] py-2.5 btn-arcade-slate rounded-2xl flex items-center justify-center gap-1.5 text-xs font-display font-bold text-slate-200"
             >
               <Map className="w-3.5 h-3.5" />
               <span>Map</span>

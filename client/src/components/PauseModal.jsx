@@ -34,7 +34,7 @@ export const PauseModal = ({ onResume, onRestart, onQuit, onBackToMap, onSelectL
         <div className="flex items-center justify-center gap-3 p-3 bg-slate-950/90 rounded-2xl border border-slate-800 mb-5">
           <button
             onClick={toggleSfx}
-            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-display font-bold transition-all ${
+            className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-display font-bold transition-all min-h-[48px] min-w-[48px] ${
               sfxMuted
                 ? 'bg-rose-500/20 border border-rose-500/40 text-rose-400'
                 : 'bg-sky-500/20 border border-sky-400/40 text-sky-300'
@@ -46,7 +46,7 @@ export const PauseModal = ({ onResume, onRestart, onQuit, onBackToMap, onSelectL
 
           <button
             onClick={toggleMusic}
-            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-display font-bold transition-all ${
+            className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-display font-bold transition-all min-h-[48px] min-w-[48px] ${
               musicMuted
                 ? 'bg-rose-500/20 border border-rose-500/40 text-rose-400'
                 : 'bg-amber-500/20 border border-amber-400/40 text-amber-300'
@@ -61,7 +61,7 @@ export const PauseModal = ({ onResume, onRestart, onQuit, onBackToMap, onSelectL
         <div className="flex flex-col gap-2.5">
           <button
             onClick={onResume}
-            className="w-full h-12 btn-arcade-gold rounded-2xl flex items-center justify-center gap-2 text-slate-950 font-display font-black text-sm tracking-wide uppercase active:translate-y-1"
+            className="w-full h-12 min-h-[48px] btn-arcade-gold rounded-2xl flex items-center justify-center gap-2 text-slate-950 font-display font-black text-sm tracking-wide uppercase active:translate-y-1"
           >
             <Play className="w-4 h-4 fill-slate-950 text-slate-950" />
             <span>Resume Sector</span>
@@ -69,7 +69,7 @@ export const PauseModal = ({ onResume, onRestart, onQuit, onBackToMap, onSelectL
 
           <button
             onClick={onRestart}
-            className="w-full py-2.5 btn-arcade-slate rounded-2xl flex items-center justify-center gap-2 text-xs font-display font-bold text-slate-200"
+            className="w-full min-h-[48px] btn-arcade-slate rounded-2xl flex items-center justify-center gap-2 text-xs font-display font-bold text-slate-200"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Restart Level</span>
@@ -77,7 +77,7 @@ export const PauseModal = ({ onResume, onRestart, onQuit, onBackToMap, onSelectL
 
           <button
             onClick={handleQuitAction}
-            className="w-full py-2.5 btn-arcade-slate rounded-2xl flex items-center justify-center gap-2 text-xs font-display font-bold text-slate-200"
+            className="w-full min-h-[48px] btn-arcade-slate rounded-2xl flex items-center justify-center gap-2 text-xs font-display font-bold text-slate-200"
           >
             <Home className="w-3.5 h-3.5" />
             <span>Quit to World Map</span>

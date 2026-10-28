@@ -23,16 +23,16 @@ import HelpPage from './pages/HelpPage.jsx';
 import AdminPage from './pages/AdminPage.jsx';
 import { useUserStore } from './store/useUserStore';
 
-// Protected route guard: auto-initializes guest if unauthenticated so all features remain accessible
+// Protected route guard: seamlessly redirects unauthenticated visitors to /login with redirect query param
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, user, loginGuest } = useUserStore();
+  const { isAuthenticated, user } = useUserStore();
+  const location = useLocation();
   const token = typeof window !== 'undefined' ? localStorage.getItem('bba_token') : null;
 
-  useEffect(() => {
-    if (!isAuthenticated && !token && !user) {
-      loginGuest();
-    }
-  }, [isAuthenticated, token, user, loginGuest]);
+  if (!isAuthenticated && !token && !user) {
+    const redirectUrl = encodeURIComponent(location.pathname + location.search);
+    return <Navigate to={`/login?redirect=${redirectUrl}`} replace />;
+  }
 
   return <>{children}</>;
 };
@@ -66,7 +66,7 @@ const AppContent = () => {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/levels" element={<LevelSelectPage />} />
-          <Route path="/game/:levelId" element={<GamePage />} />
+          <Route path="/game/:levelId" element={<ProtectedRoute><GamePage /></ProtectedRoute>} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/achievements" element={<AchievementsPage />} />
           <Route path="/daily-challenge" element={<DailyChallengePage />} />

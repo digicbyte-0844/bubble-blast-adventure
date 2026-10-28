@@ -81,7 +81,8 @@ export const completeSession = async (req, res) => {
 
     const shotsFired = Number(req.body.shotsUsed ?? req.body.shotsFired ?? 1);
     const remainingShots = Number(req.body.remainingShots ?? (session.allowedShots ? Math.max(0, session.allowedShots - shotsFired) : 0));
-    const elapsedDurationMs = Number(req.body.elapsedDurationMs ?? Math.max(3600, Date.now() - new Date(session.startedAt || session.startTime || Date.now()).getTime()));
+    const serverElapsedMs = Date.now() - new Date(session.startedAt || session.startTime || Date.now()).getTime();
+    const elapsedDurationMs = Number(req.body.elapsedDurationMs !== undefined ? req.body.elapsedDurationMs : serverElapsedMs);
     const claimedScore = Number(req.body.score ?? req.body.claimedScore ?? 0);
     const bubblesPopped = Number(req.body.bubblesPopped ?? 0);
     const comboRecord = Number(req.body.bestCombo ?? req.body.comboRecord ?? 1);

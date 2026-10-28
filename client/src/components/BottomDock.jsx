@@ -107,7 +107,7 @@ export const BottomDock = () => {
         <button
           onClick={swapBubbles}
           disabled={!isInteractive}
-          className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-slate-700 active:scale-95 transition-all disabled:opacity-50 min-h-[44px]"
+          className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-slate-700 active:scale-95 transition-all disabled:opacity-50 min-h-[48px] min-w-[48px]"
           title="Swap Ready and Next Bubble"
         >
           <div className="relative flex items-center">

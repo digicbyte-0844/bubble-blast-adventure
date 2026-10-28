@@ -186,4 +186,12 @@ export const useUserStore = create<UserState>((set, get) => {
   };
 });
 
+// DevSecOps 401 Unauthorized Session Revocation Listener
+if (typeof window !== 'undefined') {
+  window.addEventListener('bba_unauthorized', () => {
+    console.warn('🔒 401 Unauthorized received — clearing session and resetting state.');
+    useUserStore.getState().logout();
+  });
+}
+
 export default useUserStore;

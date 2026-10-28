@@ -15,15 +15,15 @@ export class AntiCheatService {
 
     const errors = [];
 
-    // 1. Timing Validation: Rejects submissions completed in under 3.5 seconds (impossible speedrun)
+    // 1. Timing Validation: Rejects submissions completed in under 3.0 seconds (impossible speedrun)
     const elapsedDurationMs = Number(claim.elapsedDurationMs || 0);
     const serverElapsedMs = startTime ? Date.now() - new Date(startTime).getTime() : elapsedDurationMs;
     const effectiveDuration = elapsedDurationMs > 0 ? elapsedDurationMs : serverElapsedMs;
 
-    if (effectiveDuration < 3500) {
+    if (effectiveDuration < 3000) {
       errors.push({
         rule: 'IMPOSSIBLE_SPEEDRUN',
-        message: `Submission completed in under 3.5 seconds (${effectiveDuration}ms). Rejected as impossible speedrun.`
+        message: `Submission completed in under 3.0 seconds (${effectiveDuration}ms). Rejected as impossible speedrun.`
       });
     }
 

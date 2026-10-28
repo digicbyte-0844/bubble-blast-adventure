@@ -769,10 +769,15 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
 
   /**
    * Fires the loaded bubble at the current aim angle
+   * Synchronously transitions gameStatus to SHOOTING to eliminate double-shooting race conditions
    */
   const shootProjectile = () => {
     if (activeProjectileRef.current) return;
     if (gameStatusRef.current !== GAME_STATES.READY && gameStatusRef.current !== GAME_STATES.AIMING) return;
+
+    // Synchronous state lock
+    gameStatusRef.current = GAME_STATES.SHOOTING;
+    setGameStatus(GAME_STATES.SHOOTING);
 
     const angle = aimAngleRef.current;
     setAimAngle(angle);
@@ -787,6 +792,10 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
         type: shot.isBooster || SPECIAL_BUBBLES.NORMAL,
         radius: BUBBLE_RADIUS
       };
+    } else {
+      // Revert if out of shots or invalid
+      gameStatusRef.current = GAME_STATES.READY;
+      setGameStatus(GAME_STATES.READY);
     }
   };
 
@@ -808,9 +817,11 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
   };
 
   const handleMouseUp = () => {
-    if (isAimingRef.current) {
+    if (isAimingRef.current && (gameStatusRef.current === GAME_STATES.READY || gameStatusRef.current === GAME_STATES.AIMING)) {
       isAimingRef.current = false;
       shootProjectile();
+    } else {
+      isAimingRef.current = false;
     }
   };
 
@@ -828,15 +839,17 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
   };
 
   const handleTouchMove = (e) => {
-    if (!isAimingRef.current) return;
+    if (!isAimingRef.current || (gameStatusRef.current !== GAME_STATES.READY && gameStatusRef.current !== GAME_STATES.AIMING)) return;
     const touch = e.touches[0];
     updateAimFromPointer(touch.clientX, touch.clientY);
   };
 
   const handleTouchEnd = () => {
-    if (isAimingRef.current) {
+    if (isAimingRef.current && (gameStatusRef.current === GAME_STATES.READY || gameStatusRef.current === GAME_STATES.AIMING)) {
       isAimingRef.current = false;
       shootProjectile();
+    } else {
+      isAimingRef.current = false;
     }
   };
 
@@ -845,14 +858,18 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
     const handleGlobalPointerUp = () => {
       if (isAimingRef.current) {
         isAimingRef.current = false;
-        shootProjectile();
+        if (gameStatusRef.current === GAME_STATES.READY || gameStatusRef.current === GAME_STATES.AIMING) {
+          shootProjectile();
+        }
       }
     };
 
     const handleKeyDown = (e) => {
       if (e.code === 'Space') {
         e.preventDefault();
-        shootProjectile();
+        if (gameStatusRef.current === GAME_STATES.READY || gameStatusRef.current === GAME_STATES.AIMING) {
+          shootProjectile();
+        }
       }
     };
 

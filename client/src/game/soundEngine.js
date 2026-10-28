@@ -11,8 +11,8 @@ class SoundEngine {
     this.musicVolume = 0.35;
 
     // Load persisted mute toggles from localStorage
-    this.sfxMuted = typeof window !== 'undefined' && localStorage.getItem('bba_sfx_muted') === 'true';
-    this.musicMuted = typeof window !== 'undefined' && localStorage.getItem('bba_music_muted') === 'true';
+    this.sfxMuted = typeof window !== 'undefined' && (localStorage.getItem('bba_sfx_muted') === 'true' || localStorage.getItem('bba_sfx_mute') === 'true');
+    this.musicMuted = typeof window !== 'undefined' && (localStorage.getItem('bba_music_muted') === 'true' || localStorage.getItem('bba_music_mute') === 'true');
 
     this.bgmTimer = null;
     this.isMusicPlaying = false;

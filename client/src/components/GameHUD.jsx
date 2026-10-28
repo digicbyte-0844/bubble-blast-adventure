@@ -58,11 +58,11 @@ export const GameHUD = ({ onPause, onRestart, onQuitToMap }) => {
 
   return (
     <header className="w-full h-16 flex-shrink-0 select-none pt-[max(env(safe-area-inset-top),0.5rem)] px-3 max-w-[440px] mx-auto z-20 flex items-center">
-      <div className="w-full h-12 px-3 bg-slate-900/90 border border-slate-800 rounded-2xl backdrop-blur-md shadow-xl flex items-center justify-between gap-2">
+      <div className="w-full h-[52px] px-2.5 bg-slate-900/90 border border-slate-800 rounded-2xl backdrop-blur-md shadow-xl flex items-center justify-between gap-2">
         {/* Left: Tactical Level Indicator / Back to Map Trigger */}
         <button
           onClick={onQuitToMap}
-          className="flex items-center gap-1.5 p-1 -ml-1 rounded-xl hover:bg-slate-800/80 active:scale-95 transition-all flex-shrink-0"
+          className="flex items-center gap-1.5 p-1 -ml-0.5 rounded-xl hover:bg-slate-800/80 active:scale-95 transition-all flex-shrink-0 min-h-[48px] min-w-[48px]"
           title="Back to Saga Map"
           aria-label="Back to map"
         >
@@ -113,7 +113,7 @@ export const GameHUD = ({ onPause, onRestart, onQuitToMap }) => {
           <button
             onClick={() => undoShot()}
             disabled={!canUndo}
-            className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all active:scale-95 ${
+            className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all active:scale-95 min-h-[48px] min-w-[44px] ${
               canUndo
                 ? 'btn-arcade-slate text-sky-400 hover:text-white'
                 : 'bg-slate-950/40 border border-slate-800 text-slate-700 cursor-not-allowed opacity-50'
@@ -127,7 +127,7 @@ export const GameHUD = ({ onPause, onRestart, onQuitToMap }) => {
           {/* Menu / Pause Action Button */}
           <button
             onClick={onPause}
-            className="h-9 px-2 btn-arcade-slate rounded-xl flex items-center justify-center gap-1 text-amber-300 hover:text-white transition-all active:scale-95 border border-slate-700/60"
+            className="h-11 px-2.5 btn-arcade-slate rounded-xl flex items-center justify-center gap-1 text-amber-300 hover:text-white transition-all active:scale-95 border border-slate-700/60 min-h-[48px] min-w-[48px]"
             title="Game Menu"
             aria-label="Pause and open menu"
           >
