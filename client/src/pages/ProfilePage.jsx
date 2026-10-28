@@ -56,6 +56,34 @@ export const ProfilePage = () => {
           </div>
         </div>
 
+        {/* Guest Account Conversion Card */}
+        {user?.isGuest && (
+          <div className="clay-card p-5 rounded-2xl bg-amber-500/10 border border-amber-400/40 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <h3 className="font-display font-black text-sm text-amber-300">
+                Playing in Guest Mode
+              </h3>
+              <p className="text-xs text-slate-300 font-body">
+                Register or sign in to permanently save your high scores, badges, and progress across devices.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <button
+                onClick={() => navigate('/login')}
+                className="flex-1 sm:flex-initial btn-arcade-slate py-2 px-4 rounded-xl text-xs font-display font-black"
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => navigate('/register')}
+                className="flex-1 sm:flex-initial btn-arcade-gold py-2 px-4 rounded-xl text-xs font-display font-black text-slate-950"
+              >
+                Register
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Lifetime Credentials */}
         <div>
           <h2 className="text-xs font-display font-black uppercase text-amber-400 tracking-wider mb-3 px-1 flex items-center gap-1.5">

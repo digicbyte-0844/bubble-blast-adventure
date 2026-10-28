@@ -16,7 +16,9 @@ import {
   Star,
   ChevronRight,
   Zap,
-  Gift
+  Gift,
+  LogIn,
+  UserPlus
 } from 'lucide-react';
 import { GAME_NAME } from '../config/gameConfig.js';
 import CharacterMascot from '../components/CharacterMascot.jsx';
@@ -25,7 +27,8 @@ import { soundEngine } from '../game/soundEngine.js';
 
 export const LandingPage = () => {
   const navigate = useNavigate();
-  const { progress, coins } = useUserStore();
+  const { progress, coins, user, isAuthenticated } = useUserStore();
+  const isRegistered = Boolean(isAuthenticated && user && !user.isGuest);
   const [claimedReward, setClaimedReward] = useState(false);
   const [tipIndex, setTipIndex] = useState(0);
   const [isJiggling, setIsJiggling] = useState(false);
@@ -169,6 +172,26 @@ export const LandingPage = () => {
           </div>
           <ChevronRight className="w-4 h-4 text-slate-400" />
         </button>
+
+        {/* Quick Auth Deck: Sign In & Register (Mobile Friendly) */}
+        {!isRegistered && (
+          <div className="w-full flex items-center justify-between gap-2 mt-0.5">
+            <button
+              onClick={() => navigate('/login')}
+              className="flex-1 py-2 px-3 rounded-xl bg-slate-900/90 border border-slate-700/80 hover:border-slate-600 text-slate-200 text-xs font-display font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-md"
+            >
+              <LogIn className="w-3.5 h-3.5 text-amber-400" />
+              <span>Sign In</span>
+            </button>
+            <button
+              onClick={() => navigate('/register')}
+              className="flex-1 py-2 px-3 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 hover:from-amber-300 hover:to-amber-400 text-xs font-display font-black flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-md shadow-amber-400/20"
+            >
+              <UserPlus className="w-3.5 h-3.5 text-slate-950" />
+              <span>Register</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 4. BOTTOM QUICK NAVIGATION SHELF (4 Tactile Icons) */}

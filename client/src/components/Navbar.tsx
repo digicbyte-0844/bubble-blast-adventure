@@ -20,6 +20,7 @@ import {
   LayoutDashboard,
   ShieldCheck,
   User,
+  UserPlus,
   LogIn,
   LogOut,
   Menu,
@@ -35,10 +36,20 @@ export const Navbar: React.FC = () => {
   const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  const isRegistered = Boolean(isAuthenticated && user && !user.isGuest);
   const isAdmin = Boolean(
     isAuthenticated &&
       (user?.role === 'admin' || user?.username === 'admin' || user?.username === 'Always_Prabhu')
   );
+
+  const authNavLinks = !isRegistered
+    ? [
+        { to: '/login', label: 'Sign In', icon: LogIn, color: 'text-amber-400' },
+        { to: '/register', label: 'Register', icon: UserPlus, color: 'text-emerald-400' }
+      ]
+    : [
+        { to: '/profile', label: 'Profile', icon: User, color: 'text-sky-400' }
+      ];
 
   const baseNavLinks = [
     { to: '/levels', label: 'Map', icon: Map, color: 'text-sky-400' },
@@ -47,7 +58,8 @@ export const Navbar: React.FC = () => {
     { to: '/achievements', label: 'Badges', icon: Trophy, color: 'text-purple-400' },
     { to: '/editor', label: 'Editor', icon: Sparkles, color: 'text-emerald-400' },
     { to: '/help', label: 'Academy', icon: HelpCircle, color: 'text-cyan-400' },
-    { to: '/settings', label: 'Settings', icon: Settings, color: 'text-slate-400' }
+    { to: '/settings', label: 'Settings', icon: Settings, color: 'text-slate-400' },
+    ...authNavLinks
   ];
 
   // Admin link only shows for verified administrators, never for guests or normal users
@@ -144,6 +156,18 @@ export const Navbar: React.FC = () => {
             </button>
           </div>
 
+          {/* Direct Sign In Button on Header */}
+          {!isRegistered && (
+            <Link
+              to="/login"
+              className="px-2 sm:px-2.5 py-1 rounded-xl bg-amber-400/15 hover:bg-amber-400/25 border border-amber-400/40 text-amber-300 font-display font-black text-xs transition-all active:scale-95 flex items-center gap-1 shadow-sm"
+              title="Sign In with Pilot Account"
+            >
+              <LogIn className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden xs:inline">Sign In</span>
+            </Link>
+          )}
+
           {/* Tactile Mobile & Desktop Menu Trigger Button */}
           <button
             onClick={() => setDrawerOpen(!drawerOpen)}
@@ -187,7 +211,7 @@ export const Navbar: React.FC = () => {
               </div>
 
               {/* User Identity Pill */}
-              <div className="mb-4 p-3 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+              <div className="mb-3 p-3 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div className="w-9 h-9 rounded-xl bg-sky-500/20 border border-sky-400/30 flex items-center justify-center text-sky-400 font-display font-black text-sm">
                     {user?.username ? user.username.charAt(0).toUpperCase() : 'P'}
@@ -197,7 +221,7 @@ export const Navbar: React.FC = () => {
                       {user?.username || (isAuthenticated ? 'Pilot' : 'Guest Explorer')}
                     </p>
                     <p className="text-[10px] font-body text-slate-400">
-                      {isAuthenticated ? 'License Active' : 'Offline Session'}
+                      {isRegistered ? 'Verified Pilot' : 'Guest Explorer Session'}
                     </p>
                   </div>
                 </div>
@@ -207,7 +231,7 @@ export const Navbar: React.FC = () => {
                       logout();
                       closeDrawer();
                     }}
-                    className="p-2 text-slate-400 hover:text-rose-400"
+                    className="p-2 text-slate-400 hover:text-rose-400 transition-colors"
                     title="Sign Out"
                   >
                     <LogOut className="w-4 h-4" />
@@ -224,6 +248,36 @@ export const Navbar: React.FC = () => {
                   </button>
                 )}
               </div>
+
+              {/* Prominent Mobile Sign In & Register Callout */}
+              {!isRegistered && (
+                <div className="mb-4 p-3 rounded-2xl bg-gradient-to-b from-amber-500/15 via-slate-900 to-slate-900 border border-amber-400/40 shadow-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-display font-black text-amber-300 uppercase tracking-tight">
+                      Guest Pilot Mode
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-body">Save Stars & Coins</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Link
+                      to="/login"
+                      onClick={closeDrawer}
+                      className="btn-arcade-slate py-2 rounded-xl text-center text-xs font-display font-black flex items-center justify-center gap-1.5"
+                    >
+                      <LogIn className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Sign In</span>
+                    </Link>
+                    <Link
+                      to="/register"
+                      onClick={closeDrawer}
+                      className="btn-arcade-gold py-2 rounded-xl text-center text-xs font-display font-black flex items-center justify-center gap-1.5 text-slate-950"
+                    >
+                      <UserPlus className="w-3.5 h-3.5 text-slate-950" />
+                      <span>Register</span>
+                    </Link>
+                  </div>
+                </div>
+              )}
 
               {/* Quick Audio Controls in Drawer */}
               <div className="mb-4 p-2 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between gap-2">
@@ -280,24 +334,26 @@ export const Navbar: React.FC = () => {
 
             {/* Bottom Auth Buttons */}
             <div className="pt-4 border-t border-slate-800/80 space-y-2">
-              {!isAuthenticated ? (
-                <div className="grid grid-cols-2 gap-2">
-                  <Link
-                    to="/login"
-                    onClick={closeDrawer}
-                    className="btn-arcade-slate py-2.5 rounded-2xl text-center text-xs font-display font-black"
-                  >
-                    Sign In
-                  </Link>
-                  <Link
-                    to="/register"
-                    onClick={closeDrawer}
-                    className="btn-arcade-gold py-2.5 rounded-2xl text-center text-xs font-display font-black"
-                  >
-                    Register
-                  </Link>
-                </div>
-              ) : (
+              <div className="grid grid-cols-2 gap-2">
+                <Link
+                  to="/login"
+                  onClick={closeDrawer}
+                  className="btn-arcade-slate py-2.5 rounded-2xl text-center text-xs font-display font-black flex items-center justify-center gap-1.5"
+                >
+                  <LogIn className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Sign In</span>
+                </Link>
+                <Link
+                  to="/register"
+                  onClick={closeDrawer}
+                  className="btn-arcade-gold py-2.5 rounded-2xl text-center text-xs font-display font-black flex items-center justify-center gap-1.5 text-slate-950"
+                >
+                  <UserPlus className="w-3.5 h-3.5 text-slate-950" />
+                  <span>Register</span>
+                </Link>
+              </div>
+
+              {isRegistered && (
                 <Link
                   to="/profile"
                   onClick={closeDrawer}
