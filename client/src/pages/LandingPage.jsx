@@ -21,11 +21,31 @@ import {
 import { GAME_NAME } from '../config/gameConfig.js';
 import CharacterMascot from '../components/CharacterMascot.jsx';
 import { useUserStore } from '../store/useUserStore';
+import { soundEngine } from '../game/soundEngine.js';
 
 export const LandingPage = () => {
   const navigate = useNavigate();
   const { progress, coins } = useUserStore();
   const [claimedReward, setClaimedReward] = useState(false);
+  const [tipIndex, setTipIndex] = useState(0);
+  const [isJiggling, setIsJiggling] = useState(false);
+
+  const MASCOT_TIPS = [
+    'Aim, match & pop! 🫧',
+    'Rescue my Mini-Jelly friends! ✨',
+    'Sever ceiling clusters for avalanches! 💥',
+    'Billiard bank-shots reflect off walls! 🎯',
+    'Tap launcher ammo tray to swap! ⇄',
+    'Cosmic Bomb clears a 2-hex ring! 💣',
+    'Ready to fly? Tap PLAY NOW! 🚀'
+  ];
+
+  const handleMascotClick = () => {
+    soundEngine.playPop(tipIndex % 5);
+    setTipIndex((prev) => (prev + 1) % MASCOT_TIPS.length);
+    setIsJiggling(true);
+    setTimeout(() => setIsJiggling(false), 500);
+  };
 
   // Highest unlocked level calculation
   const highestUnlocked = Math.max(
@@ -80,9 +100,24 @@ export const LandingPage = () => {
 
       {/* 2. CENTER ZONE: Bobbing Bloopi Mascot & 3D Title */}
       <div className="relative z-10 flex flex-col items-center justify-center my-auto text-center">
-        {/* Floating Animated Bloopi Mascot */}
-        <div className="animate-mascot-bob mb-3 cursor-pointer transform hover:scale-105 transition-transform">
-          <CharacterMascot emotion="celebrate" size="lg" speech="Aim, match & pop!" />
+        {/* Floating Animated Bloopi Mascot with Interactive Speech & Audio */}
+        <div
+          onClick={handleMascotClick}
+          className={`mb-3 cursor-pointer transform transition-all select-none group flex flex-col items-center ${
+            isJiggling ? 'scale-110 animate-bounce' : 'animate-mascot-bob hover:scale-105 active:scale-95'
+          }`}
+          title="Tap Bloopi for pro tips!"
+        >
+          <CharacterMascot
+            emotion={isJiggling ? 'celebrate' : 'cheering'}
+            size="lg"
+            speech={MASCOT_TIPS[tipIndex]}
+            onClick={handleMascotClick}
+          />
+          <span className="text-[10px] font-display font-black text-cyan-400/90 mt-1 flex items-center gap-1 group-hover:text-amber-400 transition-colors">
+            <Sparkles className="w-3 h-3 text-cyan-400" />
+            Tap Bloopi for pro tips!
+          </span>
         </div>
 
         <h1 className="font-display font-black text-3xl sm:text-4xl md:text-5xl text-amber-400 tracking-tight leading-tight uppercase text-shadow-arcade">

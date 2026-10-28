@@ -10,7 +10,8 @@ export const CharacterMascot = ({
   emotion = 'idle',
   size = 'md',
   speech = null,
-  className = ''
+  className = '',
+  onClick = undefined
 }) => {
   // Dimensions map
   const sizeMap = {
@@ -41,10 +42,13 @@ export const CharacterMascot = ({
   }, [emotion, speech]);
 
   return (
-    <div className={`relative flex items-center gap-2 select-none ${className}`}>
-      {/* Dynamic Speech Bubble */}
+    <div
+      onClick={onClick}
+      className={`relative flex items-center gap-2 select-none ${onClick ? 'cursor-pointer active:scale-95 transition-transform' : ''} ${className}`}
+    >
+      {/* Dynamic Speech Bubble - Visible on mobile and desktop */}
       {speechText && (
-        <div className="hidden sm:flex items-center px-3 py-1.5 rounded-2xl bg-cosmic-card/90 border border-cosmic-cyan/40 shadow-lg text-xs font-bold text-slate-200 backdrop-blur-md animate-fade-in max-w-[170px]">
+        <div className="flex items-center px-3 py-1.5 rounded-2xl bg-slate-900/95 border border-cyan-400/50 shadow-lg text-[11px] sm:text-xs font-display font-bold text-slate-200 backdrop-blur-md animate-fade-in max-w-[190px] sm:max-w-[220px] text-center leading-tight">
           <span>{speechText}</span>
         </div>
       )}
