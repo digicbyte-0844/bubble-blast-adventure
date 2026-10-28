@@ -4,19 +4,27 @@
  * Bubble Puzzle Engine Presentation Tier
  */
 
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, LogOut, Shield, Award, Trophy, Star, Sparkles, Map, Compass } from 'lucide-react';
+import { User, LogOut, Shield, Award, Trophy, Star, Sparkles, Map, Compass, Copy, Check } from 'lucide-react';
 import { GAME_NAME } from '../config/gameConfig.js';
 import { useUserStore } from '../store/useUserStore';
 
 export const ProfilePage = () => {
   const navigate = useNavigate();
   const { user, currentLevel, totalScore, stars, bubblesPopped, logout } = useUserStore();
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     document.title = `Pilot Profile — ${GAME_NAME}`;
   }, []);
+
+  const handleCopyPilotId = () => {
+    const pilotId = user?.id || user?._id || `PLT-${(user?.username || 'GUEST').slice(0, 4).toUpperCase()}-2026`;
+    navigator.clipboard.writeText(pilotId);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const handleLogout = () => {
     logout();
@@ -44,6 +52,29 @@ export const ProfilePage = () => {
               <p className="text-xs text-slate-400 font-sans font-semibold mt-0.5">
                 Active Member • {GAME_NAME} Space Academy
               </p>
+              <div className="flex items-center gap-2 mt-2.5 justify-center sm:justify-start">
+                <span className="font-mono text-[11px] bg-slate-900/90 border border-slate-800 text-slate-300 px-2.5 py-1 rounded-xl">
+                  ID: {user?.id || user?._id || `PLT-${(user?.username || 'GUEST').slice(0, 4).toUpperCase()}-2026`}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleCopyPilotId}
+                  className="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-[11px] font-display font-black inline-flex items-center gap-1 transition-all active:scale-95 min-h-[32px]"
+                  aria-label="Copy Pilot ID to clipboard"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <span className="text-emerald-400">COPIED!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5 text-amber-400" />
+                      <span>COPY ID</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
 
             <button

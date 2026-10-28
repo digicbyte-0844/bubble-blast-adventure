@@ -6,7 +6,7 @@
 
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { HelpCircle, Play, Sparkles, Target, Zap, Shield, ArrowRight, Compass } from 'lucide-react';
+import { HelpCircle, Play, Sparkles, Target, Zap, Shield, ArrowRight, Compass, ChevronDown } from 'lucide-react';
 import { GAME_NAME } from '../config/gameConfig.js';
 import CharacterMascot from '../components/CharacterMascot.jsx';
 
@@ -105,6 +105,86 @@ export const HelpPage = () => {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Expandable Flight Academy FAQ Accordion with Semantic <details> */}
+        <div className="clay-card p-6 md:p-7 border border-slate-700/60 shadow-xl space-y-4">
+          <div className="flex items-center gap-2">
+            <HelpCircle className="w-5 h-5 text-amber-400" />
+            <h2 className="text-lg font-display font-black text-white">
+              Flight Academy & Engine FAQ
+            </h2>
+          </div>
+          <p className="text-xs text-slate-400 font-sans">
+            Common questions regarding topological gravity mechanics, anti-cheat validation, and offline play.
+          </p>
+
+          <div className="space-y-3 pt-2">
+            {[
+              {
+                q: 'How does topological BFS avalanche and cluster dropping work?',
+                a: 'Bubbles on row 0 act as celestial anchors. When your shot pops a connected group, Breadth-First Search (BFS) graph traversal checks whether remaining bubbles maintain a path to row 0. Any bubbles severed from the ceiling fall in a zero-gravity avalanche, awarding +200 bonus score per dropped bubble!'
+              },
+              {
+                q: 'How does the server-side anti-cheat validator verify my score?',
+                a: 'When you complete a sector, your client sends a cryptographic validation payload including shots fired, booster usage counts, bubbles cleared, and elapsed time. The server strictly rejects completion if shots exceed level limits, score exceeds the theoretical maximum (Pops * 150 + Combos * 500 + Rescues * 300 + Shots * 250 + 2500), or elapsed time is under 3 seconds.'
+              },
+              {
+                q: 'Can I play offline without an active network connection?',
+                a: 'Yes! The game engine is fully operational offline. Your progress, unlocked sectors, high scores, and booster counts are cached in browser storage. When internet access resumes, completed sectors automatically queue and sync to the server.'
+              },
+              {
+                q: 'What are the keyboard and touch shortcuts for desktop and mobile?',
+                a: 'On desktop, aim with mouse position, click/release to launch, press [Space] to swap the active bubble with your secondary queued bubble, and press [P] or [Esc] to pause. On mobile, touch-and-drag calculates trajectory and lifting your thumb fires the launcher.'
+              },
+              {
+                q: 'How do I unlock custom sectors in the Level Editor?',
+                a: 'Progress to Sector 5 on the Saga Map to unlock the Level Editor. Once unlocked, you can paint custom Odd-R hexagonal grids, place Baby Jellies, save custom puzzles to browser memory, and test-play immediately!'
+              }
+            ].map((faq, i) => (
+              <details
+                key={i}
+                className="group rounded-2xl bg-slate-950/80 border border-slate-800/90 overflow-hidden transition-all duration-200"
+              >
+                <summary className="flex items-center justify-between p-4 cursor-pointer list-none select-none text-xs sm:text-sm font-display font-black text-white hover:text-amber-300 transition-colors">
+                  <span className="flex-1 pr-3">{faq.q}</span>
+                  <ChevronDown className="w-4 h-4 text-amber-400 transform group-open:rotate-180 transition-transform duration-200 flex-shrink-0" />
+                </summary>
+                <div className="px-4 pb-4 pt-1 text-xs text-slate-300 font-sans leading-relaxed border-t border-slate-900">
+                  {faq.a}
+                </div>
+              </details>
+            ))}
+          </div>
+
+          {/* JSON-LD Schema for FAQPage */}
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                '@context': 'https://schema.org',
+                '@type': 'FAQPage',
+                mainEntity: [
+                  {
+                    '@type': 'Question',
+                    name: 'How does topological BFS avalanche and cluster dropping work?',
+                    acceptedAnswer: {
+                      '@type': 'Answer',
+                      text: 'Bubbles on row 0 act as celestial anchors. Severed bubbles drop in a zero-gravity avalanche.'
+                    }
+                  },
+                  {
+                    '@type': 'Question',
+                    name: 'How does the server-side anti-cheat validator verify my score?',
+                    acceptedAnswer: {
+                      '@type': 'Answer',
+                      text: 'Cryptographic payload validates shots, boosters, timestamps, and theoretical maximum score.'
+                    }
+                  }
+                ]
+              })
+            }}
+          />
         </div>
 
         {/* Support & Developer Communications */}

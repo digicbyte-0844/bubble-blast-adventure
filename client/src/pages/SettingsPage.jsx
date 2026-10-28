@@ -5,7 +5,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Volume2, VolumeX, Music, Eye, RotateCcw, Shield, Check, AlertTriangle, Sparkles } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Volume2, VolumeX, Music, Eye, RotateCcw, Shield, Check, AlertTriangle, Sparkles, ShieldCheck, FileText, Cookie } from 'lucide-react';
 import { GAME_NAME } from '../config/gameConfig.js';
 import { useAudioStore } from '../store/useAudioStore';
 
@@ -194,6 +195,66 @@ export const SettingsPage = () => {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Legal & Compliance Card */}
+        <div className="clay-card p-6 border border-slate-700/60 shadow-xl space-y-4">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5 text-amber-400" />
+            <h2 className="text-lg font-display font-black text-white">Compliance & Fair Play Policies</h2>
+          </div>
+          <p className="text-xs text-slate-400 font-sans">
+            Review {GAME_NAME}'s DPDP Act 2023 & GDPR telemetry disclosures, server-side anti-cheat regulations, and fair play terms.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+            <Link
+              to="/privacy-policy"
+              className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 hover:border-amber-400/50 flex items-center justify-between transition-all group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-amber-400/10 text-amber-400 flex items-center justify-center border border-amber-400/20">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-display font-black text-white group-hover:text-amber-300">Privacy Policy</h4>
+                  <span className="text-[10px] text-slate-400 font-sans">DPDP & GDPR Telemetry</span>
+                </div>
+              </div>
+              <span className="text-xs text-slate-500 group-hover:text-amber-400 transition-colors">→</span>
+            </Link>
+
+            <Link
+              to="/terms-and-conditions"
+              className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 hover:border-amber-400/50 flex items-center justify-between transition-all group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-amber-400/10 text-amber-400 flex items-center justify-center border border-amber-400/20">
+                  <FileText className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-display font-black text-white group-hover:text-amber-300">Terms of Service</h4>
+                  <span className="text-[10px] text-slate-400 font-sans">Fair Play & Anti-Cheat</span>
+                </div>
+              </div>
+              <span className="text-xs text-slate-500 group-hover:text-amber-400 transition-colors">→</span>
+            </Link>
+          </div>
+
+          <div className="pt-2 flex items-center justify-between border-t border-slate-800/80">
+            <div className="flex items-center gap-2 text-xs text-slate-400">
+              <Cookie className="w-4 h-4 text-amber-400" />
+              <span>Cookie & Telemetry Preference</span>
+            </div>
+            <button
+              onClick={() => {
+                localStorage.removeItem('bba_cookie_consent');
+                window.location.reload();
+              }}
+              className="text-xs text-amber-400 hover:underline font-display font-bold py-1 px-2"
+            >
+              Reset Cookie Choice
+            </button>
           </div>
         </div>
 

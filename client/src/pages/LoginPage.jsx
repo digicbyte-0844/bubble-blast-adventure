@@ -6,14 +6,16 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Lock, User, ArrowRight, Sparkles, AlertCircle } from 'lucide-react';
+import { Lock, User, ArrowRight, Sparkles, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
 import { GAME_NAME } from '../config/gameConfig.js';
 import { useUserStore } from '../store/useUserStore';
 
 export const LoginPage = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login, loginGuest } = useUserStore();
   const navigate = useNavigate();
@@ -24,12 +26,28 @@ export const LoginPage = () => {
     document.title = `Login — ${GAME_NAME}`;
   }, []);
 
+  const validate = () => {
+    const errs = {};
+    if (!username.trim()) {
+      errs.username = 'Pilot identifier is required.';
+    }
+    if (!password) {
+      errs.password = 'Secret passphrase is required.';
+    } else if (password.length < 6) {
+      errs.password = 'Passphrase must be at least 6 characters.';
+    }
+    setFieldErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
+    if (!validate()) return;
+
     setIsSubmitting(true);
     try {
-      await login(username, password);
+      await login(username.trim(), password);
       navigate(redirectTarget);
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Please verify credentials or continue as Guest.');
@@ -58,9 +76,9 @@ export const LoginPage = () => {
           <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-amber-400 to-amber-600 flex items-center justify-center text-3xl mx-auto mb-3 shadow-lg ring-4 ring-amber-400/20">
             🫧
           </div>
-          <h2 className="text-2xl font-display font-black text-white text-shadow-arcade">
+          <h1 className="text-2xl font-display font-black text-white text-shadow-arcade">
             Pilot Access
-          </h2>
+          </h1>
           <p className="text-xs text-slate-400 font-sans font-semibold mt-1">
             Sign in to <span className="text-amber-400 font-bold">{GAME_NAME}</span> to sync stars and ranks.
           </p>
@@ -73,39 +91,81 @@ export const LoginPage = () => {
           </div>
         )}
 
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-4" noValidate>
           <div>
-            <label className="text-xs font-display font-black text-slate-300 block mb-1.5 uppercase tracking-wider">
+            <label
+              htmlFor="login-username"
+              className="text-xs font-display font-black text-slate-300 block mb-1.5 uppercase tracking-wider"
+            >
               Pilot Identifier / Email
             </label>
             <div className="relative">
               <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
               <input
+                id="login-username"
+                name="username"
                 type="text"
                 required
+                aria-invalid={Boolean(fieldErrors.username)}
+                aria-describedby={fieldErrors.username ? 'username-error' : undefined}
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={(e) => {
+                  setUsername(e.target.value);
+                  if (fieldErrors.username) setFieldErrors((prev) => ({ ...prev, username: '' }));
+                }}
                 placeholder="e.g. StarlightPilot"
-                className="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl pl-10 pr-3 py-3 text-[16px] text-white placeholder-slate-500 font-sans font-semibold focus:outline-none focus:border-amber-400 min-h-[48px] transition-all"
+                className={`w-full bg-slate-950/80 border rounded-xl pl-10 pr-3 py-3 text-[16px] text-white placeholder-slate-500 font-sans font-semibold focus:outline-none min-h-[48px] transition-all ${
+                  fieldErrors.username ? 'border-rose-500 ring-1 ring-rose-500' : 'border-slate-700/80 focus:border-amber-400'
+                }`}
               />
             </div>
+            {fieldErrors.username && (
+              <p id="username-error" className="text-xs text-rose-400 font-semibold mt-1">
+                {fieldErrors.username}
+              </p>
+            )}
           </div>
 
           <div>
-            <label className="text-xs font-display font-black text-slate-300 block mb-1.5 uppercase tracking-wider">
+            <label
+              htmlFor="login-password"
+              className="text-xs font-display font-black text-slate-300 block mb-1.5 uppercase tracking-wider"
+            >
               Secret Passphrase
             </label>
             <div className="relative">
-              <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+              <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5 pointer-events-none" />
               <input
-                type="password"
+                id="login-password"
+                name="password"
+                type={showPassword ? 'text' : 'password'}
                 required
+                aria-invalid={Boolean(fieldErrors.password)}
+                aria-describedby={fieldErrors.password ? 'password-error' : undefined}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: '' }));
+                }}
                 placeholder="••••••••"
-                className="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl pl-10 pr-3 py-3 text-[16px] text-white placeholder-slate-500 font-sans font-semibold focus:outline-none focus:border-amber-400 min-h-[48px] transition-all"
+                className={`w-full bg-slate-950/80 border rounded-xl pl-10 pr-11 py-3 text-[16px] text-white placeholder-slate-500 font-sans font-semibold focus:outline-none min-h-[48px] transition-all ${
+                  fieldErrors.password ? 'border-rose-500 ring-1 ring-rose-500' : 'border-slate-700/80 focus:border-amber-400'
+                }`}
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-3 p-1 text-slate-400 hover:text-white transition-colors focus:outline-none"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
+            {fieldErrors.password && (
+              <p id="password-error" className="text-xs text-rose-400 font-semibold mt-1">
+                {fieldErrors.password}
+              </p>
+            )}
           </div>
 
           <button
@@ -113,8 +173,17 @@ export const LoginPage = () => {
             disabled={isSubmitting}
             className="w-full btn-arcade-gold py-3.5 rounded-2xl text-xs font-display font-black flex items-center justify-center gap-2 min-h-[50px] disabled:opacity-50 mt-2"
           >
-            <span>{isSubmitting ? 'AUTHENTICATING...' : 'SIGN IN TO SECTOR HQ'}</span>
-            <ArrowRight className="w-4 h-4" />
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
+                <span>AUTHENTICATING...</span>
+              </>
+            ) : (
+              <>
+                <span>SIGN IN TO SECTOR HQ</span>
+                <ArrowRight className="w-4 h-4" />
+              </>
+            )}
           </button>
         </form>
 

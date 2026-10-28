@@ -4,7 +4,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { Trophy, Medal, Star, Flame, ShieldCheck, User, Sparkles } from 'lucide-react';
+import { Trophy, Medal, Star, Flame, ShieldCheck, User, Sparkles, Search, X } from 'lucide-react';
 import { GAME_NAME } from '../config/gameConfig.js';
 import { useUserStore } from '../store/useUserStore';
 import ApiService from '../services/api.js';
@@ -15,6 +15,7 @@ export const LeaderboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [leaderboard, setLeaderboard] = useState([]);
   const [currentUserRank, setCurrentUserRank] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     document.title = `Leaderboards — ${GAME_NAME}`;
@@ -140,44 +141,77 @@ export const LeaderboardPage = () => {
 
           {/* Full Standings Table */}
           <div className="p-6 rounded-3xl clay-card mb-6 overflow-hidden">
-            <h2 className="font-display font-black text-xs uppercase text-slate-300 tracking-wider mb-4">
-              Full Pilot Standings
-            </h2>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+              <h2 className="font-display font-black text-xs uppercase text-slate-300 tracking-wider">
+                Full Pilot Standings
+              </h2>
+              {/* Pilot Search Bar */}
+              <div className="relative w-full sm:w-64">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Filter by callsign..."
+                  aria-label="Filter pilots by callsign"
+                  className="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl pl-9 pr-8 py-1.5 text-xs text-white placeholder-slate-500 font-sans focus:outline-none focus:border-amber-400 min-h-[36px]"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-2.5 top-2.5 text-slate-400 hover:text-white"
+                    aria-label="Clear filter"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            </div>
+
             <div className="w-full overflow-x-auto">
-              <table className="w-full text-left text-xs font-display">
-                <thead>
-                  <tr className="border-b border-slate-800 text-slate-300 uppercase text-xs tracking-wider">
-                    <th className="py-2.5 font-bold">Rank</th>
-                    <th className="py-2.5 font-bold">Pilot</th>
-                    <th className="py-2.5 font-bold">Verified Score</th>
-                    <th className="py-2.5 font-bold">Stars</th>
-                    <th className="py-2.5 font-bold text-right">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/60 font-body">
-                  {leaderboard.map((item, idx) => (
-                    <tr key={idx} className="hover:bg-slate-800/40 transition-colors">
-                      <td className="py-3 font-display font-black text-sm text-amber-400">
-                        #{item.rank}
-                      </td>
-                      <td className="py-3 font-semibold text-white">
-                        {item.name || item.username}
-                      </td>
-                      <td className="py-3 font-display font-black text-amber-300">
-                        {(item.totalScore || item.score).toLocaleString()}
-                      </td>
-                      <td className="py-3 font-display font-bold text-slate-300">
-                        {item.totalStars || 0} ★
-                      </td>
-                      <td className="py-3 text-right">
-                        <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-400 font-bold uppercase">
-                          Clean
-                        </span>
-                      </td>
+              {leaderboard.filter((item) => (item.name || item.username || '').toLowerCase().includes(searchQuery.toLowerCase().trim())).length === 0 ? (
+                <div className="py-8 text-center text-slate-400 font-sans text-xs">
+                  No pilots found matching "{searchQuery}".
+                </div>
+              ) : (
+                <table className="w-full text-left text-xs font-display">
+                  <thead>
+                    <tr className="border-b border-slate-800 text-slate-300 uppercase text-xs tracking-wider">
+                      <th className="py-2.5 font-bold">Rank</th>
+                      <th className="py-2.5 font-bold">Pilot</th>
+                      <th className="py-2.5 font-bold">Verified Score</th>
+                      <th className="py-2.5 font-bold">Stars</th>
+                      <th className="py-2.5 font-bold text-right">Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60 font-body">
+                    {leaderboard
+                      .filter((item) => (item.name || item.username || '').toLowerCase().includes(searchQuery.toLowerCase().trim()))
+                      .map((item, idx) => (
+                        <tr key={idx} className="hover:bg-slate-800/40 transition-colors">
+                          <td className="py-3 font-display font-black text-sm text-amber-400">
+                            #{item.rank}
+                          </td>
+                          <td className="py-3 font-semibold text-white">
+                            {item.name || item.username}
+                          </td>
+                          <td className="py-3 font-display font-black text-amber-300">
+                            {(item.totalScore || item.score).toLocaleString()}
+                          </td>
+                          <td className="py-3 font-display font-bold text-slate-300">
+                            {item.totalStars || 0} ★
+                          </td>
+                          <td className="py-3 text-right">
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-400 font-bold uppercase">
+                              Clean
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           </div>
         </>

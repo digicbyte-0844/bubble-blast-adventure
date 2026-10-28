@@ -18,12 +18,29 @@ const generateToken = (user) => {
 export const register = async (req, res) => {
   try {
     const name = req.body.name || req.body.username;
-    const username = req.body.username || name;
-    const email = req.body.email || `${(username || 'player').toLowerCase().replace(/\s+/g, '_')}@example.com`;
+    const username = (req.body.username || name || '').trim();
+    const email = (req.body.email || `${(username || 'player').toLowerCase().replace(/\s+/g, '_')}@starfleet.space`).trim();
     const password = req.body.password;
 
     if (!username || !password) {
-      return res.status(400).json({ success: false, message: 'Name/username and password required' });
+      return res.status(400).json({ success: false, message: 'Username and password are required' });
+    }
+
+    if (username.length < 3 || username.length > 30) {
+      return res.status(400).json({ success: false, message: 'Username must be between 3 and 30 characters' });
+    }
+
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+      return res.status(400).json({ success: false, message: 'Username may only contain letters, numbers, and underscores' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 6 characters long' });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ success: false, message: 'A valid email address is required' });
     }
 
     const existing = (await StoreService.findUserByUsername(username)) || (await StoreService.findUserByEmail(email));
@@ -78,6 +95,11 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { username, email, password } = req.body;
+
+    if ((!username && !email) || !password) {
+      return res.status(400).json({ success: false, message: 'Username/email and password are required' });
+    }
+
     let user = null;
     if (email) {
       user = await StoreService.findUserByEmail(email);

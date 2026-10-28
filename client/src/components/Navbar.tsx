@@ -98,16 +98,16 @@ export const Navbar: React.FC = () => {
         <Link
           to="/"
           onClick={closeDrawer}
-          aria-label="Home"
+          aria-label="Go to Homepage"
           className="flex items-center gap-1.5 sm:gap-2 group flex-shrink-0 min-h-[44px]"
         >
           <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-2xl bg-gradient-to-b from-amber-400 to-amber-500 border border-amber-300 shadow-md shadow-black/40 flex items-center justify-center text-base sm:text-lg transform group-hover:scale-105 active:scale-95 transition-all flex-shrink-0">
             🫧
           </div>
           <div className="flex flex-col min-w-0">
-            <h1 className="font-display font-black text-xs sm:text-sm md:text-base text-amber-400 tracking-tight leading-none text-shadow-arcade truncate max-w-[110px] xs:max-w-[150px] sm:max-w-none">
+            <span className="font-display font-black text-xs sm:text-sm md:text-base text-amber-400 tracking-tight leading-none text-shadow-arcade truncate max-w-[110px] xs:max-w-[150px] sm:max-w-none">
               {GAME_NAME}
-            </h1>
+            </span>
             <span className="hidden sm:block text-[10px] sm:text-xs font-body font-bold text-slate-400 tracking-wider uppercase">
               Arcade Puzzle
             </span>
@@ -387,6 +387,15 @@ export const Navbar: React.FC = () => {
                   <span>My Profile & Stats</span>
                 </Link>
               )}
+              <div className="flex items-center justify-center gap-3 pt-2 text-[11px] font-body text-slate-400">
+                <Link to="/privacy-policy" onClick={closeDrawer} className="hover:text-amber-400 transition-colors">
+                  Privacy Policy
+                </Link>
+                <span>•</span>
+                <Link to="/terms-and-conditions" onClick={closeDrawer} className="hover:text-amber-400 transition-colors">
+                  Terms of Service
+                </Link>
+              </div>
               <p className="text-[10px] font-body text-slate-500 text-center">
                 {GAME_NAME} • King/Supercell Mobile Engine
               </p>

@@ -22,6 +22,9 @@ import SettingsPage from './pages/SettingsPage.jsx';
 import HelpPage from './pages/HelpPage.jsx';
 import AdminPage from './pages/AdminPage.jsx';
 import NotFoundPage from './pages/NotFoundPage.jsx';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage.jsx';
+import TermsPage from './pages/TermsPage.jsx';
+import CookieConsent from './components/CookieConsent';
 import { useUserStore } from './store/useUserStore';
 
 // Protected route guard: seamlessly redirects unauthenticated visitors to /login with redirect query param
@@ -59,8 +62,20 @@ const AppContent = () => {
 
   return (
     <div className="h-[100dvh] max-h-[100dvh] w-full max-w-[100vw] overflow-x-hidden overflow-y-hidden bg-[#0B0F19] text-slate-100 flex flex-col font-['Nunito',sans-serif] select-none">
+      {/* Universal Skip to Main Content Link for Keyboard & Screen Reader Accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[9999] focus:px-4 focus:py-2.5 focus:bg-amber-400 focus:text-slate-950 focus:font-display focus:font-black focus:text-xs focus:rounded-xl focus:shadow-2xl focus:outline-none focus:ring-4 focus:ring-amber-400/50"
+      >
+        Skip to main content
+      </a>
+
       {!isGameRoute && <Navbar />}
-      <main className={`flex-1 w-full max-w-[100vw] h-full min-h-0 overflow-y-auto overflow-x-hidden ${!isGameRoute ? 'pb-16 md:pb-0' : ''}`}>
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className={`flex-1 w-full max-w-[100vw] h-full min-h-0 overflow-y-auto overflow-x-hidden ${!isGameRoute ? 'pb-16 md:pb-0' : ''}`}
+      >
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -76,9 +91,13 @@ const AppContent = () => {
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/help" element={<HelpPage />} />
           <Route path="/admin" element={<AdminPage />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+          <Route path="/terms-and-conditions" element={<TermsPage />} />
+          <Route path="/terms" element={<Navigate to="/terms-and-conditions" replace />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
+      <CookieConsent />
     </div>
   );
 };

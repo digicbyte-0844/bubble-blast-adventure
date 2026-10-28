@@ -28,6 +28,8 @@ export const GameLayout = ({
 
   return (
     <div className="w-full h-[100dvh] max-h-[100dvh] overflow-hidden flex flex-col justify-between bg-[#0B0F19] text-white select-none touch-none overscroll-none relative">
+      <h1 className="sr-only">Active Mission Gameplay — Sector Arena</h1>
+
       {/* Tier A: Fixed Top HUD (Safe area padded) */}
       <GameHUD onPause={onPause} onRestart={onRestart} onQuitToMap={onQuitToMap} />
 
