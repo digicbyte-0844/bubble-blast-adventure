@@ -254,11 +254,11 @@ export const AdminPage = () => {
                   type="text"
                   value={adminUsername}
                   onChange={(e) => setAdminUsername(e.target.value)}
-                  className="w-full h-11 px-3.5 pl-10 rounded-xl bg-slate-950/90 border border-slate-700/80 text-white font-display font-bold text-sm focus:outline-none focus:border-amber-400"
+                  className="w-full h-12 min-h-[48px] px-3.5 pl-10 rounded-xl bg-slate-950/90 border border-slate-700/80 text-white font-display font-bold text-[16px] focus:outline-none focus:border-amber-400"
                   placeholder="admin"
                   required
                 />
-                <Key className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
+                <Key className="w-4 h-4 text-slate-500 absolute left-3.5 top-4" />
               </div>
             </div>
 
@@ -271,11 +271,11 @@ export const AdminPage = () => {
                   type="password"
                   value={adminPassword}
                   onChange={(e) => setAdminPassword(e.target.value)}
-                  className="w-full h-11 px-3.5 pl-10 rounded-xl bg-slate-950/90 border border-slate-700/80 text-white font-display font-bold text-sm focus:outline-none focus:border-amber-400"
+                  className="w-full h-12 min-h-[48px] px-3.5 pl-10 rounded-xl bg-slate-950/90 border border-slate-700/80 text-white font-display font-bold text-[16px] focus:outline-none focus:border-amber-400"
                   placeholder="••••••••••••"
                   required
                 />
-                <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
+                <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-4" />
               </div>
             </div>
 
@@ -466,7 +466,7 @@ export const AdminPage = () => {
             placeholder="Search username, email, name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 transition-colors"
+            className="w-full min-h-[44px] bg-slate-950 border border-slate-800 rounded-2xl pl-10 pr-4 py-2.5 text-[16px] md:text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 transition-colors"
           />
         </div>
 
@@ -585,7 +585,13 @@ export const AdminPage = () => {
 
                       {/* Email */}
                       <td className="py-3.5 px-4 font-mono text-[11px] text-slate-300">
-                        {u.email || 'None'}
+                        {u.email ? (
+                          <a href={`mailto:${u.email}`} className="text-cyan-400 hover:text-cyan-300 hover:underline min-h-[40px] inline-flex items-center">
+                            {u.email}
+                          </a>
+                        ) : (
+                          'None'
+                        )}
                       </td>
 
                       {/* Registered Date */}

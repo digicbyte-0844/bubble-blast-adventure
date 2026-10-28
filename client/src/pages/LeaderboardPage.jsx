@@ -81,7 +81,7 @@ export const LeaderboardPage = () => {
             <button
               key={tab}
               onClick={() => setTimeframe(tab)}
-              className={`px-4 py-1.5 rounded-xl capitalize transition-all ${
+              className={`px-4 py-2 min-h-[44px] rounded-xl capitalize transition-all ${
                 timeframe === tab
                   ? 'bg-amber-400 text-slate-950 font-black shadow-md'
                   : 'text-slate-400 hover:text-white'
@@ -143,7 +143,7 @@ export const LeaderboardPage = () => {
             <h2 className="font-display font-black text-xs uppercase text-slate-300 tracking-wider mb-4">
               Full Pilot Standings
             </h2>
-            <div className="overflow-x-auto">
+            <div className="w-full overflow-x-auto">
               <table className="w-full text-left text-xs font-display">
                 <thead>
                   <tr className="border-b border-slate-800 text-slate-300 uppercase text-xs tracking-wider">

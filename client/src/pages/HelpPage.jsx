@@ -107,6 +107,35 @@ export const HelpPage = () => {
           ))}
         </div>
 
+        {/* Support & Developer Communications */}
+        <div className="clay-card p-6 md:p-7 border border-slate-700/60 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+          <div>
+            <span className="text-[10px] font-display font-black text-amber-400 uppercase tracking-widest block mb-1">
+              Direct Pilot Support
+            </span>
+            <h3 className="text-lg font-display font-black text-white">
+              Need Assistance or Found a Bug?
+            </h3>
+            <p className="text-xs text-slate-300 font-sans mt-0.5">
+              Contact Lead Engineer Prabhuteja Koda directly for flight log verification or technical support.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <a
+              href="mailto:prabhutejakoda@gmail.com"
+              className="btn-arcade-slate px-4 py-2.5 rounded-xl text-xs font-display font-bold text-sky-300 hover:text-white flex items-center gap-2 min-h-[44px]"
+            >
+              <span>📧 prabhutejakoda@gmail.com</span>
+            </a>
+            <a
+              href="tel:+918008882026"
+              className="btn-arcade-slate px-4 py-2.5 rounded-xl text-xs font-display font-bold text-emerald-300 hover:text-white flex items-center gap-2 min-h-[44px]"
+            >
+              <span>📞 +91 (800) 888-2026</span>
+            </a>
+          </div>
+        </div>
+
         {/* Bottom CTA to Launch Game */}
         <div className="clay-card p-8 border border-amber-500/30 text-center shadow-2xl relative overflow-hidden">
           <div className="relative z-10 max-w-md mx-auto space-y-4">

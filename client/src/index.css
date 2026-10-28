@@ -3,18 +3,28 @@
 @tailwind utilities;
 
 @layer base {
+  html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
   html, body, #root {
     margin: 0;
     padding: 0;
     width: 100%;
+    max-width: 100vw;
     height: 100%;
-    overflow: hidden;
+    overflow-x: hidden;
     overscroll-behavior: none;
-    touch-action: none;
     background-color: #0B0F19;
     user-select: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
+  }
+
+  /* Prevent iOS auto-zoom by enforcing >= 16px font-size on all form controls */
+  input, select, textarea {
+    font-size: 16px !important;
   }
 
   img, svg {
@@ -163,4 +173,69 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #334155;
+}
+
+/* ==========================================================================
+   Print Stylesheet (@media print)
+   Hides headers, footers, docks, audio toggles, and floating UI
+   Produces crisp, clean high-contrast black/white reports on A4/thermal paper
+   ========================================================================== */
+@media print {
+  /* Hide non-printable navigation, buttons, and decorative overlays */
+  .no-print,
+  header,
+  nav,
+  footer,
+  aside,
+  button,
+  .mobile-dock,
+  .floating-mascot,
+  [aria-label="Toggle navigation drawer"],
+  [aria-label="Mobile Navigation Dock"] {
+    display: none !important;
+  }
+
+  /* Reset document flow and containers */
+  html, body, #root, main {
+    background: #ffffff !important;
+    color: #000000 !important;
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Normalize glassmorphic cards and backgrounds for clean ink printing */
+  .clay-card,
+  div {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    background: transparent !important;
+    color: #111827 !important;
+    border-color: #d1d5db !important;
+  }
+
+  /* Format tables crisply */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    color: #000000 !important;
+  }
+
+  th, td {
+    border: 1px solid #d1d5db !important;
+    padding: 8px !important;
+    color: #000000 !important;
+  }
+
+  a {
+    text-decoration: underline !important;
+    color: #000000 !important;
+  }
+
+  @page {
+    margin: 1.5cm;
+    size: A4;
+  }
 }

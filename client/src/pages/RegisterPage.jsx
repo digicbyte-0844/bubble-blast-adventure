@@ -98,7 +98,7 @@ export const RegisterPage = () => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Choose callsign"
-                className="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl pl-10 pr-3 py-2.5 text-sm text-white placeholder-slate-500 font-sans font-semibold focus:outline-none focus:border-amber-400 min-h-[46px] transition-all"
+                className="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl pl-10 pr-3 py-2.5 text-[16px] text-white placeholder-slate-500 font-sans font-semibold focus:outline-none focus:border-amber-400 min-h-[48px] transition-all"
               />
             </div>
           </div>
@@ -115,7 +115,7 @@ export const RegisterPage = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="pilot@starfleet.space"
-                className="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl pl-10 pr-3 py-2.5 text-sm text-white placeholder-slate-500 font-sans font-semibold focus:outline-none focus:border-amber-400 min-h-[46px] transition-all"
+                className="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl pl-10 pr-3 py-2.5 text-[16px] text-white placeholder-slate-500 font-sans font-semibold focus:outline-none focus:border-amber-400 min-h-[48px] transition-all"
               />
             </div>
           </div>
@@ -132,7 +132,7 @@ export const RegisterPage = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Minimum 6 characters"
-                className="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl pl-10 pr-3 py-2.5 text-sm text-white placeholder-slate-500 font-sans font-semibold focus:outline-none focus:border-amber-400 min-h-[46px] transition-all"
+                className="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl pl-10 pr-3 py-2.5 text-[16px] text-white placeholder-slate-500 font-sans font-semibold focus:outline-none focus:border-amber-400 min-h-[48px] transition-all"
               />
             </div>
           </div>
@@ -149,7 +149,7 @@ export const RegisterPage = () => {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Repeat password"
-                className="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl pl-10 pr-3 py-2.5 text-sm text-white placeholder-slate-500 font-sans font-semibold focus:outline-none focus:border-amber-400 min-h-[46px] transition-all"
+                className="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl pl-10 pr-3 py-2.5 text-[16px] text-white placeholder-slate-500 font-sans font-semibold focus:outline-none focus:border-amber-400 min-h-[48px] transition-all"
               />
             </div>
           </div>

@@ -70,13 +70,13 @@ export const ProfilePage = () => {
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <button
                 onClick={() => navigate('/login')}
-                className="flex-1 sm:flex-initial btn-arcade-slate py-2 px-4 rounded-xl text-xs font-display font-black"
+                className="flex-1 sm:flex-initial btn-arcade-slate py-2.5 px-4 rounded-xl text-xs font-display font-black min-h-[44px]"
               >
                 Sign In
               </button>
               <button
                 onClick={() => navigate('/register')}
-                className="flex-1 sm:flex-initial btn-arcade-gold py-2 px-4 rounded-xl text-xs font-display font-black text-slate-950"
+                className="flex-1 sm:flex-initial btn-arcade-gold py-2.5 px-4 rounded-xl text-xs font-display font-black text-slate-950 min-h-[44px]"
               >
                 Register
               </button>

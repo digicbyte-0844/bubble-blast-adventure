@@ -52,9 +52,9 @@ export const LevelSelectPage = () => {
   const getOffsetClass = (index) => {
     const mod = index % 4;
     if (mod === 0) return 'translate-x-0';
-    if (mod === 1) return '-translate-x-10 sm:-translate-x-16';
+    if (mod === 1) return '-translate-x-6 sm:-translate-x-10 md:-translate-x-14';
     if (mod === 2) return 'translate-x-0';
-    return 'translate-x-10 sm:translate-x-16';
+    return 'translate-x-6 sm:translate-x-10 md:translate-x-14';
   };
 
   return (

@@ -86,7 +86,7 @@ export const LoginPage = () => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="e.g. StarlightPilot"
-                className="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl pl-10 pr-3 py-3 text-sm text-white placeholder-slate-500 font-sans font-semibold focus:outline-none focus:border-amber-400 min-h-[48px] transition-all"
+                className="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl pl-10 pr-3 py-3 text-[16px] text-white placeholder-slate-500 font-sans font-semibold focus:outline-none focus:border-amber-400 min-h-[48px] transition-all"
               />
             </div>
           </div>
@@ -103,7 +103,7 @@ export const LoginPage = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl pl-10 pr-3 py-3 text-sm text-white placeholder-slate-500 font-sans font-semibold focus:outline-none focus:border-amber-400 min-h-[48px] transition-all"
+                className="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl pl-10 pr-3 py-3 text-[16px] text-white placeholder-slate-500 font-sans font-semibold focus:outline-none focus:border-amber-400 min-h-[48px] transition-all"
               />
             </div>
           </div>

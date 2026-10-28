@@ -3,7 +3,7 @@
  * King/Supercell Caliber: Height 56px, Safe-area Inset, Tactile Micro-Interactions
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   Volume2,
@@ -35,6 +35,28 @@ export const Navbar: React.FC = () => {
   const { coins, energy, user, isAuthenticated, logout, loginGuest } = useUserStore();
   const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // Lock background scroll when drawer is open & handle Escape key navigation
+  useEffect(() => {
+    if (drawerOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          setDrawerOpen(false);
+        }
+      };
+
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.body.style.overflow = originalOverflow;
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    } else {
+      document.body.style.overflow = '';
+    }
+  }, [drawerOpen]);
 
   const isRegistered = Boolean(isAuthenticated && user && !user.isGuest);
   const isAdmin = Boolean(
@@ -76,6 +98,7 @@ export const Navbar: React.FC = () => {
         <Link
           to="/"
           onClick={closeDrawer}
+          aria-label="Home"
           className="flex items-center gap-1.5 sm:gap-2 group flex-shrink-0 min-h-[44px]"
         >
           <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-2xl bg-gradient-to-b from-amber-400 to-amber-500 border border-amber-300 shadow-md shadow-black/40 flex items-center justify-center text-base sm:text-lg transform group-hover:scale-105 active:scale-95 transition-all flex-shrink-0">
@@ -171,8 +194,9 @@ export const Navbar: React.FC = () => {
           {/* Tactile Mobile & Desktop Menu Trigger Button */}
           <button
             onClick={() => setDrawerOpen(!drawerOpen)}
-            className="flex-shrink-0 w-10 h-10 rounded-2xl bg-slate-800/90 hover:bg-slate-700/90 border border-amber-400/40 hover:border-amber-400 flex items-center justify-center text-amber-400 transition-all active:scale-95 shadow-md"
-            aria-label="Toggle navigation drawer"
+            aria-expanded={drawerOpen}
+            aria-label={drawerOpen ? 'Close navigation drawer' : 'Open navigation drawer'}
+            className="flex-shrink-0 w-11 h-11 min-w-[44px] min-h-[44px] rounded-2xl bg-slate-800/90 hover:bg-slate-700/90 border border-amber-400/40 hover:border-amber-400 flex items-center justify-center text-amber-400 transition-all active:scale-95 shadow-md"
             title="Open Menu"
           >
             {drawerOpen ? <X className="w-5 h-5 text-amber-400" /> : <Menu className="w-5 h-5 text-amber-400" />}
@@ -443,12 +467,13 @@ export const Navbar: React.FC = () => {
         {/* Tab 5: Menu / More Drawer Trigger */}
         <button
           onClick={() => setDrawerOpen(!drawerOpen)}
+          aria-expanded={drawerOpen}
+          aria-label={drawerOpen ? 'Close all menus' : 'Open all menus'}
           className={`flex-1 min-h-[48px] py-1 flex flex-col items-center justify-center gap-0.5 rounded-xl transition-all ${
             drawerOpen
               ? 'text-amber-400 font-black'
               : 'text-slate-400 hover:text-slate-200'
           }`}
-          aria-label="Toggle all menus"
         >
           <div className={`p-1 rounded-xl transition-all ${drawerOpen ? 'bg-amber-400/15 ring-1 ring-amber-400/40 text-amber-400' : ''}`}>
             {drawerOpen ? <X className="w-5 h-5 text-amber-400" /> : <Menu className="w-5 h-5" />}

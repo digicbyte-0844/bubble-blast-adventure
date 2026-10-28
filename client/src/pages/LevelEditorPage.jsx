@@ -218,7 +218,7 @@ export const LevelEditorPage = () => {
                   type="text"
                   value={levelName}
                   onChange={(e) => setLevelName(e.target.value)}
-                  className="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white font-bold focus:outline-none focus:border-amber-400 transition-all min-h-[42px]"
+                  className="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl px-3 py-2 text-[16px] md:text-xs text-white font-bold focus:outline-none focus:border-amber-400 transition-all min-h-[44px]"
                 />
               </div>
 
@@ -227,7 +227,7 @@ export const LevelEditorPage = () => {
                 <select
                   value={objectiveType}
                   onChange={(e) => setObjectiveType(e.target.value)}
-                  className="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white font-bold focus:outline-none focus:border-amber-400 transition-all min-h-[42px]"
+                  className="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl px-3 py-2 text-[16px] md:text-xs text-white font-bold focus:outline-none focus:border-amber-400 transition-all min-h-[44px]"
                 >
                   <option value="clear_all">🎯 Clear All Bubbles</option>
                   <option value="rescue">🌟 Rescue Trapped Jellies</option>
