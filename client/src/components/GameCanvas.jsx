@@ -754,14 +754,18 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
     const pointerX = (clientX - rect.left) * scaleX;
     const pointerY = (clientY - rect.top) * scaleY;
 
-    // Check if clicked the launcher base or next bubble tray
-    const distToLauncher = Math.hypot(pointerX - LAUNCHER_X, pointerY - LAUNCHER_Y);
+    // Check if clicked the next bubble ammo tray specifically to swap
     const distToNext = Math.hypot(pointerX - NEXT_BUBBLE_X, pointerY - NEXT_BUBBLE_Y);
-    if (distToLauncher < BUBBLE_RADIUS * 1.8 || distToNext < BUBBLE_RADIUS * 1.5) {
+    if (distToNext < BUBBLE_RADIUS * 1.5) {
       return 'SWAP_TRIGGERED';
     }
 
-    const angle = Math.atan2(pointerY - LAUNCHER_Y, pointerX - LAUNCHER_X);
+    let angle = Math.atan2(pointerY - LAUNCHER_Y, pointerX - LAUNCHER_X);
+    if (pointerY >= LAUNCHER_Y) {
+      const dx = pointerX - LAUNCHER_X;
+      angle = Math.atan2(-Math.max(12, pointerY - LAUNCHER_Y), dx);
+    }
+
     const clamped = clampAimAngle(angle);
     aimAngleRef.current = clamped;
     return 'AIM_UPDATED';
@@ -769,20 +773,17 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
 
   /**
    * Fires the loaded bubble at the current aim angle
-   * Synchronously transitions gameStatus to SHOOTING to eliminate double-shooting race conditions
    */
   const shootProjectile = () => {
     if (activeProjectileRef.current) return;
     if (gameStatusRef.current !== GAME_STATES.READY && gameStatusRef.current !== GAME_STATES.AIMING) return;
 
-    // Synchronous state lock
-    gameStatusRef.current = GAME_STATES.SHOOTING;
-    setGameStatus(GAME_STATES.SHOOTING);
-
     const angle = aimAngleRef.current;
     setAimAngle(angle);
     const shot = fireBubble(angle);
+
     if (shot) {
+      gameStatusRef.current = GAME_STATES.SHOOTING;
       activeProjectileRef.current = {
         x: LAUNCHER_X,
         y: LAUNCHER_Y,
@@ -793,20 +794,20 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
         radius: BUBBLE_RADIUS
       };
     } else {
-      // Revert if out of shots or invalid
       gameStatusRef.current = GAME_STATES.READY;
       setGameStatus(GAME_STATES.READY);
     }
   };
 
-  // --- DESKTOP MOUSE CONTROLS ---
-  const handleMouseMove = (e) => {
+  // --- UNIFIED POINTER CONTROLS (Touch, Mouse & Pen with Hardware Capture) ---
+  const handlePointerDown = (e) => {
+    if (e.button && e.button !== 0) return;
     if (gameStatusRef.current !== GAME_STATES.READY && gameStatusRef.current !== GAME_STATES.AIMING) return;
-    updateAimFromPointer(e.clientX, e.clientY);
-  };
 
-  const handleMouseDown = (e) => {
-    if (gameStatusRef.current !== GAME_STATES.READY && gameStatusRef.current !== GAME_STATES.AIMING) return;
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {}
+
     const result = updateAimFromPointer(e.clientX, e.clientY);
     if (result === 'SWAP_TRIGGERED') {
       swapBubbles();
@@ -816,7 +817,18 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
     setGameStatus(GAME_STATES.AIMING);
   };
 
-  const handleMouseUp = () => {
+  const handlePointerMove = (e) => {
+    if (!isAimingRef.current || (gameStatusRef.current !== GAME_STATES.READY && gameStatusRef.current !== GAME_STATES.AIMING)) return;
+    updateAimFromPointer(e.clientX, e.clientY);
+  };
+
+  const handlePointerUp = (e) => {
+    try {
+      if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      }
+    } catch {}
+
     if (isAimingRef.current && (gameStatusRef.current === GAME_STATES.READY || gameStatusRef.current === GAME_STATES.AIMING)) {
       isAimingRef.current = false;
       shootProjectile();
@@ -825,7 +837,16 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
     }
   };
 
-  // --- MOBILE TOUCH CONTROLS (drag-to-aim with touch-action: none) ---
+  const handlePointerCancel = (e) => {
+    try {
+      if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      }
+    } catch {}
+    isAimingRef.current = false;
+  };
+
+  // Mobile Touch Fallback for older iOS Safari WebKit versions
   const handleTouchStart = (e) => {
     if (gameStatusRef.current !== GAME_STATES.READY && gameStatusRef.current !== GAME_STATES.AIMING) return;
     const touch = e.touches[0];
@@ -899,9 +920,10 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
           display: 'block'
         }}
         className="cursor-crosshair touch-none select-none block"
-        onMouseMove={handleMouseMove}
-        onMouseDown={handleMouseDown}
-        onMouseUp={handleMouseUp}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerCancel}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}

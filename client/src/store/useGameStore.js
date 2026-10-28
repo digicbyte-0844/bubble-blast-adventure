@@ -133,15 +133,8 @@ export const useGameStore = create((set, get) => ({
 
     // Anti-cheat session token
     let token = `local_session_${Date.now()}`;
-    try {
-      const authRes = await ApiService.startGameSession(numericId);
-      if (authRes) {
-        token = authRes.sessionToken || authRes.sessionId || authRes.data?.sessionToken || token;
-      }
-    } catch (e) {
-      // Offline fallback
-    }
 
+    // SET FSM STATE TO READY IMMEDIATELY - Zero render lag, zero network blocking
     set({
       levelId: numericId,
       levelData: level,
@@ -172,6 +165,19 @@ export const useGameStore = create((set, get) => ({
     });
 
     soundEngine.play('click');
+
+    // Asynchronously obtain remote session token if backend is reachable
+    try {
+      const authRes = await ApiService.startGameSession(numericId);
+      if (authRes) {
+        const remoteToken = authRes.sessionToken || authRes.sessionId || authRes.data?.sessionToken;
+        if (remoteToken) {
+          set({ sessionToken: remoteToken });
+        }
+      }
+    } catch (e) {
+      // Offline fallback
+    }
   },
 
   /**
@@ -229,7 +235,7 @@ export const useGameStore = create((set, get) => ({
     } = get();
 
     // STRICT FSM GUARD: Double shooting is impossible during flight or resolution
-    if (gameStatus !== GAME_STATES.READY && gameStatus !== GAME_STATES.AIMING) {
+    if (gameStatus !== GAME_STATES.READY && gameStatus !== GAME_STATES.AIMING && gameStatus !== GAME_STATES.SHOOTING) {
       return null;
     }
     if (shotsRemaining <= 0) {
