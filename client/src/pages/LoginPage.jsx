@@ -20,7 +20,8 @@ export const LoginPage = () => {
   const { login, loginGuest } = useUserStore();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const redirectTarget = searchParams.get('redirect') ? decodeURIComponent(searchParams.get('redirect')) : '/levels';
+  const rawTarget = searchParams.get('redirect') ? decodeURIComponent(searchParams.get('redirect')) : '/levels';
+  const redirectTarget = (!rawTarget || rawTarget.startsWith('/login')) ? '/levels' : rawTarget;
 
   useEffect(() => {
     document.title = `Login — ${GAME_NAME}`;
@@ -48,9 +49,14 @@ export const LoginPage = () => {
     setIsSubmitting(true);
     try {
       await login(username.trim(), password);
-      navigate(redirectTarget);
+      const state = useUserStore.getState();
+      if (state.isAuthenticated && state.token) {
+        navigate(redirectTarget);
+      } else {
+        setError('Authentication was unsuccessful. Please check your credentials or continue as Guest.');
+      }
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please verify credentials or continue as Guest.');
+      setError(err?.message || 'Login failed. Please verify credentials or continue as Guest.');
     } finally {
       setIsSubmitting(false);
     }

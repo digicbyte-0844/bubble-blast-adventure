@@ -77,7 +77,7 @@ export const useUserStore = create<UserState>((set, get) => {
 
     login: async (username: string, pass?: string) => {
       const res = await ApiService.login(username, pass);
-      if (res.success) {
+      if (res && res.success) {
         const userObj = res.user || res.data?.user;
         const tokenStr = res.token || res.data?.token;
         if (tokenStr) localStorage.setItem('bba_token', tokenStr);
@@ -88,12 +88,15 @@ export const useUserStore = create<UserState>((set, get) => {
           isAuthenticated: true,
           coins: userObj?.coins || 500
         });
+        return userObj;
+      } else {
+        throw new Error(res?.message || 'Invalid callsign or passphrase. Please verify your credentials or enlist as a new Pilot.');
       }
     },
 
     register: async (username: string, email: string, pass?: string) => {
       const res = await ApiService.register(username, email, pass);
-      if (res.success) {
+      if (res && res.success) {
         const userObj = res.user || res.data?.user;
         const tokenStr = res.token || res.data?.token;
         if (tokenStr) localStorage.setItem('bba_token', tokenStr);
@@ -104,6 +107,9 @@ export const useUserStore = create<UserState>((set, get) => {
           isAuthenticated: true,
           coins: userObj?.coins || 500
         });
+        return userObj;
+      } else {
+        throw new Error(res?.message || 'Registration failed. Callsign or email may already be in use.');
       }
     },
 

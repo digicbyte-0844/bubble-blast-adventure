@@ -23,7 +23,8 @@ export const RegisterPage = () => {
   const { register, loginGuest } = useUserStore();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const redirectTarget = searchParams.get('redirect') ? decodeURIComponent(searchParams.get('redirect')) : '/levels';
+  const rawTarget = searchParams.get('redirect') ? decodeURIComponent(searchParams.get('redirect')) : '/levels';
+  const redirectTarget = (!rawTarget || rawTarget.startsWith('/login')) ? '/levels' : rawTarget;
 
   useEffect(() => {
     document.title = `Register — ${GAME_NAME}`;
@@ -67,9 +68,14 @@ export const RegisterPage = () => {
     setIsSubmitting(true);
     try {
       await register(username.trim(), email.trim(), password);
-      navigate(redirectTarget);
+      const state = useUserStore.getState();
+      if (state.isAuthenticated && state.token) {
+        navigate(redirectTarget);
+      } else {
+        setError('Registration was unsuccessful. Please check your inputs or try another callsign.');
+      }
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Username or email may already be registered.');
+      setError(err?.message || 'Registration failed. Callsign or email may already be registered.');
     } finally {
       setIsSubmitting(false);
     }
