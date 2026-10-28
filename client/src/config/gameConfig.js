@@ -9,7 +9,7 @@ const isProductionDomain = typeof window !== 'undefined' &&
 
 export const API_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL)
   || (typeof process !== 'undefined' && process.env && process.env.VITE_API_URL)
-  || (isProductionDomain ? "https://bubble-blast-adventure-api.onrender.com/api" : "http://localhost:5000/api");
+  || (isProductionDomain ? "/api" : "http://localhost:5000/api");
 
 export default {
   GAME_NAME,

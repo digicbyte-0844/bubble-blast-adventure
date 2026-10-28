@@ -208,10 +208,10 @@ export const HelpPage = () => {
               <span>📧 prabhutejakoda@gmail.com</span>
             </a>
             <a
-              href="tel:+918008882026"
+              href="tel:+919177160897"
               className="btn-arcade-slate px-4 py-2.5 rounded-xl text-xs font-display font-bold text-emerald-300 hover:text-white flex items-center gap-2 min-h-[44px]"
             >
-              <span>📞 +91 (800) 888-2026</span>
+              <span>📞 +91 9177160897</span>
             </a>
           </div>
         </div>

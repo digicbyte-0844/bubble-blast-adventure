@@ -160,7 +160,7 @@ export const TermsPage = () => {
               </h2>
             </div>
             <p className="text-xs text-slate-300 font-sans leading-relaxed">
-              These Terms shall be governed by and construed in accordance with the laws of the Republic of India. Any disputes arising in connection with this web application shall be subject to the exclusive jurisdiction of the competent courts of Bengaluru, Karnataka, India.
+              These Terms shall be governed by and construed in accordance with the laws of the Republic of India. Any disputes arising in connection with this web application shall be subject to the exclusive jurisdiction of the competent courts of Visakhapatnam (Vizag), Andhra Pradesh, India.
             </p>
             <div className="bg-slate-950/90 p-4 rounded-xl border border-slate-800 text-xs font-sans space-y-2">
               <div className="flex items-center justify-between">
@@ -175,9 +175,13 @@ export const TermsPage = () => {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-slate-400">Phone Hotline:</span>
-                <a href="tel:+918008882026" className="font-mono text-emerald-400 hover:underline min-h-[44px] flex items-center">
-                  +91 (800) 888-2026
+                <a href="tel:+919177160897" className="font-mono text-emerald-400 hover:underline min-h-[44px] flex items-center">
+                  +91 9177160897
                 </a>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400">Jurisdiction & Location:</span>
+                <span className="text-white">Visakhapatnam (Vizag), Andhra Pradesh, India</span>
               </div>
             </div>
           </div>

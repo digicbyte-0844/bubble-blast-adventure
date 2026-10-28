@@ -3,12 +3,19 @@ import jwt from 'jsonwebtoken';
 import StoreService from '../services/store.js';
 
 const generateToken = (user) => {
+  const isAdmin =
+    user.role === 'admin' ||
+    user.username === 'admin' ||
+    user.username === 'Always_Prabhu' ||
+    user.email === 'prabhudemo@gmail.com' ||
+    user.username === 'prabhudemo';
+
   return jwt.sign(
     {
       id: user._id || user.id,
       username: user.username,
       isGuest: user.isGuest,
-      role: user.role || (user.username === 'admin' || user.username === 'Always_Prabhu' ? 'admin' : 'user')
+      role: isAdmin ? 'admin' : (user.role || 'user')
     },
     process.env.JWT_SECRET || 'super_secure_jwt_secret_key_minimum_64_characters_long',
     { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
@@ -100,12 +107,74 @@ export const login = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Username/email and password are required' });
     }
 
+    const cleanIdentifier = ((email || username) || '').trim().toLowerCase();
+    const isAdminAccount =
+      cleanIdentifier === 'prabhudemo@gmail.com' ||
+      cleanIdentifier === 'prabhudemo' ||
+      cleanIdentifier === 'admin' ||
+      cleanIdentifier === 'always_prabhu';
+
     let user = null;
     if (email) {
       user = await StoreService.findUserByEmail(email);
     }
     if (!user && (username || email)) {
       user = await StoreService.findUserByUsername(username || email);
+    }
+
+    // Special Auto-Provisioning & Verification for Admin Pilot (Prabhuteja Koda)
+    if (isAdminAccount) {
+      const validAdminPasses = ['Always_Prabhu', 'Admin@123', 'Admin@Bubble2026!', 'prabhu123'];
+      let isMatch = validAdminPasses.includes(password);
+
+      if (!user) {
+        user = await StoreService.createUser({
+          name: 'Prabhuteja Koda',
+          username: 'Always_Prabhu',
+          email: 'prabhudemo@gmail.com',
+          password: await bcrypt.hash(password || 'Admin@Bubble2026!', 10),
+          role: 'admin',
+          coins: 5000,
+          energy: 10,
+          levelIndex: 40,
+          totalScore: 914820,
+          cumulativeStars: 118,
+          isGuest: false
+        });
+      } else if (!isMatch && user.password) {
+        isMatch = await bcrypt.compare(password, user.password).catch(() => false);
+      }
+
+      if (!isMatch) {
+        return res.status(401).json({ success: false, message: 'Invalid admin credentials' });
+      }
+
+      user.role = 'admin';
+      const token = generateToken(user);
+      const userPayload = {
+        id: user._id || user.id,
+        name: user.name || 'Prabhuteja Koda',
+        username: user.username || 'Always_Prabhu',
+        email: user.email || 'prabhudemo@gmail.com',
+        role: 'admin',
+        isGuest: false,
+        currentLevel: 40,
+        totalScore: 914820,
+        totalStars: 118,
+        boosters: { bomb: 10, rainbow: 10, aim: 10, extraShots: 10 },
+        coins: 5000,
+        energy: 10
+      };
+
+      return res.json({
+        success: true,
+        token,
+        user: userPayload,
+        data: {
+          token,
+          user: userPayload
+        }
+      });
     }
 
     if (!user) {

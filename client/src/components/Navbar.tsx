@@ -61,17 +61,12 @@ export const Navbar: React.FC = () => {
   const isRegistered = Boolean(isAuthenticated && user && !user.isGuest);
   const isAdmin = Boolean(
     isAuthenticated &&
-      (user?.role === 'admin' || user?.username === 'admin' || user?.username === 'Always_Prabhu')
+      (user?.role === 'admin' ||
+        user?.username === 'admin' ||
+        user?.username === 'Always_Prabhu' ||
+        user?.email === 'prabhudemo@gmail.com' ||
+        user?.username === 'prabhudemo')
   );
-
-  const authNavLinks = !isRegistered
-    ? [
-        { to: '/login', label: 'Sign In', icon: LogIn, color: 'text-amber-400' },
-        { to: '/register', label: 'Register', icon: UserPlus, color: 'text-emerald-400' }
-      ]
-    : [
-        { to: '/profile', label: 'Profile', icon: User, color: 'text-sky-400' }
-      ];
 
   const baseNavLinks = [
     { to: '/levels', label: 'Map', icon: Map, color: 'text-sky-400' },
@@ -81,7 +76,7 @@ export const Navbar: React.FC = () => {
     { to: '/editor', label: 'Editor', icon: Sparkles, color: 'text-emerald-400' },
     { to: '/help', label: 'Academy', icon: HelpCircle, color: 'text-cyan-400' },
     { to: '/settings', label: 'Settings', icon: Settings, color: 'text-slate-400' },
-    ...authNavLinks
+    ...(isRegistered ? [{ to: '/profile', label: 'Profile', icon: User, color: 'text-sky-400' }] : [])
   ];
 
   // Admin link only shows for verified administrators, never for guests or normal users
@@ -273,33 +268,13 @@ export const Navbar: React.FC = () => {
                 )}
               </div>
 
-              {/* Prominent Mobile Sign In & Register Callout */}
+              {/* Guest Pilot Status Indicator (Non-repetitive) */}
               {!isRegistered && (
-                <div className="mb-4 p-3 rounded-2xl bg-gradient-to-b from-amber-500/15 via-slate-900 to-slate-900 border border-amber-400/40 shadow-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-display font-black text-amber-300 uppercase tracking-tight">
-                      Guest Pilot Mode
-                    </span>
-                    <span className="text-[10px] text-slate-400 font-body">Save Stars & Coins</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Link
-                      to="/login"
-                      onClick={closeDrawer}
-                      className="btn-arcade-slate py-2 rounded-xl text-center text-xs font-display font-black flex items-center justify-center gap-1.5"
-                    >
-                      <LogIn className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Sign In</span>
-                    </Link>
-                    <Link
-                      to="/register"
-                      onClick={closeDrawer}
-                      className="btn-arcade-gold py-2 rounded-xl text-center text-xs font-display font-black flex items-center justify-center gap-1.5 text-slate-950"
-                    >
-                      <UserPlus className="w-3.5 h-3.5 text-slate-950" />
-                      <span>Register</span>
-                    </Link>
-                  </div>
+                <div className="mb-3 px-3 py-2 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+                  <span className="text-xs font-display font-black text-amber-300 uppercase tracking-tight">
+                    Guest Pilot Mode
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-mono">Unsynced Progress</span>
                 </div>
               )}
 
@@ -358,47 +333,64 @@ export const Navbar: React.FC = () => {
 
             {/* Bottom Auth Buttons */}
             <div className="pt-4 border-t border-slate-800/80 space-y-2">
-              <div className="grid grid-cols-2 gap-2">
-                <Link
-                  to="/login"
-                  onClick={closeDrawer}
-                  className="btn-arcade-slate py-2.5 rounded-2xl text-center text-xs font-display font-black flex items-center justify-center gap-1.5"
-                >
-                  <LogIn className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Sign In</span>
-                </Link>
-                <Link
-                  to="/register"
-                  onClick={closeDrawer}
-                  className="btn-arcade-gold py-2.5 rounded-2xl text-center text-xs font-display font-black flex items-center justify-center gap-1.5 text-slate-950"
-                >
-                  <UserPlus className="w-3.5 h-3.5 text-slate-950" />
-                  <span>Register</span>
-                </Link>
-              </div>
-
-              {isRegistered && (
-                <Link
-                  to="/profile"
-                  onClick={closeDrawer}
-                  className="w-full btn-arcade-slate py-2.5 rounded-2xl text-center text-xs font-display font-black flex items-center justify-center gap-2"
-                >
-                  <User className="w-4 h-4" />
-                  <span>My Profile & Stats</span>
-                </Link>
+              {!isRegistered ? (
+                <div className="grid grid-cols-2 gap-2">
+                  <Link
+                    to="/login"
+                    onClick={closeDrawer}
+                    className="btn-arcade-slate py-2.5 rounded-2xl text-center text-xs font-display font-black flex items-center justify-center gap-1.5 min-h-[44px]"
+                  >
+                    <LogIn className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Sign In</span>
+                  </Link>
+                  <Link
+                    to="/register"
+                    onClick={closeDrawer}
+                    className="btn-arcade-gold py-2.5 rounded-2xl text-center text-xs font-display font-black flex items-center justify-center gap-1.5 text-slate-950 min-h-[44px]"
+                  >
+                    <UserPlus className="w-3.5 h-3.5 text-slate-950" />
+                    <span>Register</span>
+                  </Link>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-2">
+                  <Link
+                    to="/profile"
+                    onClick={closeDrawer}
+                    className="btn-arcade-slate py-2.5 rounded-2xl text-center text-xs font-display font-black flex items-center justify-center gap-1.5 min-h-[44px]"
+                  >
+                    <User className="w-3.5 h-3.5 text-sky-400" />
+                    <span>Profile</span>
+                  </Link>
+                  <button
+                    onClick={() => {
+                      logout();
+                      closeDrawer();
+                    }}
+                    className="btn-arcade-slate py-2.5 rounded-2xl text-center text-xs font-display font-black flex items-center justify-center gap-1.5 text-rose-400 hover:text-rose-300 min-h-[44px]"
+                  >
+                    <LogOut className="w-3.5 h-3.5 text-rose-400" />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
               )}
               <div className="flex items-center justify-center gap-3 pt-2 text-[11px] font-body text-slate-400">
-                <Link to="/privacy-policy" onClick={closeDrawer} className="hover:text-amber-400 transition-colors">
+                <Link to="/privacy-policy" onClick={closeDrawer} className="hover:text-amber-400 transition-colors py-1">
                   Privacy Policy
                 </Link>
                 <span>•</span>
-                <Link to="/terms-and-conditions" onClick={closeDrawer} className="hover:text-amber-400 transition-colors">
+                <Link to="/terms-and-conditions" onClick={closeDrawer} className="hover:text-amber-400 transition-colors py-1">
                   Terms of Service
                 </Link>
               </div>
-              <p className="text-[10px] font-body text-slate-500 text-center">
-                {GAME_NAME} • King/Supercell Mobile Engine
-              </p>
+              <div className="pt-2 text-center border-t border-slate-900/60">
+                <p className="text-xs font-display font-black text-slate-200 tracking-wide">
+                  Designed &amp; Developed by <span className="text-amber-400">Prabhuteja Koda</span>
+                </p>
+                <p className="text-[10px] font-mono text-slate-400 mt-0.5">
+                  {GAME_NAME} • Visakhapatnam (Vizag), India
+                </p>
+              </div>
             </div>
           </div>
         </div>

@@ -199,13 +199,13 @@ export const PrivacyPolicyPage = () => {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-slate-400">Direct Support Line:</span>
-                <a href="tel:+918008882026" className="font-mono text-emerald-400 hover:underline min-h-[44px] flex items-center">
-                  +91 (800) 888-2026
+                <a href="tel:+919177160897" className="font-mono text-emerald-400 hover:underline min-h-[44px] flex items-center">
+                  +91 9177160897
                 </a>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-slate-400">Jurisdiction & Location:</span>
-                <span className="text-white">Bengaluru, Karnataka, India</span>
+                <span className="text-white">Visakhapatnam (Vizag), Andhra Pradesh, India</span>
               </div>
             </div>
           </div>

@@ -6,7 +6,7 @@ const isProductionDomain = typeof window !== 'undefined' &&
   window.location.hostname !== '127.0.0.1';
 
 export const API_URL: string = import.meta.env.VITE_API_URL || 
-  (isProductionDomain ? "https://bubble-blast-adventure-api.onrender.com/api" : "http://localhost:5000/api");
+  (isProductionDomain ? "/api" : "http://localhost:5000/api");
 
 export default {
   GAME_NAME,

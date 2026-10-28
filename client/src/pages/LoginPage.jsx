@@ -119,7 +119,7 @@ export const LoginPage = () => {
                   setUsername(e.target.value);
                   if (fieldErrors.username) setFieldErrors((prev) => ({ ...prev, username: '' }));
                 }}
-                placeholder="e.g. StarlightPilot"
+                placeholder="e.g. prabhudemo@gmail.com or StarlightPilot"
                 className={`w-full bg-slate-950/80 border rounded-xl pl-10 pr-3 py-3 text-[16px] text-white placeholder-slate-500 font-sans font-semibold focus:outline-none min-h-[48px] transition-all ${
                   fieldErrors.username ? 'border-rose-500 ring-1 ring-rose-500' : 'border-slate-700/80 focus:border-amber-400'
                 }`}

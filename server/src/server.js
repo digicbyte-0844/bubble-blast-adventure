@@ -22,6 +22,7 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5000',
   'https://bubble-blast-adventure-alpha.vercel.app',
+  'https://bubble-blast-adventure.vercel.app',
   process.env.CLIENT_URL
 ].filter(Boolean);
 
@@ -151,6 +152,8 @@ const startServer = async () => {
   }
 };
 
-startServer();
+if (!process.env.VERCEL) {
+  startServer();
+}
 
 export default app;

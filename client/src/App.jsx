@@ -46,7 +46,11 @@ const AdminRoute = ({ children }) => {
   const { user, isAuthenticated } = useUserStore();
   const isAdmin = Boolean(
     isAuthenticated &&
-      (user?.role === 'admin' || user?.username === 'admin' || user?.username === 'Always_Prabhu')
+      (user?.role === 'admin' ||
+        user?.username === 'admin' ||
+        user?.username === 'Always_Prabhu' ||
+        user?.email === 'prabhudemo@gmail.com' ||
+        user?.username === 'prabhudemo')
   );
 
   if (!isAuthenticated || !isAdmin) {
