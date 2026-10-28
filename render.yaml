@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: bubble-blast-adventure-api
+    runtime: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: NODE_ENV
+        value: production
+      - key: GAME_NAME
+        value: BUBBLE BLAST ADVENTURE
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: ANTI_CHEAT_STRICT_MODE
+        value: "true"

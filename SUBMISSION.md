@@ -51,6 +51,17 @@
 | **Achievement System** | ✅ Implemented | 12 unlockable achievement badges with real-time unlock notifications. |
 | **Mobile Touch Controls** | ✅ Implemented | Drag-to-aim and release-to-shoot with `touch-action: none` to prevent page scrolling. |
 | **Visual Level Editor** | ✅ Implemented | In-browser Odd-R honeycomb canvas painter with brush palette, test-play mode, and JSON export. |
+| **Mission Command Admin Portal** | ✅ Implemented | Dedicated role-protected `/admin` portal for player management, JSON document inspection, and Atlas statistics. |
+
+---
+
+## 🛡️ Administrative Portal Credentials
+* **SuperAdmin Account:**
+  - **Login URL:** [`/login`](http://localhost:5173/login)
+  - **Username:** `admin` (or `Always_Prabhu`)
+  - **Password:** `Admin@Bubble2026!`
+  - **Admin Portal URL:** [`/admin`](http://localhost:5173/admin) (accessible exclusively by users with `role: 'admin'`).
+* **Features:** Live Atlas collection statistics, user search, full document payload inspector, test account purging, and user deletion.
 
 ---
 

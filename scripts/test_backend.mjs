@@ -118,6 +118,11 @@ async function runTests() {
     }, authToken);
     assert('Visual Level Editor Save (201 Created)', saveLvl.status === 201 && saveLvl.body.data.customId);
 
+    // 10. Clean up transient test user to maintain clean database state
+    try {
+      await request('POST', '/api/admin/cleanup-test-users', null, authToken);
+    } catch (e) {}
+
     console.log(`\n📊 Backend Tests Completed: ${results.filter(r => r.passed).length}/${results.length} passed`);
   } catch (err) {
     console.error('💥 Test suite error:', err.message);
