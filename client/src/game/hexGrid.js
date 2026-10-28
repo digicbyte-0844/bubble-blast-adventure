@@ -11,6 +11,15 @@ export const COLS_ODD = PHYSICS.GRID_COLS_ODD; // 10
 export const HEX_HEIGHT_RATIO = PHYSICS.HEX_HEIGHT_RATIO; // Math.sqrt(3)
 
 /**
+ * Calculates optimal bubble radius for Odd-R grid to touch canvas walls exactly
+ * Formula: canvasWidth / (GRID_COLS * 2) where GRID_COLS is 11
+ */
+export function getOptimalRadius(canvasWidth) {
+  if (!canvasWidth || canvasWidth <= 0) return PHYSICS.DEFAULT_BUBBLE_RADIUS;
+  return canvasWidth / (COLS_EVEN * 2);
+}
+
+/**
  * Returns the maximum column count for a given row index in Odd-R layout
  */
 export function getColsInRow(row) {

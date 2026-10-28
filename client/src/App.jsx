@@ -1,10 +1,11 @@
 /**
  * Main Application Router & Route Protection
+ * Bulletproof layout with conditional Navbar display and 100dvh game isolation
  * Bubble Puzzle Engine Presentation Tier
  */
 
 import React, { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import LandingPage from './pages/LandingPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
@@ -35,6 +36,35 @@ const ProtectedRoute = ({ children }) => {
   return <>{children}</>;
 };
 
+const AppContent = () => {
+  const location = useLocation();
+  const isGameRoute = location.pathname.startsWith('/game');
+
+  return (
+    <div className="h-[100dvh] max-h-[100dvh] w-full overflow-hidden bg-[#0B0F19] text-slate-100 flex flex-col font-['Nunito',sans-serif] select-none">
+      {!isGameRoute && <Navbar />}
+      <main className="flex-1 w-full h-full min-h-0 overflow-y-auto">
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+          <Route path="/levels" element={<LevelSelectPage />} />
+          <Route path="/game/:levelId" element={<GamePage />} />
+          <Route path="/leaderboard" element={<LeaderboardPage />} />
+          <Route path="/achievements" element={<AchievementsPage />} />
+          <Route path="/daily-challenge" element={<DailyChallengePage />} />
+          <Route path="/editor" element={<ProtectedRoute><LevelEditorPage /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/help" element={<HelpPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </main>
+    </div>
+  );
+};
+
 export const App = () => {
   const { loadProgress } = useUserStore();
 
@@ -44,27 +74,7 @@ export const App = () => {
 
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-cosmic-dark text-slate-100 flex flex-col font-['Plus_Jakarta_Sans',sans-serif]">
-        <Navbar />
-        <main className="flex-1">
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-            <Route path="/levels" element={<LevelSelectPage />} />
-            <Route path="/game/:levelId" element={<GamePage />} />
-            <Route path="/leaderboard" element={<LeaderboardPage />} />
-            <Route path="/achievements" element={<AchievementsPage />} />
-            <Route path="/daily-challenge" element={<DailyChallengePage />} />
-            <Route path="/editor" element={<ProtectedRoute><LevelEditorPage /></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/help" element={<HelpPage />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </main>
-      </div>
+      <AppContent />
     </BrowserRouter>
   );
 };

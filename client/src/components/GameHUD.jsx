@@ -57,8 +57,8 @@ export const GameHUD = ({ onPause, onRestart }) => {
   }, [levelData, currentRescued, targetJellies, score]);
 
   return (
-    <div className="w-full max-w-[420px] mx-auto select-none pt-safe">
-      <div className="h-[64px] px-3 bg-slate-900/90 border border-slate-800 rounded-2xl backdrop-blur-md shadow-xl flex items-center justify-between gap-2">
+    <header className="w-full h-16 flex-shrink-0 select-none pt-[max(env(safe-area-inset-top),0.5rem)] px-3 max-w-[440px] mx-auto z-20 flex items-center">
+      <div className="w-full h-12 px-3 bg-slate-900/90 border border-slate-800 rounded-2xl backdrop-blur-md shadow-xl flex items-center justify-between gap-2">
         {/* Left: Compact Level Indicator Badge */}
         <div className="flex flex-col flex-shrink-0">
           <div className="flex items-center gap-1.5">
@@ -132,7 +132,7 @@ export const GameHUD = ({ onPause, onRestart }) => {
           </button>
         </div>
       </div>
-    </div>
+    </header>
   );
 };
 
