@@ -171,11 +171,13 @@ export function resolveLightningClear(grid, row, col) {
 /**
  * Scans adjacent cells around a popped cluster for trapped Starlight Jellies to rescue
  */
-export function checkRescuedJellies(grid, poppedCells) {
+export function checkRescuedJellies(grid, poppedCells = []) {
+  if (!grid || !Array.isArray(poppedCells)) return [];
   const rescued = [];
   const checkedKeys = new Set();
 
   for (const cell of poppedCells) {
+    if (!cell || typeof cell.row !== 'number' || typeof cell.col !== 'number') continue;
     const neighbors = getHexNeighbors(cell.row, cell.col);
     for (const n of neighbors) {
       const key = `${n.row},${n.col}`;

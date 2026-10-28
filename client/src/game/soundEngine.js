@@ -365,6 +365,40 @@ class SoundEngine {
     });
   }
 
+  // 17. Bubble Grid Snap
+  playSnap() {
+    if (this.sfxMuted) return;
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    try {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(540, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(260, ctx.currentTime + 0.045);
+
+      gain.gain.setValueAtTime(this.sfxVolume * 0.45, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.045);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.045);
+    } catch {
+      // Audio node failure fallback
+    }
+  }
+
+  // Aliases for gameplay compatibility
+  playBombExplode() {
+    return this.playBomb();
+  }
+
+  playDrop() {
+    return this.playFloatingFall();
+  }
+
   /**
    * Generic unified dispatcher by sound ID
    */
@@ -374,12 +408,15 @@ class SoundEngine {
       case 'aim': return this.playAim();
       case 'launch': return this.playLaunch();
       case 'bounce': return this.playBounce();
+      case 'snap': return this.playSnap();
       case 'pop': return this.playPop(args[0]);
       case 'multiPop': return this.playMultiPop(args[0]);
-      case 'floatingFall': return this.playFloatingFall();
+      case 'floatingFall':
+      case 'drop': return this.playDrop();
       case 'combo': return this.playCombo(args[0]);
       case 'booster': return this.playBooster();
-      case 'bomb': return this.playBomb();
+      case 'bomb':
+      case 'bombExplode': return this.playBombExplode();
       case 'rainbow': return this.playRainbow();
       case 'rescue': return this.playRescue();
       case 'star': return this.playStar();
@@ -508,7 +545,29 @@ class SoundEngine {
   }
 }
 
-// Global Singleton Instance
-export const soundEngine = new SoundEngine();
+// Global Singleton Instance wrapped in Safe Proxy to guarantee zero uncaught audio exceptions
+const rawSoundEngine = new SoundEngine();
+
+export const soundEngine = new Proxy(rawSoundEngine, {
+  get(target, prop, receiver) {
+    if (prop in target) {
+      const val = Reflect.get(target, prop, receiver);
+      return typeof val === 'function' ? val.bind(target) : val;
+    }
+    // Safe fallback for any undefined method call (e.g. playSomething)
+    if (typeof prop === 'string' && prop.startsWith('play')) {
+      return (...args) => {
+        const soundKey = prop.slice(4).replace(/^./, (c) => c.toLowerCase());
+        if (typeof target[prop] === 'function') {
+          return target[prop](...args);
+        }
+        if (typeof target.play === 'function') {
+          return target.play(soundKey, ...args);
+        }
+      };
+    }
+    return undefined;
+  }
+});
 
 export default soundEngine;

@@ -275,48 +275,58 @@ export function stepProjectile(
   const rightWall = arenaWidth - xOffset - radius;
   const ceilingY = yOffset + radius;
 
-  // Advance projectile
-  projectile.x += projectile.vx;
-  projectile.y += projectile.vy;
+  // Sub-step movement in increments of at most 6px to prevent tunneling at high velocities
+  const totalSpeed = Math.hypot(projectile.vx, projectile.vy);
+  const maxStepDist = Math.min(6, radius * 0.35);
+  const numSteps = Math.max(1, Math.ceil(totalSpeed / maxStepDist));
+  let stepVx = projectile.vx / numSteps;
+  const stepVy = projectile.vy / numSteps;
 
-  // Left wall bounce
-  if (projectile.x <= leftWall) {
-    projectile.x = leftWall;
-    projectile.vx = -projectile.vx;
-  }
-
-  // Right wall bounce
-  if (projectile.x >= rightWall) {
-    projectile.x = rightWall;
-    projectile.vx = -projectile.vx;
-  }
-
-  // Ceiling collision
-  if (projectile.y <= ceilingY) {
-    projectile.y = ceilingY;
-    const snapCell = findSnapCell(projectile.x, projectile.y, null, null, grid, radius, xOffset, yOffset);
-    return {
-      hasCollided: true,
-      collision: { x: projectile.x, y: ceilingY, hitRow: null, hitCol: null },
-      snapCell
-    };
-  }
-
-  // Bubble-to-bubble collision
   const collisionDistSq = (2 * radius * PHYSICS.COLLISION_TOLERANCE) ** 2;
 
-  for (let r = 0; r < grid.length; r++) {
-    for (let c = 0; c < grid[r].length; c++) {
-      if (grid[r][c]) {
-        const pos = gridToPixel(r, c, radius, xOffset, yOffset);
-        const dSq = (projectile.x - pos.x) ** 2 + (projectile.y - pos.y) ** 2;
-        if (dSq <= collisionDistSq) {
-          const snapCell = findSnapCell(projectile.x, projectile.y, r, c, grid, radius, xOffset, yOffset);
-          return {
-            hasCollided: true,
-            collision: { x: projectile.x, y: projectile.y, hitRow: r, hitCol: c },
-            snapCell
-          };
+  for (let s = 0; s < numSteps; s++) {
+    projectile.x += stepVx;
+    projectile.y += stepVy;
+
+    // 1. Left wall bounce
+    if (projectile.x <= leftWall) {
+      projectile.x = leftWall;
+      projectile.vx = Math.abs(projectile.vx);
+      stepVx = Math.abs(stepVx);
+    }
+
+    // 2. Right wall bounce
+    if (projectile.x >= rightWall) {
+      projectile.x = rightWall;
+      projectile.vx = -Math.abs(projectile.vx);
+      stepVx = -Math.abs(stepVx);
+    }
+
+    // 3. Ceiling collision
+    if (projectile.y <= ceilingY) {
+      projectile.y = ceilingY;
+      const snapCell = findSnapCell(projectile.x, projectile.y, null, null, grid, radius, xOffset, yOffset);
+      return {
+        hasCollided: true,
+        collision: { x: projectile.x, y: ceilingY, hitRow: null, hitCol: null },
+        snapCell
+      };
+    }
+
+    // 4. Bubble-to-bubble collision
+    for (let r = 0; r < grid.length; r++) {
+      for (let c = 0; c < grid[r].length; c++) {
+        if (grid[r][c]) {
+          const pos = gridToPixel(r, c, radius, xOffset, yOffset);
+          const dSq = (projectile.x - pos.x) ** 2 + (projectile.y - pos.y) ** 2;
+          if (dSq <= collisionDistSq) {
+            const snapCell = findSnapCell(projectile.x, projectile.y, r, c, grid, radius, xOffset, yOffset);
+            return {
+              hasCollided: true,
+              collision: { x: projectile.x, y: projectile.y, hitRow: r, hitCol: c },
+              snapCell
+            };
+          }
         }
       }
     }

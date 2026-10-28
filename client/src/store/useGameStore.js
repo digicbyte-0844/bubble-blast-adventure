@@ -213,7 +213,7 @@ export const useGameStore = create((set, get) => ({
    * Fires a projectile with strict serialization guard (prevents double-shooting)
    * Captures an Undo snapshot before advancing state.
    */
-  fireBubble: () => {
+  fireBubble: (overrideAngle = null) => {
     const {
       gameStatus,
       shotsRemaining,
@@ -236,6 +236,8 @@ export const useGameStore = create((set, get) => ({
       set({ gameStatus: GAME_STATES.LEVEL_FAILED, gameState: 'GAME_OVER' });
       return null;
     }
+
+    const finalAngle = overrideAngle !== null ? overrideAngle : aimAngle;
 
     // 1. Capture Undo Snapshot
     const snapshot = {
@@ -260,14 +262,15 @@ export const useGameStore = create((set, get) => ({
       shotsRemaining: remaining,
       undoStack: newUndoStack,
       mascotEmotion: 'aiming',
-      hintData: null
+      hintData: null,
+      aimAngle: finalAngle
     });
 
     soundEngine.play('launch');
 
     return {
       color: currentBubble,
-      angle: aimAngle,
+      angle: finalAngle,
       isBooster: activeBooster
     };
   },

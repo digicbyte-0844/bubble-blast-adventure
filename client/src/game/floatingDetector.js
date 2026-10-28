@@ -72,16 +72,29 @@ export function findFloatingBubbles(
 
 /**
  * Factory creating dynamic physics entities for dropped bubbles with mass, rotation, and drift
- *
- * @param {object} bubble - Bubble data object
- * @param {number} x - Starting pixel X
- * @param {number} y - Starting pixel Y
- * @param {number} radius - Radius
- * @returns {object} Physics entity
+ * Robust overload handling: (bubble, x, y, radius) or (row, col, x, y, bubble)
  */
-export function createDroppingBubble(bubble, x, y, radius = PHYSICS.DEFAULT_BUBBLE_RADIUS) {
+export function createDroppingBubble(arg1, arg2, arg3, arg4, arg5) {
+  let bubble, x, y, radius;
+
+  if (typeof arg1 === 'object' && arg1 !== null) {
+    bubble = arg1;
+    x = typeof arg2 === 'number' ? arg2 : 0;
+    y = typeof arg3 === 'number' ? arg3 : 0;
+    radius = typeof arg4 === 'number' ? arg4 : PHYSICS.DEFAULT_BUBBLE_RADIUS;
+  } else {
+    // If called with (row, col, x, y, bubble)
+    bubble = (typeof arg5 === 'object' && arg5 !== null) ? arg5 : { color: 'cyan', type: 'normal' };
+    x = typeof arg3 === 'number' ? arg3 : 0;
+    y = typeof arg4 === 'number' ? arg4 : 0;
+    radius = PHYSICS.DEFAULT_BUBBLE_RADIUS;
+  }
+
   return {
     ...bubble,
+    bubble: bubble, // Guarantee both fb.color and fb.bubble.color work
+    color: bubble.color || 'cyan',
+    type: bubble.type || 'normal',
     x,
     y,
     radius,

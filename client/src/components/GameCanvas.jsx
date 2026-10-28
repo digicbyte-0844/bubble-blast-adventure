@@ -2,6 +2,7 @@
  * 60 FPS HTML5 Interactive Canvas Game Board
  * Bulletproof auto-adjusting responsive Canvas for mobile web and desktop.
  * Dynamically computes BUBBLE_RADIUS from canvasWidth / (11 * 2) to touch walls with zero clipping.
+ * High-performance animation loop decoupled from React state churn for rock-solid 60 FPS.
  * Bubble Puzzle Engine Presentation Tier
  */
 
@@ -44,7 +45,7 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
   const canvasWidth = Math.max(280, Math.floor(width));
   const canvasHeight = Math.max(380, Math.floor(height));
 
-  // Dynamic Bubble Radius Scaling (Requirement 3):
+  // Dynamic Bubble Radius Scaling:
   // Formula: const RADIUS = canvasWidth / (GRID_COLS * 2) where GRID_COLS is 11
   const BUBBLE_RADIUS = Math.floor(canvasWidth / (PHYSICS.GRID_COLS_EVEN * 2));
   const X_OFFSET = Math.max(0, Math.floor((canvasWidth - PHYSICS.GRID_COLS_EVEN * (BUBBLE_RADIUS * 2)) / 2));
@@ -75,7 +76,51 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
     setGridMatrix
   } = useGameStore();
 
-  // Particle systems
+  // State synchronization refs to keep the 60 FPS requestAnimationFrame loop smooth & decoupled
+  const gridMatrixRef = useRef(gridMatrix);
+  const gameStatusRef = useRef(gameStatus);
+  const currentBubbleRef = useRef(currentBubble);
+  const nextBubbleRef = useRef(nextBubble);
+  const superAimActiveRef = useRef(superAimActive);
+  const activeBoosterRef = useRef(activeBooster);
+  const hintDataRef = useRef(hintData);
+  const aimAngleRef = useRef(aimAngle || -Math.PI / 2);
+
+  useEffect(() => {
+    gridMatrixRef.current = gridMatrix;
+  }, [gridMatrix]);
+
+  useEffect(() => {
+    gameStatusRef.current = gameStatus;
+  }, [gameStatus]);
+
+  useEffect(() => {
+    currentBubbleRef.current = currentBubble;
+  }, [currentBubble]);
+
+  useEffect(() => {
+    nextBubbleRef.current = nextBubble;
+  }, [nextBubble]);
+
+  useEffect(() => {
+    superAimActiveRef.current = superAimActive;
+  }, [superAimActive]);
+
+  useEffect(() => {
+    activeBoosterRef.current = activeBooster;
+  }, [activeBooster]);
+
+  useEffect(() => {
+    hintDataRef.current = hintData;
+  }, [hintData]);
+
+  useEffect(() => {
+    if (aimAngle !== undefined && aimAngle !== null) {
+      aimAngleRef.current = aimAngle;
+    }
+  }, [aimAngle]);
+
+  // Particle systems & animated entities
   const particlesRef = useRef([]);
   const floatingBubblesRef = useRef([]);
   const floatingTextsRef = useRef([]);
@@ -101,17 +146,17 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
   const spawnPopParticles = (x, y, colorDef, count = 12) => {
     for (let i = 0; i < count; i++) {
       const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.5;
-      const speed = Math.random() * 5 + 2;
+      const speed = Math.random() * 5 + 2.5;
       particlesRef.current.push({
         x,
         y,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
-        color: colorDef.fill || '#00F0FF',
+        color: colorDef?.fill || '#00F0FF',
         alpha: 1.0,
         size: Math.random() * 4 + 2,
         life: 1.0,
-        decay: Math.random() * 0.03 + 0.02
+        decay: Math.random() * 0.03 + 0.025
       });
     }
   };
@@ -161,6 +206,14 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
       // 1. Clear Arena
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
+      const activeGrid = gridMatrixRef.current || [];
+      const currentStatus = gameStatusRef.current;
+      const currentAngle = aimAngleRef.current;
+      const curBubble = currentBubbleRef.current;
+      const nxtBubble = nextBubbleRef.current;
+      const isSuperAim = superAimActiveRef.current || activeBoosterRef.current === 'superAim';
+      const curHint = hintDataRef.current;
+
       // Draw subtle grid guide ceiling line
       ctx.strokeStyle = 'rgba(56, 189, 248, 0.25)';
       ctx.lineWidth = 1;
@@ -171,8 +224,8 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
 
       // Danger Line: 2-3 rows above launcher
       let hasDangerBubbles = false;
-      for (let r = 10; r < gridMatrix.length; r++) {
-        if (gridMatrix[r]?.some((b) => b !== null)) {
+      for (let r = 10; r < activeGrid.length; r++) {
+        if (activeGrid[r]?.some((b) => b !== null)) {
           hasDangerBubbles = true;
           break;
         }
@@ -196,9 +249,9 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
       ctx.restore();
 
       // 2. Render Existing Grid Bubbles
-      for (let r = 0; r < gridMatrix.length; r++) {
-        for (let c = 0; c < gridMatrix[r].length; c++) {
-          const bubble = gridMatrix[r][c];
+      for (let r = 0; r < activeGrid.length; r++) {
+        for (let c = 0; c < activeGrid[r].length; c++) {
+          const bubble = activeGrid[r][c];
           if (bubble) {
             const pos = gridToPixel(r, c, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
             drawBubble(ctx, pos.x, pos.y, BUBBLE_RADIUS, bubble.color, bubble.type);
@@ -207,25 +260,24 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
       }
 
       // 3. Render Hint Target Ring (if requested)
-      if (hintData && hintData.target) {
+      if (curHint && curHint.target) {
         ctx.save();
         ctx.strokeStyle = '#FACC15';
         ctx.lineWidth = 2.5;
         ctx.setLineDash([4, 4]);
         ctx.beginPath();
-        ctx.arc(hintData.target.x, hintData.target.y, BUBBLE_RADIUS + 4, 0, Math.PI * 2);
+        ctx.arc(curHint.target.x, curHint.target.y, BUBBLE_RADIUS + 4, 0, Math.PI * 2);
         ctx.stroke();
         ctx.restore();
       }
 
       // 4. Render Trajectory Guide Laser (when ready or aiming)
-      if (gameStatus === GAME_STATES.READY || gameStatus === GAME_STATES.AIMING) {
-        const isSuperAim = superAimActive || activeBooster === 'superAim';
+      if (currentStatus === GAME_STATES.READY || currentStatus === GAME_STATES.AIMING) {
         const traj = calculateTrajectory(
           LAUNCHER_X,
           LAUNCHER_Y,
-          aimAngle,
-          gridMatrix,
+          currentAngle,
+          activeGrid,
           canvasWidth,
           isSuperAim,
           BUBBLE_RADIUS,
@@ -260,7 +312,7 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
       // 5. Update & Render Active Flying Projectile
       if (activeProjectileRef.current) {
         const proj = activeProjectileRef.current;
-        const collisionResult = stepProjectile(proj, gridMatrix, canvasWidth, X_OFFSET, Y_OFFSET);
+        const collisionResult = stepProjectile(proj, activeGrid, canvasWidth, X_OFFSET, Y_OFFSET);
 
         drawBubble(ctx, proj.x, proj.y, BUBBLE_RADIUS, proj.color, proj.type);
 
@@ -268,107 +320,124 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
           const { row, col } = collisionResult.snapCell;
           activeProjectileRef.current = null;
 
+          // Sound effect on docking
           soundEngine.playSnap();
 
           // Snapshot grid and insert new bubble into cell
-          const newGrid = cloneGrid(gridMatrix);
+          const newGrid = cloneGrid(activeGrid);
           newGrid[row][col] = {
             color: proj.color,
             type: proj.type || SPECIAL_BUBBLES.NORMAL
           };
 
+          gridMatrixRef.current = newGrid;
           setGridMatrix(newGrid);
           setGameStatus(GAME_STATES.RESOLVING);
 
-          // Handle special bomb booster blast
-          if (proj.type === SPECIAL_BUBBLES.BOMB || proj.color === 'bomb') {
-            soundEngine.playBombExplode();
-            const bombPops = [];
-            const directNeighbors = getHexNeighbors(row, col);
-            bombPops.push({ row, col });
+          try {
+            // Handle special bomb booster blast
+            if (proj.type === SPECIAL_BUBBLES.BOMB || proj.color === 'bomb') {
+              soundEngine.playBombExplode();
+              const bombPops = [];
+              const directNeighbors = getHexNeighbors(row, col);
+              bombPops.push({ row, col });
 
-            directNeighbors.forEach(n => {
-              bombPops.push(n);
-              getHexNeighbors(n.row, n.col).forEach(n2 => bombPops.push(n2));
-            });
-
-            // Unique cells
-            const uniquePops = Array.from(new Set(bombPops.map(p => `${p.row},${p.col}`)))
-              .map(str => {
-                const [r, c] = str.split(',').map(Number);
-                return { row: r, col: c };
-              })
-              .filter(p => newGrid[p.row] && newGrid[p.row][p.col]);
-
-            uniquePops.forEach(p => {
-              const b = newGrid[p.row][p.col];
-              if (b) {
-                const pos = gridToPixel(p.row, p.col, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
-                spawnPopParticles(pos.x, pos.y, getColorDef(b.color), 10);
-                newGrid[p.row][p.col] = null;
-              }
-            });
-
-            setGridMatrix(newGrid);
-            recordTurnResolution(uniquePops.length, 0, 0);
-
-            // Floating drop check
-            const dropped = findFloatingBubbles(newGrid);
-            if (dropped.length > 0) {
-              dropped.forEach(d => {
-                const pos = gridToPixel(d.row, d.col, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
-                floatingBubblesRef.current.push(createDroppingBubble(d.row, d.col, pos.x, pos.y, d.bubble));
-                newGrid[d.row][d.col] = null;
+              directNeighbors.forEach(n => {
+                bombPops.push(n);
+                getHexNeighbors(n.row, n.col).forEach(n2 => bombPops.push(n2));
               });
+
+              // Unique cells
+              const uniquePops = Array.from(new Set(bombPops.map(p => `${p.row},${p.col}`)))
+                .map(str => {
+                  const [r, c] = str.split(',').map(Number);
+                  return { row: r, col: c };
+                })
+                .filter(p => newGrid[p.row] && newGrid[p.row][p.col]);
+
+              uniquePops.forEach(p => {
+                const b = newGrid[p.row][p.col];
+                if (b) {
+                  const pos = gridToPixel(p.row, p.col, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
+                  spawnPopParticles(pos.x, pos.y, getColorDef(b.color), 12);
+                  newGrid[p.row][p.col] = null;
+                }
+              });
+
+              // Floating drop check
+              const dropped = findFloatingBubbles(newGrid, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
+              if (dropped.length > 0) {
+                dropped.forEach(d => {
+                  const pos = gridToPixel(d.row, d.col, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
+                  floatingBubblesRef.current.push(createDroppingBubble(d.bubble, pos.x, pos.y, BUBBLE_RADIUS));
+                  newGrid[d.row][d.col] = null;
+                });
+                soundEngine.playDrop();
+              }
+
+              gridMatrixRef.current = newGrid;
               setGridMatrix(newGrid);
-              soundEngine.playDrop();
+              recordTurnResolution(uniquePops.length, dropped.length, 0);
+
+              replenishBubbles();
+              evaluateLevelEnd();
+              return;
             }
 
-            replenishBubbles();
-            evaluateLevelEnd();
-            return;
-          }
+            // Standard Match-3 BFS Check
+            const matchedCluster = findConnectedMatch(newGrid, row, col);
 
-          // Standard Match-3 BFS Check
-          const matchedCluster = findConnectedMatch(newGrid, row, col);
+            if (matchedCluster.length >= 3) {
+              // Trigger Pop Audio with Combo Pitch
+              soundEngine.playPop(1);
 
-          if (matchedCluster.length >= 3) {
-            // Trigger Pop Audio with Combo Pitch
-            soundEngine.playPop(1);
-
-            // Spawn Particles & Clear Cluster
-            matchedCluster.forEach((cell) => {
-              const b = newGrid[cell.row][cell.col];
-              const pos = gridToPixel(cell.row, cell.col, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
-              spawnPopParticles(pos.x, pos.y, getColorDef(b?.color), 12);
-              newGrid[cell.row][cell.col] = null;
-            });
-
-            // Check for rescued Starlight Jellies
-            const rescuedCount = checkRescuedJellies(newGrid);
-
-            // Check for Floating Bubbles to Detach
-            const floating = findFloatingBubbles(newGrid);
-            if (floating.length > 0) {
-              soundEngine.playDrop();
-              floating.forEach((cell) => {
+              // Spawn Particles & Clear Cluster
+              matchedCluster.forEach((cell) => {
+                const b = newGrid[cell.row][cell.col];
                 const pos = gridToPixel(cell.row, cell.col, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
-                floatingBubblesRef.current.push(createDroppingBubble(cell.row, cell.col, pos.x, pos.y, cell.bubble));
+                spawnPopParticles(pos.x, pos.y, getColorDef(b?.color), 14);
                 newGrid[cell.row][cell.col] = null;
               });
-              spawnFloatingText(LAUNCHER_X, LAUNCHER_Y - 50, `+${floating.length * 20} AVALANCHE!`, '#10B981');
-            }
 
-            // Commit new grid and compute turn score
-            setGridMatrix(newGrid);
-            recordTurnResolution(matchedCluster.length, floating.length, rescuedCount);
+              // Check for rescued Starlight Jellies
+              const rescued = checkRescuedJellies(newGrid, matchedCluster);
+              const rescuedCount = rescued.length;
+              if (rescuedCount > 0) {
+                soundEngine.playRescue();
+                rescued.forEach((r) => {
+                  const pos = gridToPixel(r.row, r.col, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
+                  spawnPopParticles(pos.x, pos.y, { fill: '#38BDF8', glow: 'rgba(56, 189, 248, 0.8)' }, 16);
+                  newGrid[r.row][r.col] = null;
+                });
+                spawnFloatingText(LAUNCHER_X, LAUNCHER_Y - 90, `+${rescuedCount * 100} JELLY RESCUED!`, '#38BDF8');
+              }
 
-            if (matchedCluster.length >= 5) {
-              spawnFloatingText(LAUNCHER_X, LAUNCHER_Y - 80, 'GREAT POP! x2', '#FACC15');
+              // Check for Floating Bubbles to Detach
+              const floating = findFloatingBubbles(newGrid, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
+              if (floating.length > 0) {
+                soundEngine.playDrop();
+                floating.forEach((cell) => {
+                  const pos = gridToPixel(cell.row, cell.col, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
+                  floatingBubblesRef.current.push(createDroppingBubble(cell.bubble, pos.x, pos.y, BUBBLE_RADIUS));
+                  newGrid[cell.row][cell.col] = null;
+                });
+                spawnFloatingText(LAUNCHER_X, LAUNCHER_Y - 50, `+${floating.length * 20} AVALANCHE!`, '#10B981');
+              }
+
+              // Commit new grid and compute turn score
+              gridMatrixRef.current = newGrid;
+              setGridMatrix(newGrid);
+              recordTurnResolution(matchedCluster.length, floating.length, rescuedCount);
+
+              if (matchedCluster.length >= 5) {
+                spawnFloatingText(LAUNCHER_X, LAUNCHER_Y - 80, 'GREAT POP! x2', '#FACC15');
+              }
+            } else {
+              // Missed match - combo reset
+              recordTurnResolution(0, 0, 0);
             }
-          } else {
-            // Missed match - combo reset
-            recordTurnResolution(0, 0, 0);
+          } catch (err) {
+            console.error('Match resolution error:', err);
           }
 
           replenishBubbles();
@@ -383,7 +452,8 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
           ctx.save();
           ctx.translate(fb.x, fb.y);
           ctx.rotate(fb.rotation || 0);
-          drawBubble(ctx, 0, 0, BUBBLE_RADIUS, fb.bubble.color, fb.bubble.type);
+          const bubbleData = fb.bubble || fb;
+          drawBubble(ctx, 0, 0, BUBBLE_RADIUS, bubbleData.color, bubbleData.type);
           ctx.restore();
         });
       }
@@ -431,7 +501,7 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
       }
 
       // 9. Render Rotating Launcher Base & Loaded Ammo
-      drawLauncherAssembly(ctx, LAUNCHER_X, LAUNCHER_Y, aimAngle, currentBubble, nextBubble);
+      drawLauncherAssembly(ctx, LAUNCHER_X, LAUNCHER_Y, currentAngle, curBubble, nxtBubble);
 
       animationFrameId = requestAnimationFrame(render);
     };
@@ -442,14 +512,6 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
       cancelAnimationFrame(animationFrameId);
     };
   }, [
-    gridMatrix,
-    gameStatus,
-    aimAngle,
-    currentBubble,
-    nextBubble,
-    superAimActive,
-    activeBooster,
-    hintData,
     canvasWidth,
     canvasHeight,
     BUBBLE_RADIUS,
@@ -695,24 +757,47 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
     // Check if clicked the launcher base or next bubble tray
     const distToLauncher = Math.hypot(pointerX - LAUNCHER_X, pointerY - LAUNCHER_Y);
     const distToNext = Math.hypot(pointerX - NEXT_BUBBLE_X, pointerY - NEXT_BUBBLE_Y);
-    if (distToLauncher < BUBBLE_RADIUS * 2 || distToNext < BUBBLE_RADIUS * 1.6) {
+    if (distToLauncher < BUBBLE_RADIUS * 1.8 || distToNext < BUBBLE_RADIUS * 1.5) {
       return 'SWAP_TRIGGERED';
     }
 
     const angle = Math.atan2(pointerY - LAUNCHER_Y, pointerX - LAUNCHER_X);
     const clamped = clampAimAngle(angle);
-    setAimAngle(clamped);
+    aimAngleRef.current = clamped;
     return 'AIM_UPDATED';
+  };
+
+  /**
+   * Fires the loaded bubble at the current aim angle
+   */
+  const shootProjectile = () => {
+    if (activeProjectileRef.current) return;
+    if (gameStatusRef.current !== GAME_STATES.READY && gameStatusRef.current !== GAME_STATES.AIMING) return;
+
+    const angle = aimAngleRef.current;
+    setAimAngle(angle);
+    const shot = fireBubble(angle);
+    if (shot) {
+      activeProjectileRef.current = {
+        x: LAUNCHER_X,
+        y: LAUNCHER_Y,
+        vx: Math.cos(shot.angle) * PHYSICS.LAUNCH_SPEED,
+        vy: Math.sin(shot.angle) * PHYSICS.LAUNCH_SPEED,
+        color: shot.color,
+        type: shot.isBooster || SPECIAL_BUBBLES.NORMAL,
+        radius: BUBBLE_RADIUS
+      };
+    }
   };
 
   // --- DESKTOP MOUSE CONTROLS ---
   const handleMouseMove = (e) => {
-    if (gameStatus !== GAME_STATES.READY && gameStatus !== GAME_STATES.AIMING) return;
+    if (gameStatusRef.current !== GAME_STATES.READY && gameStatusRef.current !== GAME_STATES.AIMING) return;
     updateAimFromPointer(e.clientX, e.clientY);
   };
 
   const handleMouseDown = (e) => {
-    if (gameStatus !== GAME_STATES.READY && gameStatus !== GAME_STATES.AIMING) return;
+    if (gameStatusRef.current !== GAME_STATES.READY && gameStatusRef.current !== GAME_STATES.AIMING) return;
     const result = updateAimFromPointer(e.clientX, e.clientY);
     if (result === 'SWAP_TRIGGERED') {
       swapBubbles();
@@ -723,26 +808,15 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
   };
 
   const handleMouseUp = () => {
-    if (isAimingRef.current && (gameStatus === GAME_STATES.READY || gameStatus === GAME_STATES.AIMING)) {
+    if (isAimingRef.current) {
       isAimingRef.current = false;
-      const shot = fireBubble();
-      if (shot) {
-        activeProjectileRef.current = {
-          x: LAUNCHER_X,
-          y: LAUNCHER_Y,
-          vx: Math.cos(shot.angle) * PHYSICS.LAUNCH_SPEED,
-          vy: Math.sin(shot.angle) * PHYSICS.LAUNCH_SPEED,
-          color: shot.color,
-          type: shot.isBooster || SPECIAL_BUBBLES.NORMAL,
-          radius: BUBBLE_RADIUS
-        };
-      }
+      shootProjectile();
     }
   };
 
   // --- MOBILE TOUCH CONTROLS (drag-to-aim with touch-action: none) ---
   const handleTouchStart = (e) => {
-    if (gameStatus !== GAME_STATES.READY && gameStatus !== GAME_STATES.AIMING) return;
+    if (gameStatusRef.current !== GAME_STATES.READY && gameStatusRef.current !== GAME_STATES.AIMING) return;
     const touch = e.touches[0];
     const result = updateAimFromPointer(touch.clientX, touch.clientY);
     if (result === 'SWAP_TRIGGERED') {
@@ -760,19 +834,34 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
   };
 
   const handleTouchEnd = () => {
-    handleMouseUp();
+    if (isAimingRef.current) {
+      isAimingRef.current = false;
+      shootProjectile();
+    }
   };
 
-  // --- KEYBOARD CONTROLS (Spacebar to Shoot) ---
+  // Global window listeners for drag release outside canvas & Spacebar key
   useEffect(() => {
+    const handleGlobalPointerUp = () => {
+      if (isAimingRef.current) {
+        isAimingRef.current = false;
+        shootProjectile();
+      }
+    };
+
     const handleKeyDown = (e) => {
       if (e.code === 'Space') {
         e.preventDefault();
-        handleMouseUp();
+        shootProjectile();
       }
     };
+
+    window.addEventListener('pointerup', handleGlobalPointerUp);
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('pointerup', handleGlobalPointerUp);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   return (
