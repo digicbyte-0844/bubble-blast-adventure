@@ -114,8 +114,18 @@ export function resolveRainbowMatch(grid, startRow, startCol) {
     }
   }
 
-  // Rainbow bubble pops if it completes a match-3 or more
-  return largestCluster.length >= 3 ? largestCluster : [];
+  // Rainbow bubble pops all connected bubbles of the touched color (at least 1 adjacent bubble, i.e. cluster >= 2)
+  if (largestCluster.length >= 2) {
+    return largestCluster;
+  }
+
+  // If touching any color bubble, pop that cluster
+  if (largestCluster.length > 0) {
+    return largestCluster;
+  }
+
+  // Fallback: Rainbow bubble always clears itself even if touching no colored bubbles
+  return [{ row: startRow, col: startCol, bubble: grid[startRow][startCol] }];
 }
 
 /**

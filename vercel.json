@@ -36,8 +36,8 @@
   ],
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api"
+      "source": "/api/:path*",
+      "destination": "https://bubble-blast-adventure-ci3t.onrender.com/api/:path*"
     },
     {
       "source": "/(.*)",

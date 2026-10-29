@@ -28,6 +28,7 @@ import {
 } from '../game/collision.js';
 import {
   findConnectedMatch,
+  resolveRainbowMatch,
   checkRescuedJellies
 } from '../game/matchDetector.js';
 import {
@@ -66,6 +67,7 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
     superAimActive,
     hintData,
     shotsRemaining,
+    bannerNotice,
     setAimAngle,
     setGameStatus,
     fireBubble,
@@ -119,6 +121,13 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
       aimAngleRef.current = aimAngle;
     }
   }, [aimAngle]);
+
+  // Floating text banner notification for booster events
+  useEffect(() => {
+    if (bannerNotice && bannerNotice.text) {
+      spawnFloatingText(LAUNCHER_X, LAUNCHER_Y - 70, bannerNotice.text, bannerNotice.color || '#FACC15');
+    }
+  }, [bannerNotice, LAUNCHER_X, LAUNCHER_Y]);
 
   // Particle systems & animated entities
   const particlesRef = useRef([]);
@@ -324,10 +333,13 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
           soundEngine.playSnap();
 
           // Snapshot grid and insert new bubble into cell
+          const isRainbowShot = proj.type === SPECIAL_BUBBLES.RAINBOW || proj.color === 'rainbow';
+          const isBombShot = proj.type === SPECIAL_BUBBLES.BOMB || proj.color === 'bomb';
+
           const newGrid = cloneGrid(activeGrid);
           newGrid[row][col] = {
-            color: proj.color,
-            type: proj.type || SPECIAL_BUBBLES.NORMAL
+            color: isRainbowShot ? 'rainbow' : (isBombShot ? 'bomb' : proj.color),
+            type: isRainbowShot ? SPECIAL_BUBBLES.RAINBOW : (isBombShot ? SPECIAL_BUBBLES.BOMB : (proj.type || SPECIAL_BUBBLES.NORMAL))
           };
 
           gridMatrixRef.current = newGrid;
@@ -336,7 +348,7 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
 
           try {
             // Handle special bomb booster blast
-            if (proj.type === SPECIAL_BUBBLES.BOMB || proj.color === 'bomb') {
+            if (isBombShot) {
               soundEngine.playBombExplode();
               const bombPops = [];
               const directNeighbors = getHexNeighbors(row, col);
@@ -378,16 +390,23 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
               gridMatrixRef.current = newGrid;
               setGridMatrix(newGrid);
               recordTurnResolution(uniquePops.length, dropped.length, 0);
+              spawnFloatingText(LAUNCHER_X, LAUNCHER_Y - 80, `💥 BOMB BLAST! +${uniquePops.length * 50}`, '#FF4500');
 
               replenishBubbles();
               evaluateLevelEnd();
               return;
             }
 
-            // Standard Match-3 BFS Check
-            const matchedCluster = findConnectedMatch(newGrid, row, col);
+            // Standard Match-3 or Rainbow Wildcard BFS Check
+            let matchedCluster = [];
 
-            if (matchedCluster.length >= 3) {
+            if (isRainbowShot) {
+              matchedCluster = resolveRainbowMatch(newGrid, row, col);
+            } else {
+              matchedCluster = findConnectedMatch(newGrid, row, col);
+            }
+
+            if (matchedCluster.length >= 3 || (isRainbowShot && matchedCluster.length >= 1)) {
               // Trigger Pop Audio with Combo Pitch
               soundEngine.playPop(1);
 
@@ -398,6 +417,10 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
                 spawnPopParticles(pos.x, pos.y, getColorDef(b?.color), 14);
                 newGrid[cell.row][cell.col] = null;
               });
+
+              if (isRainbowShot) {
+                spawnFloatingText(LAUNCHER_X, LAUNCHER_Y - 80, `🌈 RAINBOW POP! +${matchedCluster.length * 60}`, '#EC4899');
+              }
 
               // Check for rescued Starlight Jellies
               const rescued = checkRescuedJellies(newGrid, matchedCluster);
@@ -429,7 +452,7 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
               setGridMatrix(newGrid);
               recordTurnResolution(matchedCluster.length, floating.length, rescuedCount);
 
-              if (matchedCluster.length >= 5) {
+              if (matchedCluster.length >= 5 && !isRainbowShot) {
                 spawnFloatingText(LAUNCHER_X, LAUNCHER_Y - 80, 'GREAT POP! x2', '#FACC15');
               }
             } else {
@@ -458,8 +481,9 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
         });
       }
 
-      // 7. Update & Render Particles
+      // 7. Update & Render Particles (Batched 60 FPS mobile optimization)
       if (particlesRef.current.length > 0) {
+        ctx.save();
         particlesRef.current.forEach((p) => {
           p.x += p.vx;
           p.y += p.vy;
@@ -467,36 +491,35 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
           p.alpha -= p.decay;
 
           if (p.alpha > 0) {
-            ctx.save();
-            ctx.globalAlpha = Math.max(0, p.alpha);
+            ctx.globalAlpha = Math.max(0, Math.min(1, p.alpha));
             ctx.fillStyle = p.color;
             ctx.beginPath();
             ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
             ctx.fill();
-            ctx.restore();
           }
         });
+        ctx.restore();
         particlesRef.current = particlesRef.current.filter((p) => p.alpha > 0);
       }
 
-      // 8. Update & Render Floating Score Texts
+      // 8. Update & Render Floating Score Texts (Batched 60 FPS mobile optimization)
       if (floatingTextsRef.current.length > 0) {
+        ctx.save();
+        ctx.font = 'bold 14px Nunito, Fredoka, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.shadowColor = 'rgba(0,0,0,0.8)';
+        ctx.shadowBlur = 4;
         floatingTextsRef.current.forEach((t) => {
           t.y += t.vy;
           t.alpha -= 0.02;
 
           if (t.alpha > 0) {
-            ctx.save();
-            ctx.globalAlpha = Math.max(0, t.alpha);
+            ctx.globalAlpha = Math.max(0, Math.min(1, t.alpha));
             ctx.fillStyle = t.color;
-            ctx.font = 'bold 14px Nunito, Fredoka, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.shadowColor = 'rgba(0,0,0,0.8)';
-            ctx.shadowBlur = 4;
             ctx.fillText(t.text, t.x, t.y);
-            ctx.restore();
           }
         });
+        ctx.restore();
         floatingTextsRef.current = floatingTextsRef.current.filter((t) => t.alpha > 0);
       }
 
@@ -622,11 +645,10 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
       return;
     }
 
-    // 4. Standard Glossy Cartoon Bubble
+    // 4. Standard Glossy Cartoon Bubble (Hardware-accelerated gradient depth, shadowBlur 0 for smooth 60 FPS mobile)
     const colorDef = getColorDef(colorId);
 
-    ctx.shadowColor = colorDef.glow || 'rgba(0, 240, 255, 0.5)';
-    ctx.shadowBlur = 8;
+    ctx.shadowBlur = 0;
 
     const radGrad = ctx.createRadialGradient(
       x - radius * 0.35,
@@ -803,6 +825,7 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
   const handlePointerDown = (e) => {
     if (e.button && e.button !== 0) return;
     if (gameStatusRef.current !== GAME_STATES.READY && gameStatusRef.current !== GAME_STATES.AIMING) return;
+    if (e.cancelable) e.preventDefault();
 
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
@@ -819,6 +842,7 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
 
   const handlePointerMove = (e) => {
     if (!isAimingRef.current || (gameStatusRef.current !== GAME_STATES.READY && gameStatusRef.current !== GAME_STATES.AIMING)) return;
+    if (e.cancelable) e.preventDefault();
     updateAimFromPointer(e.clientX, e.clientY);
   };
 
@@ -846,9 +870,11 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
     isAimingRef.current = false;
   };
 
-  // Mobile Touch Fallback for older iOS Safari WebKit versions
+  // Mobile Touch Fallback for legacy environments lacking PointerEvent
   const handleTouchStart = (e) => {
+    if (typeof window !== 'undefined' && 'PointerEvent' in window) return; // Prevent duplicate events on modern touch devices
     if (gameStatusRef.current !== GAME_STATES.READY && gameStatusRef.current !== GAME_STATES.AIMING) return;
+    if (e.cancelable) e.preventDefault();
     const touch = e.touches[0];
     const result = updateAimFromPointer(touch.clientX, touch.clientY);
     if (result === 'SWAP_TRIGGERED') {
@@ -860,12 +886,15 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
   };
 
   const handleTouchMove = (e) => {
+    if (typeof window !== 'undefined' && 'PointerEvent' in window) return;
     if (!isAimingRef.current || (gameStatusRef.current !== GAME_STATES.READY && gameStatusRef.current !== GAME_STATES.AIMING)) return;
+    if (e.cancelable) e.preventDefault();
     const touch = e.touches[0];
     updateAimFromPointer(touch.clientX, touch.clientY);
   };
 
   const handleTouchEnd = () => {
+    if (typeof window !== 'undefined' && 'PointerEvent' in window) return;
     if (isAimingRef.current && (gameStatusRef.current === GAME_STATES.READY || gameStatusRef.current === GAME_STATES.AIMING)) {
       isAimingRef.current = false;
       shootProjectile();

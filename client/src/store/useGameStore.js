@@ -25,18 +25,28 @@ import ApiService from '../services/api.js';
 
 // Booster inventory defaults persisted to localStorage
 const DEFAULT_BOOSTERS = {
-  aimGuide: 3,
-  bomb: 2,
-  rainbow: 2,
-  extraShots: 3,
-  shuffle: 2
+  superAim: 5,
+  aimGuide: 5,
+  bomb: 5,
+  rainbow: 5,
+  extraShots: 5,
+  shuffle: 5
 };
 
 function getPersistedBoosters() {
   if (typeof window === 'undefined') return DEFAULT_BOOSTERS;
   try {
     const raw = localStorage.getItem('bba_boosters');
-    return raw ? { ...DEFAULT_BOOSTERS, ...JSON.parse(raw) } : DEFAULT_BOOSTERS;
+    const parsed = raw ? JSON.parse(raw) : {};
+    const aimCount = parsed.superAim ?? parsed.aimGuide ?? parsed.AIM_GUIDE ?? 5;
+    return {
+      superAim: aimCount,
+      aimGuide: aimCount,
+      bomb: parsed.bomb ?? parsed.BOMB ?? 5,
+      rainbow: parsed.rainbow ?? parsed.RAINBOW ?? 5,
+      extraShots: parsed.extraShots ?? parsed.EXTRA_SHOTS ?? 5,
+      shuffle: parsed.shuffle ?? parsed.SHUFFLE ?? 5
+    };
   } catch (e) {
     return DEFAULT_BOOSTERS;
   }
@@ -98,6 +108,8 @@ export const useGameStore = create((set, get) => ({
   boosters: getPersistedBoosters(),
   activeBooster: null,
   superAimActive: false,
+  previousBubble: null,
+  bannerNotice: null,
 
   // Hint angle & target coordinates
   hintData: null,
@@ -160,6 +172,8 @@ export const useGameStore = create((set, get) => ({
       undoStack: [],
       activeBooster: null,
       superAimActive: false,
+      previousBubble: null,
+      bannerNotice: null,
       hintData: null,
       mascotEmotion: 'idle'
     });
@@ -334,6 +348,8 @@ export const useGameStore = create((set, get) => ({
       nextBubble: nextNext,
       bubbleQueue: newQueue,
       activeBooster: null,
+      superAimActive: false,
+      previousBubble: null,
       gameStatus: GAME_STATES.READY,
       gameState: GAME_STATES.READY,
       mascotEmotion: 'idle'
@@ -494,54 +510,160 @@ export const useGameStore = create((set, get) => ({
   },
 
   /**
-   * Activates a Tactical Booster
+   * Activates a Tactical Booster with toggle-off refund support & banner feedback
    */
   activateBooster: (boosterId) => {
-    const { boosters, gameStatus, shotsRemaining } = get();
+    const { boosters, gameStatus, superAimActive, activeBooster, currentBubble, previousBubble } = get();
     if (gameStatus !== GAME_STATES.READY && gameStatus !== GAME_STATES.AIMING) return false;
 
     // Normalizing booster key names
     const keyMap = {
-      SUPER_AIM: 'aimGuide',
-      aim_guide: 'aimGuide',
-      aimGuide: 'aimGuide',
+      superAim: 'superAim',
+      aimGuide: 'superAim',
+      SUPER_AIM: 'superAim',
+      aim_guide: 'superAim',
+      AIM_GUIDE: 'superAim',
+      bomb: 'bomb',
       BOMB: 'bomb',
       bomb_bubble: 'bomb',
-      bomb: 'bomb',
+      rainbow: 'rainbow',
       RAINBOW: 'rainbow',
       rainbow_bubble: 'rainbow',
-      rainbow: 'rainbow',
+      extraShots: 'extraShots',
       EXTRA_SHOTS: 'extraShots',
       plus_5_shots: 'extraShots',
-      extraShots: 'extraShots',
-      SHUFFLE: 'shuffle',
-      shuffle: 'shuffle'
+      shuffle: 'shuffle',
+      SHUFFLE: 'shuffle'
     };
 
     const key = keyMap[boosterId] || boosterId;
-    if (!boosters[key] || boosters[key] <= 0) return false;
 
-    // Execute booster effect
-    if (key === 'aimGuide') {
-      const newActive = !get().superAimActive;
-      set({ superAimActive: newActive, activeBooster: newActive ? 'aimGuide' : null });
-    } else if (key === 'bomb') {
-      set({ currentBubble: 'bomb', activeBooster: 'bomb' });
-    } else if (key === 'rainbow') {
-      set({ currentBubble: 'rainbow', activeBooster: 'rainbow' });
-    } else if (key === 'extraShots') {
-      set((state) => ({ shotsRemaining: state.shotsRemaining + 5 }));
-    } else if (key === 'shuffle') {
-      get().shuffleGrid();
+    // --- TOGGLE OFF HANDLING ---
+    if (key === 'superAim' && (superAimActive || activeBooster === 'superAim')) {
+      const updated = {
+        ...boosters,
+        superAim: (boosters.superAim || 0) + 1,
+        aimGuide: (boosters.aimGuide || 0) + 1
+      };
+      set({
+        superAimActive: false,
+        activeBooster: null,
+        boosters: updated,
+        bannerNotice: { text: 'AIM CANCELLED', color: '#94A3B8', id: Date.now() }
+      });
+      savePersistedBoosters(updated);
+      soundEngine.play('click');
+      return true;
     }
 
-    // Deduct inventory
-    const updated = { ...boosters, [key]: boosters[key] - 1 };
-    set({ boosters: updated });
-    savePersistedBoosters(updated);
+    if (key === 'bomb' && activeBooster === 'bomb') {
+      const restored = previousBubble || 'cyan';
+      const updated = { ...boosters, bomb: (boosters.bomb || 0) + 1 };
+      set({
+        activeBooster: null,
+        currentBubble: restored,
+        previousBubble: null,
+        boosters: updated,
+        bannerNotice: { text: 'BOMB CANCELLED', color: '#94A3B8', id: Date.now() }
+      });
+      savePersistedBoosters(updated);
+      soundEngine.play('click');
+      return true;
+    }
 
-    soundEngine.play('booster');
-    return true;
+    if (key === 'rainbow' && activeBooster === 'rainbow') {
+      const restored = previousBubble || 'magenta';
+      const updated = { ...boosters, rainbow: (boosters.rainbow || 0) + 1 };
+      set({
+        activeBooster: null,
+        currentBubble: restored,
+        previousBubble: null,
+        boosters: updated,
+        bannerNotice: { text: 'RAINBOW CANCELLED', color: '#94A3B8', id: Date.now() }
+      });
+      savePersistedBoosters(updated);
+      soundEngine.play('click');
+      return true;
+    }
+
+    // Verify inventory availability
+    const available = key === 'superAim' ? (boosters.superAim ?? boosters.aimGuide ?? 0) : (boosters[key] || 0);
+    if (available <= 0) return false;
+
+    // --- ACTIVATION HANDLING ---
+    if (key === 'superAim') {
+      const updated = {
+        ...boosters,
+        superAim: Math.max(0, available - 1),
+        aimGuide: Math.max(0, available - 1)
+      };
+      set({
+        superAimActive: true,
+        activeBooster: 'superAim',
+        boosters: updated,
+        bannerNotice: { text: '🎯 SUPER AIM ACTIVE!', color: '#00F0FF', id: Date.now() }
+      });
+      savePersistedBoosters(updated);
+      soundEngine.play('booster');
+      return true;
+    }
+
+    if (key === 'bomb') {
+      const prev = currentBubble;
+      const updated = { ...boosters, bomb: Math.max(0, available - 1) };
+      set({
+        activeBooster: 'bomb',
+        currentBubble: 'bomb',
+        previousBubble: prev,
+        boosters: updated,
+        bannerNotice: { text: '💣 BOMB LOADED!', color: '#F97316', id: Date.now() }
+      });
+      savePersistedBoosters(updated);
+      soundEngine.play('booster');
+      return true;
+    }
+
+    if (key === 'rainbow') {
+      const prev = currentBubble;
+      const updated = { ...boosters, rainbow: Math.max(0, available - 1) };
+      set({
+        activeBooster: 'rainbow',
+        currentBubble: 'rainbow',
+        previousBubble: prev,
+        boosters: updated,
+        bannerNotice: { text: '🌈 RAINBOW LOADED!', color: '#EC4899', id: Date.now() }
+      });
+      savePersistedBoosters(updated);
+      soundEngine.play('booster');
+      return true;
+    }
+
+    if (key === 'extraShots') {
+      const updated = { ...boosters, extraShots: Math.max(0, available - 1) };
+      set((state) => ({
+        shotsRemaining: state.shotsRemaining + 5,
+        boosters: updated,
+        mascotEmotion: 'cheering',
+        bannerNotice: { text: '+5 EXTRA SHOTS!', color: '#10B981', id: Date.now() }
+      }));
+      savePersistedBoosters(updated);
+      soundEngine.play('booster');
+      return true;
+    }
+
+    if (key === 'shuffle') {
+      const updated = { ...boosters, shuffle: Math.max(0, available - 1) };
+      get().shuffleGrid();
+      set({
+        boosters: updated,
+        bannerNotice: { text: '🔀 BOARD SHUFFLED!', color: '#38BDF8', id: Date.now() }
+      });
+      savePersistedBoosters(updated);
+      soundEngine.play('booster');
+      return true;
+    }
+
+    return false;
   },
 
   /**

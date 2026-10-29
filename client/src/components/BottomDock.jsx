@@ -51,16 +51,16 @@ export const BottomDock = () => {
     {
       id: 'superAim',
       name: 'Super Aim',
-      count: boosters.superAim ?? boosters.AIM_GUIDE ?? 2,
+      count: boosters.superAim ?? boosters.aimGuide ?? 5,
       icon: Crosshair,
       accent: 'text-cyan-400',
-      isActive: activeBooster === 'superAim',
-      disabled: !isInteractive || (boosters.superAim || 0) <= 0
+      isActive: activeBooster === 'superAim' || activeBooster === 'aimGuide',
+      disabled: !isInteractive || (boosters.superAim ?? boosters.aimGuide ?? 0) <= 0
     },
     {
       id: 'bomb',
       name: 'Bomb',
-      count: boosters.bomb ?? boosters.BOMB ?? 2,
+      count: boosters.bomb ?? 5,
       icon: Bomb,
       accent: 'text-amber-400',
       isActive: activeBooster === 'bomb',
@@ -69,7 +69,7 @@ export const BottomDock = () => {
     {
       id: 'rainbow',
       name: 'Rainbow',
-      count: boosters.rainbow ?? boosters.RAINBOW ?? 2,
+      count: boosters.rainbow ?? 5,
       icon: Sparkles,
       accent: 'text-pink-400',
       isActive: activeBooster === 'rainbow',
@@ -78,7 +78,7 @@ export const BottomDock = () => {
     {
       id: 'extraShots',
       name: '+5 Shots',
-      count: boosters.extraShots ?? boosters.EXTRA_SHOTS ?? 3,
+      count: boosters.extraShots ?? 5,
       icon: PlusCircle,
       accent: 'text-emerald-400',
       isActive: false,
@@ -87,7 +87,7 @@ export const BottomDock = () => {
     {
       id: 'shuffle',
       name: 'Shuffle',
-      count: boosters.shuffle ?? boosters.SHUFFLE ?? 2,
+      count: boosters.shuffle ?? 5,
       icon: Shuffle,
       accent: 'text-sky-400',
       isActive: false,
