@@ -12,10 +12,10 @@
 ## 🔗 Project Deliverables
 * **Configured Game Name:** `BUBBLE BLAST ADVENTURE` (Tested dynamic swap: `POP MASTER` / `%VITE_GAME_NAME%`)
 * **GitHub Repository:** [https://github.com/digicbyte-0844/bubble-blast-adventure](https://github.com/digicbyte-0844/bubble-blast-adventure)
-* **Live Web Application (Frontend):** [https://bubble-blast-adventure.vercel.app](https://bubble-blast-adventure.vercel.app)
+* **Live Web Application (Frontend):** [https://bubble-blast-adventure-kz7jnrgsd-prabhutejas-projects-4815ed55.vercel.app](https://bubble-blast-adventure-kz7jnrgsd-prabhutejas-projects-4815ed55.vercel.app)
 * **Live API Server (Backend):** [https://bubble-blast-adventure-api.onrender.com](https://bubble-blast-adventure-api.onrender.com)
 * **Live Database:** Cloud MongoDB Atlas Cluster (`bubbleshooter.ms5kfjo.mongodb.net`, AWS `ap-south-1` Mumbai)
-* **Demo Video Walkthrough:** [https://bubble-blast-adventure.vercel.app](https://bubble-blast-adventure.vercel.app)
+* **Demo Video Walkthrough:** [https://bubble-blast-adventure-kz7jnrgsd-prabhutejas-projects-4815ed55.vercel.app](https://bubble-blast-adventure-kz7jnrgsd-prabhutejas-projects-4815ed55.vercel.app)
 
 ---
 
