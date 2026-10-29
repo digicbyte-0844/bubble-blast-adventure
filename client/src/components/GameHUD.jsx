@@ -42,18 +42,38 @@ export const GameHUD = ({ onPause, onRestart, onQuitToMap }) => {
   const canUndo = undoStack && undoStack.length > 0 && (gameStatus === 'READY' || gameStatus === 'AIMING');
 
   // Objective representation
-  const objectiveText = useMemo(() => {
-    if (!levelData?.objective) return 'Clear Grid';
+  const objectiveElement = useMemo(() => {
+    if (!levelData?.objective) return (
+      <span className="inline-flex items-center gap-1">
+        <img src="/assets/icons/bubble.png" alt="Bubble" className="w-3.5 h-3.5 object-contain drop-shadow-sm inline-block" />
+        <span>Clear Grid</span>
+      </span>
+    );
     const type = levelData.objective.type;
     if (type === 'rescue' || type === 'RESCUE_JELLIES') {
       const target = targetJellies || levelData.objective.target || 3;
-      return `🌟 ${currentRescued}/${target} Rescued`;
+      return (
+        <span className="inline-flex items-center gap-1">
+          <img src="/assets/icons/star.png" alt="Star" className="w-3.5 h-3.5 object-contain drop-shadow-sm inline-block" />
+          <span>{currentRescued}/{target} Rescued</span>
+        </span>
+      );
     }
     if (type === 'target_score' || type === 'TARGET_SCORE') {
       const target = levelData.objective.target || 5000;
-      return `🎯 ${score.toLocaleString()}/${target.toLocaleString()}`;
+      return (
+        <span className="inline-flex items-center gap-1">
+          <img src="/assets/icons/target.png" alt="Target" className="w-3.5 h-3.5 object-contain drop-shadow-sm inline-block" />
+          <span>{score.toLocaleString()}/{target.toLocaleString()}</span>
+        </span>
+      );
     }
-    return `🫧 Clear All Bubbles`;
+    return (
+      <span className="inline-flex items-center gap-1">
+        <img src="/assets/icons/bubble.png" alt="Bubble" className="w-3.5 h-3.5 object-contain drop-shadow-sm inline-block" />
+        <span>Clear All Bubbles</span>
+      </span>
+    );
   }, [levelData, currentRescued, targetJellies, score]);
 
   return (
@@ -62,11 +82,11 @@ export const GameHUD = ({ onPause, onRestart, onQuitToMap }) => {
         {/* Left: Tactical Level Indicator / Back to Map Trigger */}
         <button
           onClick={onQuitToMap}
-          className="flex items-center gap-1.5 p-1 -ml-0.5 rounded-xl hover:bg-slate-800/80 active:scale-95 transition-all flex-shrink-0 min-h-[48px] min-w-[48px]"
+          className="flex items-center gap-1.5 p-1 -ml-0.5 rounded-xl hover:bg-slate-800/80 border-b-4 border-slate-950 active:translate-y-1 active:border-b-0 transition-all flex-shrink-0 min-h-[48px] min-w-[48px]"
           title="Back to Saga Map"
           aria-label="Back to map"
         >
-          <span className="w-8 h-8 rounded-xl bg-gradient-to-b from-sky-400 to-sky-600 border border-sky-400/40 flex items-center justify-center font-display font-black text-xs text-slate-950 shadow-sm">
+          <span className="w-8 h-8 rounded-xl bg-gradient-to-b from-sky-400 to-sky-600 border border-sky-400/40 border-b-2 border-b-sky-700 flex items-center justify-center font-display font-black text-xs text-slate-950 shadow-sm">
             {levelId}
           </span>
           <div className="flex flex-col text-left">
@@ -82,8 +102,8 @@ export const GameHUD = ({ onPause, onRestart, onQuitToMap }) => {
         {/* Center: Objective Pill + Live 3-Star Micro-Bar */}
         <div className="flex-1 flex flex-col items-center justify-center max-w-[190px]">
           {/* Objective Pill */}
-          <div className="w-full text-center py-0.5 px-2 rounded-full bg-slate-950/80 border border-slate-800 text-xs font-display font-black text-amber-300 truncate shadow-inner">
-            {objectiveText}
+          <div className="w-full text-center py-0.5 px-2 rounded-full bg-slate-950/80 border border-slate-800 text-xs font-display font-black text-amber-300 truncate shadow-inner flex items-center justify-center">
+            {objectiveElement}
           </div>
 
           {/* Live 3-Star Meter */}
@@ -109,13 +129,13 @@ export const GameHUD = ({ onPause, onRestart, onQuitToMap }) => {
 
         {/* Right: Tactile Utility Controls (Undo & In-Game Menu) */}
         <div className="flex items-center gap-1.5 flex-shrink-0">
-          {/* Undo Action Button */}
+          {/* Undo Action Button with 3D tactile press */}
           <button
             onClick={() => undoShot()}
             disabled={!canUndo}
-            className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all active:scale-95 min-h-[48px] min-w-[44px] ${
+            className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all min-h-[48px] min-w-[44px] ${
               canUndo
-                ? 'btn-arcade-slate text-sky-400 hover:text-white'
+                ? 'btn-arcade-slate text-sky-400 hover:text-white border-b-4 border-slate-950 active:translate-y-1 active:border-b-0'
                 : 'bg-slate-950/40 border border-slate-800 text-slate-700 cursor-not-allowed opacity-50'
             }`}
             title="Undo Last Shot"
@@ -124,10 +144,10 @@ export const GameHUD = ({ onPause, onRestart, onQuitToMap }) => {
             <Undo2 className="w-4 h-4" />
           </button>
 
-          {/* Menu / Pause Action Button */}
+          {/* Menu / Pause Action Button with 3D tactile press */}
           <button
             onClick={onPause}
-            className="h-11 px-2.5 btn-arcade-slate rounded-xl flex items-center justify-center gap-1 text-amber-300 hover:text-white transition-all active:scale-95 border border-slate-700/60 min-h-[48px] min-w-[48px]"
+            className="h-11 px-2.5 btn-arcade-slate rounded-xl flex items-center justify-center gap-1 text-amber-300 hover:text-white transition-all border border-slate-700/60 border-b-4 border-b-slate-950 active:translate-y-1 active:border-b-0 min-h-[48px] min-w-[48px]"
             title="Game Menu"
             aria-label="Pause and open menu"
           >

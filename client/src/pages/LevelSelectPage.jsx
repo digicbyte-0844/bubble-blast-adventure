@@ -118,8 +118,8 @@ export const LevelSelectPage = () => {
                       {/* Current Level Pulsing Beacon & Mascot Avatar */}
                       {isCurrent && (
                         <div className="absolute -top-12 flex flex-col items-center z-20 pointer-events-none animate-mascot-bob">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-400 to-amber-500 border border-white flex items-center justify-center text-sm shadow-md">
-                            🫧
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-400 to-amber-500 border border-white flex items-center justify-center p-1 shadow-md">
+                            <img src="/assets/icons/bubble.png" alt="Bubble" className="w-5 h-5 object-contain drop-shadow-sm" />
                           </div>
                           <span className="text-xs font-display font-black bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full uppercase tracking-tight">
                             HERE!
@@ -177,7 +177,7 @@ export const LevelSelectPage = () => {
       <div className="fixed bottom-[68px] md:bottom-4 inset-x-0 z-30 max-w-sm mx-auto px-4 pointer-events-auto">
         <button
           onClick={() => navigate(`/game/${unlockedUpTo}`)}
-          className="w-full h-14 btn-arcade-gold rounded-2xl flex items-center justify-between px-5 text-slate-950 font-display font-black text-base shadow-2xl active:translate-y-1"
+          className="w-full h-14 btn-arcade-gold rounded-2xl flex items-center justify-between px-5 text-slate-950 font-display font-black text-base shadow-2xl border-b-4 border-amber-700 active:translate-y-1 active:border-b-0"
         >
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-slate-950/20 flex items-center justify-center">

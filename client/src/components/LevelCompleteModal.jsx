@@ -104,14 +104,18 @@ export const LevelCompleteModal = ({
                     : 'scale-90 opacity-25'
                 }`}
               >
-                <Star
-                  className={`w-12 h-12 transition-all ${
-                    isEarned && isVisible
-                      ? 'text-amber-400 fill-amber-400 animate-beacon'
-                      : 'text-slate-700 fill-slate-800'
-                  }`}
-                  style={{ animationDuration: '1.2s' }}
-                />
+                {isEarned && isVisible ? (
+                  <img
+                    src="/assets/icons/star.png"
+                    alt="Star"
+                    className="w-12 h-12 object-contain drop-shadow-sm animate-beacon"
+                    style={{ animationDuration: '1.2s' }}
+                  />
+                ) : (
+                  <Star
+                    className="w-12 h-12 text-slate-700 fill-slate-800"
+                  />
+                )}
               </div>
             );
           })}
@@ -138,13 +142,19 @@ export const LevelCompleteModal = ({
 
           <div className="flex items-center justify-between text-xs font-body font-semibold">
             <span className="text-slate-400">Best Combo Streak</span>
-            <span className="text-amber-400 font-bold font-display">🔥 x{bestCombo || 1}</span>
+            <span className="text-amber-400 font-bold font-display inline-flex items-center gap-1.5">
+              <img src="/assets/icons/fire.png" alt="Fire" className="w-4 h-4 object-contain inline-block drop-shadow-sm" />
+              <span>x{bestCombo || 1}</span>
+            </span>
           </div>
 
           {rescuedCount > 0 && (
             <div className="flex items-center justify-between text-xs font-body font-semibold">
               <span className="text-slate-400">Mini-Jellies Rescued</span>
-              <span className="text-rose-400 font-bold font-display">🌟 {rescuedCount}</span>
+              <span className="text-rose-400 font-bold font-display inline-flex items-center gap-1.5">
+                <img src="/assets/icons/star.png" alt="Star" className="w-4 h-4 object-contain inline-block drop-shadow-sm" />
+                <span>{rescuedCount}</span>
+              </span>
             </div>
           )}
         </div>
@@ -153,7 +163,7 @@ export const LevelCompleteModal = ({
         <div className="flex flex-col gap-2.5">
           <button
             onClick={onNextLevel}
-            className="w-full h-12 min-h-[48px] btn-arcade-gold rounded-2xl flex items-center justify-center gap-2 text-slate-950 font-display font-black text-sm tracking-wide uppercase active:translate-y-1"
+            className="w-full h-12 min-h-[48px] btn-arcade-gold rounded-2xl flex items-center justify-center gap-2 text-slate-950 font-display font-black text-sm tracking-wide uppercase border-b-4 border-amber-700 active:translate-y-1 active:border-b-0"
           >
             <span>Next Level</span>
             <ArrowRight className="w-4 h-4 text-slate-950" />
@@ -162,14 +172,14 @@ export const LevelCompleteModal = ({
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={onReplay}
-              className="min-h-[48px] py-2.5 btn-arcade-slate rounded-2xl flex items-center justify-center gap-1.5 text-xs font-display font-bold text-slate-200"
+              className="min-h-[48px] py-2.5 btn-arcade-slate rounded-2xl flex items-center justify-center gap-1.5 text-xs font-display font-bold text-slate-200 border-b-4 border-slate-950 active:translate-y-1 active:border-b-0"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Replay</span>
             </button>
             <button
               onClick={handleMapAction}
-              className="min-h-[48px] py-2.5 btn-arcade-slate rounded-2xl flex items-center justify-center gap-1.5 text-xs font-display font-bold text-slate-200"
+              className="min-h-[48px] py-2.5 btn-arcade-slate rounded-2xl flex items-center justify-center gap-1.5 text-xs font-display font-bold text-slate-200 border-b-4 border-slate-950 active:translate-y-1 active:border-b-0"
             >
               <Map className="w-3.5 h-3.5" />
               <span>Map</span>

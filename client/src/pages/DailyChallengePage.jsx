@@ -62,8 +62,9 @@ export const DailyChallengePage = () => {
             <span className="text-[10px] font-display font-black uppercase text-slate-400 tracking-wider block">
               Active Streak
             </span>
-            <span className="font-display font-black text-xl text-amber-300">
-              {streak} Days 🔥
+            <span className="font-display font-black text-xl text-amber-300 inline-flex items-center gap-1">
+              <span>{streak} Days</span>
+              <img src="/assets/icons/fire.png" alt="Streak" className="w-5 h-5 object-contain" />
             </span>
           </div>
         </div>
@@ -87,21 +88,24 @@ export const DailyChallengePage = () => {
             </p>
 
             <div className="flex flex-wrap gap-2 pt-1 text-xs font-display">
-              <span className="px-3 py-1 rounded-xl bg-slate-950 border border-slate-800 text-sky-400 font-bold">
-                🎯 Target: Clear All
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-950 border border-slate-800 text-sky-400 font-bold">
+                <img src="/assets/icons/target.png" alt="Target" className="w-3.5 h-3.5 object-contain" />
+                <span>Target: Clear All</span>
               </span>
-              <span className="px-3 py-1 rounded-xl bg-slate-950 border border-slate-800 text-amber-300 font-bold">
-                ⚡ Ammo: 22 Shots
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-950 border border-slate-800 text-amber-300 font-bold">
+                <img src="/assets/icons/bubble.png" alt="Ammo" className="w-3.5 h-3.5 object-contain" />
+                <span>Ammo: 22 Shots</span>
               </span>
-              <span className="px-3 py-1 rounded-xl bg-slate-950 border border-slate-800 text-emerald-400 font-bold">
-                🪙 Reward: 250 Coins + Bomb
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-950 border border-slate-800 text-emerald-400 font-bold">
+                <img src="/assets/icons/coin.png" alt="Coin" className="w-3.5 h-3.5 object-contain" />
+                <span>Reward: 250 Coins + Bomb</span>
               </span>
             </div>
           </div>
 
           <button
             onClick={() => navigate('/game/1')}
-            className="w-full md:w-auto h-14 px-8 btn-arcade-gold rounded-2xl flex items-center justify-center gap-2 text-slate-950 font-display font-black text-base uppercase active:translate-y-1 shadow-lg shadow-amber-500/25 flex-shrink-0"
+            className="w-full md:w-auto h-14 px-8 btn-arcade-gold rounded-2xl flex items-center justify-center gap-2 text-slate-950 font-display font-black text-base uppercase border-b-4 border-amber-700 active:translate-y-1 active:border-b-0 shadow-lg shadow-amber-500/25 flex-shrink-0"
           >
             <Play className="w-5 h-5 fill-slate-950 text-slate-950" />
             <span>Engage Mission</span>

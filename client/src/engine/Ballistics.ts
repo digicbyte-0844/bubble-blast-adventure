@@ -17,7 +17,7 @@ export interface TrajectoryPrediction {
 export class BallisticsEngine {
   public static readonly MIN_ANGLE_RAD = -2.932; // -168 degrees
   public static readonly MAX_ANGLE_RAD = -0.209; // -12 degrees
-  public static readonly LAUNCH_SPEED = 1200;    // px/sec
+  public static readonly LAUNCH_SPEED = 1800;    // px/sec (+50% velocity)
 
   /**
    * Clamps aim angle strictly within upward arc [-168°, -12°]

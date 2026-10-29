@@ -108,7 +108,7 @@ export const PHYSICS = {
   GRID_ROWS: 14,      // 14 total rows
   DEFAULT_BUBBLE_RADIUS: 18, // Screen pixel radius
   HEX_HEIGHT_RATIO: Math.sqrt(3), // ~1.73205
-  LAUNCH_SPEED: 26,   // Pixels per frame (snappy arcade ballistics with sub-step precision)
+  LAUNCH_SPEED: 39,   // Pixels per frame (snappy arcade ballistics with sub-step precision, +50% velocity)
   GRAVITY: 0.45,      // Falling bubble acceleration (px/frame^2)
   MIN_AIM_ANGLE: -168 * (Math.PI / 180), // -2.93215 rad (clamped to prevent horizontal shots)
   MAX_AIM_ANGLE: -12 * (Math.PI / 180),  // -0.20944 rad

@@ -601,7 +601,7 @@ export const useGameStore = create((set, get) => ({
         superAimActive: true,
         activeBooster: 'superAim',
         boosters: updated,
-        bannerNotice: { text: '🎯 SUPER AIM ACTIVE!', color: '#00F0FF', id: Date.now() }
+        bannerNotice: { text: 'SUPER AIM ACTIVE!', color: '#00F0FF', id: Date.now() }
       });
       savePersistedBoosters(updated);
       soundEngine.play('booster');
@@ -616,7 +616,7 @@ export const useGameStore = create((set, get) => ({
         currentBubble: 'bomb',
         previousBubble: prev,
         boosters: updated,
-        bannerNotice: { text: '💣 BOMB LOADED!', color: '#F97316', id: Date.now() }
+        bannerNotice: { text: 'BOMB LOADED!', color: '#F97316', id: Date.now() }
       });
       savePersistedBoosters(updated);
       soundEngine.play('booster');
@@ -631,7 +631,7 @@ export const useGameStore = create((set, get) => ({
         currentBubble: 'rainbow',
         previousBubble: prev,
         boosters: updated,
-        bannerNotice: { text: '🌈 RAINBOW LOADED!', color: '#EC4899', id: Date.now() }
+        bannerNotice: { text: 'RAINBOW LOADED!', color: '#EC4899', id: Date.now() }
       });
       savePersistedBoosters(updated);
       soundEngine.play('booster');
@@ -656,7 +656,7 @@ export const useGameStore = create((set, get) => ({
       get().shuffleGrid();
       set({
         boosters: updated,
-        bannerNotice: { text: '🔀 BOARD SHUFFLED!', color: '#38BDF8', id: Date.now() }
+        bannerNotice: { text: 'BOARD SHUFFLED!', color: '#38BDF8', id: Date.now() }
       });
       savePersistedBoosters(updated);
       soundEngine.play('booster');

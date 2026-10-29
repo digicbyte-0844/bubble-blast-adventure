@@ -52,8 +52,8 @@ export const BottomDock = () => {
       id: 'superAim',
       name: 'Super Aim',
       count: boosters.superAim ?? boosters.aimGuide ?? 5,
-      icon: Crosshair,
-      accent: 'text-cyan-400',
+      iconImg: '/assets/icons/target.png',
+      altText: 'Super Aim',
       isActive: activeBooster === 'superAim' || activeBooster === 'aimGuide',
       disabled: !isInteractive || (boosters.superAim ?? boosters.aimGuide ?? 0) <= 0
     },
@@ -61,8 +61,8 @@ export const BottomDock = () => {
       id: 'bomb',
       name: 'Bomb',
       count: boosters.bomb ?? 5,
-      icon: Bomb,
-      accent: 'text-amber-400',
+      iconImg: '/assets/icons/bomb.png',
+      altText: 'Bomb',
       isActive: activeBooster === 'bomb',
       disabled: !isInteractive || (boosters.bomb || 0) <= 0
     },
@@ -70,8 +70,8 @@ export const BottomDock = () => {
       id: 'rainbow',
       name: 'Rainbow',
       count: boosters.rainbow ?? 5,
-      icon: Sparkles,
-      accent: 'text-pink-400',
+      iconImg: '/assets/icons/rainbow.png',
+      altText: 'Rainbow',
       isActive: activeBooster === 'rainbow',
       disabled: !isInteractive || (boosters.rainbow || 0) <= 0
     },
@@ -79,8 +79,8 @@ export const BottomDock = () => {
       id: 'extraShots',
       name: '+5 Shots',
       count: boosters.extraShots ?? 5,
-      icon: PlusCircle,
-      accent: 'text-emerald-400',
+      iconImg: '/assets/icons/plus.png',
+      altText: '+5 Shots',
       isActive: false,
       disabled: !isInteractive || (boosters.extraShots || 0) <= 0
     },
@@ -88,8 +88,8 @@ export const BottomDock = () => {
       id: 'shuffle',
       name: 'Shuffle',
       count: boosters.shuffle ?? 5,
-      icon: Shuffle,
-      accent: 'text-sky-400',
+      iconImg: '/assets/icons/shuffle.png',
+      altText: 'Shuffle',
       isActive: false,
       disabled: !isInteractive || (boosters.shuffle || 0) <= 0
     }
@@ -103,11 +103,11 @@ export const BottomDock = () => {
       
       {/* Upper Control Bar: Launcher Pod, Swap Tray & Ammo Counter (poking slightly into canvas) */}
       <div className="-mt-7 w-full flex items-center justify-between px-3 py-1.5 rounded-2xl bg-slate-900/95 border border-slate-800 backdrop-blur-md shadow-2xl mb-2">
-        {/* Next Bubble Tray & Swap Button */}
+        {/* Next Bubble Tray & Swap Button with 3D tactile press */}
         <button
           onClick={swapBubbles}
           disabled={!isInteractive}
-          className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-slate-700 active:scale-95 transition-all disabled:opacity-50 min-h-[48px] min-w-[48px]"
+          className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-slate-700 border-b-4 border-b-slate-950 active:translate-y-1 active:border-b-0 transition-all disabled:opacity-50 min-h-[48px] min-w-[48px]"
           title="Swap Ready and Next Bubble"
         >
           <div className="relative flex items-center">
@@ -116,15 +116,15 @@ export const BottomDock = () => {
               className="w-5 h-5 rounded-full border border-white/40 shadow-sm"
               style={{ backgroundColor: nextFill }}
             />
-            {/* Swap Circular Icon */}
-            <ArrowLeftRight className="w-3.5 h-3.5 text-amber-400 ml-1.5" />
+            {/* Swap Directional Icon */}
+            <img src="/assets/icons/swap.png" alt="Swap" className="w-3.5 h-3.5 object-contain ml-1.5" />
           </div>
           <span className="text-xs font-display font-black text-amber-300">SWAP</span>
         </button>
 
         {/* Center: Remaining Ammo Pill */}
         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800 text-xs font-display font-black">
-          <Target className="w-4 h-4 text-amber-400" />
+          <img src="/assets/icons/target.png" alt="Shots" className="w-4 h-4 object-contain" />
           <span className={`${shotsRemaining <= 5 ? 'text-rose-400 animate-pulse' : 'text-white'}`}>
             {shotsRemaining} Shots Left
           </span>
@@ -146,10 +146,9 @@ export const BottomDock = () => {
         </div>
       </div>
 
-      {/* Lower Row: 5 Tactile Booster Buttons */}
+      {/* Lower Row: 5 Tactile Booster Buttons with 3D arcade physical push states */}
       <div className="w-full h-[62px] px-2 py-1 bg-slate-900/95 border border-slate-800 rounded-2xl backdrop-blur-md shadow-2xl flex items-center justify-between gap-1.5">
         {boosterList.map((item) => {
-          const Icon = item.icon;
           return (
             <button
               key={item.id}
@@ -157,10 +156,10 @@ export const BottomDock = () => {
               disabled={item.disabled}
               className={`relative flex-1 flex flex-col items-center justify-center h-12 rounded-xl transition-all duration-100 min-w-[48px] min-h-[48px] ${
                 item.isActive
-                  ? 'bg-amber-400/20 border-2 border-amber-400 ring-2 ring-amber-400/50 shadow-md transform scale-105'
+                  ? 'bg-amber-400/20 border-2 border-amber-400 border-b-4 border-b-amber-600 ring-2 ring-amber-400/50 shadow-md active:translate-y-1 active:border-b-0'
                   : item.disabled
                   ? 'opacity-35 bg-slate-950/60 border border-slate-800/40 cursor-not-allowed'
-                  : 'btn-arcade-slate hover:border-slate-600 active:translate-y-0.5'
+                  : 'btn-arcade-slate hover:border-slate-600 border-b-4 border-b-slate-950 active:translate-y-1 active:border-b-0'
               }`}
               title={`${item.name} (${item.count} in bag)`}
               aria-label={item.name}
@@ -176,8 +175,12 @@ export const BottomDock = () => {
                 x{item.count}
               </span>
 
-              {/* Icon */}
-              <Icon className={`w-5 h-5 ${item.isActive ? 'text-amber-300' : item.accent}`} />
+              {/* Standard Asset Image Icon */}
+              <img
+                src={item.iconImg}
+                alt={item.altText}
+                className="w-5 h-5 object-contain drop-shadow-sm"
+              />
 
               {/* Label */}
               <span className="text-[10px] sm:text-xs font-display font-bold text-slate-300 leading-tight mt-0.5 truncate max-w-full text-center px-0.5">

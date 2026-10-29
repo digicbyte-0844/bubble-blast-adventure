@@ -529,31 +529,44 @@ function drawBubble(ctx: CanvasRenderingContext2D, x: number, y: number, r: numb
   ctx.shadowBlur = 0;
   ctx.fill();
 
-  // Special Icon overlays
+  // Special Icon overlays (crisp vector rendering without OS emoji dependency)
   if (colorKey === 'BOMB') {
-    ctx.fillStyle = '#FF5500';
-    ctx.font = 'bold 14px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('💣', x, y);
-  } else if (colorKey === 'RAINBOW') {
-    ctx.fillStyle = '#00F0FF';
-    ctx.font = 'bold 14px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('🌈', x, y);
-  } else if (colorKey === 'JELLY') {
-    ctx.fillStyle = '#FFF';
-    ctx.font = 'bold 14px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('🌟', x, y);
+    ctx.beginPath();
+    ctx.arc(x, y + 1, r * 0.42, 0, Math.PI * 2);
+    ctx.fillStyle = '#0F172A';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(x + 2, y - r * 0.35);
+    ctx.quadraticCurveTo(x + 5, y - r * 0.6, x + 8, y - r * 0.55);
+    ctx.strokeStyle = '#FDE047';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(x + 8, y - r * 0.55, 2, 0, Math.PI * 2);
+    ctx.fillStyle = '#FF4500';
+    ctx.fill();
+  } else if (colorKey === 'RAINBOW' || colorKey === 'JELLY') {
+    ctx.fillStyle = colorKey === 'RAINBOW' ? '#FFFFFF' : '#FEF08A';
+    ctx.beginPath();
+    for (let i = 0; i < 5; i++) {
+      const outerAngle = (i * 4 * Math.PI) / 5 - Math.PI / 2;
+      const outerX = x + Math.cos(outerAngle) * (r * 0.42);
+      const outerY = y + Math.sin(outerAngle) * (r * 0.42);
+      if (i === 0) ctx.moveTo(outerX, outerY);
+      else ctx.lineTo(outerX, outerY);
+    }
+    ctx.closePath();
+    ctx.fill();
   } else if (colorKey === 'ROCK') {
-    ctx.fillStyle = '#E5E7EB';
-    ctx.font = 'bold 12px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('🪨', x, y);
+    ctx.fillStyle = '#94A3B8';
+    ctx.beginPath();
+    ctx.moveTo(x - r * 0.4, y - r * 0.2);
+    ctx.lineTo(x, y - r * 0.5);
+    ctx.lineTo(x + r * 0.45, y - r * 0.1);
+    ctx.lineTo(x + r * 0.35, y + r * 0.4);
+    ctx.lineTo(x - r * 0.3, y + r * 0.45);
+    ctx.closePath();
+    ctx.fill();
   }
 
   ctx.restore();

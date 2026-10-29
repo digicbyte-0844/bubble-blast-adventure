@@ -253,7 +253,7 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
         ctx.fillStyle = 'rgba(239, 68, 68, 0.9)';
         ctx.font = 'bold 10px "Fredoka", sans-serif';
         ctx.textAlign = 'right';
-        ctx.fillText('⚠️ DANGER LINE', canvasWidth - X_OFFSET - 4, DANGER_Y - 4);
+        ctx.fillText('DANGER LINE', canvasWidth - X_OFFSET - 4, DANGER_Y - 4);
       }
       ctx.restore();
 
@@ -390,7 +390,7 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
               gridMatrixRef.current = newGrid;
               setGridMatrix(newGrid);
               recordTurnResolution(uniquePops.length, dropped.length, 0);
-              spawnFloatingText(LAUNCHER_X, LAUNCHER_Y - 80, `💥 BOMB BLAST! +${uniquePops.length * 50}`, '#FF4500');
+              spawnFloatingText(LAUNCHER_X, LAUNCHER_Y - 80, `BOMB BLAST! +${uniquePops.length * 50}`, '#FF4500');
 
               replenishBubbles();
               evaluateLevelEnd();
@@ -419,7 +419,7 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
               });
 
               if (isRainbowShot) {
-                spawnFloatingText(LAUNCHER_X, LAUNCHER_Y - 80, `🌈 RAINBOW POP! +${matchedCluster.length * 60}`, '#EC4899');
+                spawnFloatingText(LAUNCHER_X, LAUNCHER_Y - 80, `RAINBOW POP! +${matchedCluster.length * 60}`, '#EC4899');
               }
 
               // Check for rescued Starlight Jellies
@@ -610,11 +610,23 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
       ctx.shadowBlur = 12;
       ctx.fill();
 
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = 'bold 13px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('💣', x, y);
+      // Vector bomb core & fuse spark
+      ctx.beginPath();
+      ctx.arc(x, y + 1, radius * 0.42, 0, Math.PI * 2);
+      ctx.fillStyle = '#0F172A';
+      ctx.fill();
+      // Fuse
+      ctx.beginPath();
+      ctx.moveTo(x + 2, y - radius * 0.35);
+      ctx.quadraticCurveTo(x + 5, y - radius * 0.6, x + 8, y - radius * 0.55);
+      ctx.strokeStyle = '#FDE047';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      // Spark
+      ctx.beginPath();
+      ctx.arc(x + 8, y - radius * 0.55, 2, 0, Math.PI * 2);
+      ctx.fillStyle = '#FF4500';
+      ctx.fill();
 
       ctx.restore();
       return;
@@ -635,11 +647,18 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
       ctx.shadowBlur = 10;
       ctx.fill();
 
+      // Prismatic vector star emblem
       ctx.fillStyle = '#FFFFFF';
-      ctx.font = 'bold 12px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('🌈', x, y);
+      ctx.beginPath();
+      for (let i = 0; i < 5; i++) {
+        const outerAngle = (i * 4 * Math.PI) / 5 - Math.PI / 2;
+        const outerX = x + Math.cos(outerAngle) * (radius * 0.42);
+        const outerY = y + Math.sin(outerAngle) * (radius * 0.42);
+        if (i === 0) ctx.moveTo(outerX, outerY);
+        else ctx.lineTo(outerX, outerY);
+      }
+      ctx.closePath();
+      ctx.fill();
 
       ctx.restore();
       return;

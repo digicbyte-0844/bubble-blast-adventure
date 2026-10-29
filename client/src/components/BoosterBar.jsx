@@ -20,20 +20,20 @@ export const BoosterBar = () => {
 
   const boosterList = [
     {
-      id: 'aimGuide',
+      id: 'superAim',
       name: 'Super Aim',
-      count: boosters.aimGuide ?? boosters.SUPER_AIM ?? 0,
-      icon: Target,
-      accent: 'text-sky-400',
-      isActive: superAimActive || activeBooster === 'aimGuide',
-      disabled: !isInteractive || (boosters.aimGuide || 0) <= 0
+      count: boosters.superAim ?? boosters.aimGuide ?? boosters.SUPER_AIM ?? 0,
+      iconImg: '/assets/icons/target.png',
+      altText: 'Super Aim',
+      isActive: superAimActive || activeBooster === 'superAim' || activeBooster === 'aimGuide',
+      disabled: !isInteractive || (boosters.superAim ?? boosters.aimGuide ?? 0) <= 0
     },
     {
       id: 'bomb',
       name: 'Bomb',
       count: boosters.bomb ?? boosters.BOMB ?? 0,
-      icon: Bomb,
-      accent: 'text-rose-400',
+      iconImg: '/assets/icons/bomb.png',
+      altText: 'Bomb',
       isActive: activeBooster === 'bomb',
       disabled: !isInteractive || (boosters.bomb || 0) <= 0
     },
@@ -41,8 +41,8 @@ export const BoosterBar = () => {
       id: 'rainbow',
       name: 'Rainbow',
       count: boosters.rainbow ?? boosters.RAINBOW ?? 0,
-      icon: Sparkles,
-      accent: 'text-amber-300',
+      iconImg: '/assets/icons/rainbow.png',
+      altText: 'Rainbow',
       isActive: activeBooster === 'rainbow',
       disabled: !isInteractive || (boosters.rainbow || 0) <= 0
     },
@@ -50,8 +50,8 @@ export const BoosterBar = () => {
       id: 'extraShots',
       name: '+5 Shots',
       count: boosters.extraShots ?? boosters.EXTRA_SHOTS ?? 0,
-      icon: PlusCircle,
-      accent: 'text-emerald-400',
+      iconImg: '/assets/icons/plus.png',
+      altText: '+5 Shots',
       isActive: false,
       disabled: !isInteractive || (boosters.extraShots || 0) <= 0
     },
@@ -59,8 +59,8 @@ export const BoosterBar = () => {
       id: 'shuffle',
       name: 'Shuffle',
       count: boosters.shuffle ?? boosters.SHUFFLE ?? 0,
-      icon: Shuffle,
-      accent: 'text-purple-400',
+      iconImg: '/assets/icons/shuffle.png',
+      altText: 'Shuffle',
       isActive: false,
       disabled: !isInteractive || (boosters.shuffle || 0) <= 0
     }
@@ -68,9 +68,8 @@ export const BoosterBar = () => {
 
   return (
     <div className="w-full max-w-[420px] mx-auto select-none pb-safe pt-1">
-      <div className="h-[60px] px-2 py-1 bg-slate-900/90 border border-slate-800 rounded-2xl backdrop-blur-md shadow-2xl flex items-center justify-around gap-1">
+      <div className="h-[62px] px-2 py-1 bg-slate-900/95 border border-slate-800 rounded-2xl backdrop-blur-md shadow-2xl flex items-center justify-around gap-1.5">
         {boosterList.map((item) => {
-          const Icon = item.icon;
           return (
             <button
               key={item.id}
@@ -78,10 +77,10 @@ export const BoosterBar = () => {
               disabled={item.disabled}
               className={`relative flex flex-col items-center justify-center w-12 h-12 rounded-xl transition-all duration-100 min-w-[48px] min-h-[48px] ${
                 item.isActive
-                  ? 'bg-amber-400/20 border-2 border-amber-400 ring-2 ring-amber-400/50 shadow-md shadow-black/40 transform scale-105'
+                  ? 'bg-amber-400/20 border-2 border-amber-400 border-b-4 border-b-amber-600 ring-2 ring-amber-400/50 shadow-md shadow-black/40 active:translate-y-1 active:border-b-0'
                   : item.disabled
                   ? 'opacity-35 bg-slate-950/60 border border-slate-800/40 cursor-not-allowed'
-                  : 'btn-arcade-slate hover:border-slate-600 active:translate-y-0.5'
+                  : 'btn-arcade-slate hover:border-slate-600 border-b-4 border-b-slate-950 active:translate-y-1 active:border-b-0'
               }`}
               title={`${item.name} (${item.count} in bag)`}
               aria-label={item.name}
@@ -97,8 +96,12 @@ export const BoosterBar = () => {
                 x{item.count}
               </span>
 
-              {/* Icon */}
-              <Icon className={`w-5 h-5 ${item.isActive ? 'text-amber-300' : item.accent}`} />
+              {/* Standard Asset Image Icon */}
+              <img
+                src={item.iconImg}
+                alt={item.altText}
+                className="w-5 h-5 object-contain drop-shadow-sm"
+              />
 
               {/* Label */}
               <span className="text-xs font-display font-bold text-slate-300 leading-tight mt-0.5 truncate max-w-[48px]">

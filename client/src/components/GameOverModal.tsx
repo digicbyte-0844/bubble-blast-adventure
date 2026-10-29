@@ -14,7 +14,9 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ onRetry, onBackToM
   return (
     <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
       <div className="w-full max-w-sm bg-cosmic-card border-2 border-rose-500/40 p-6 rounded-3xl text-center shadow-2xl animate-in fade-in zoom-in duration-200">
-        <div className="text-4xl mb-2">💥</div>
+        <div className="flex justify-center mb-2">
+          <img src="/assets/icons/heart-broken.png" alt="Defeat" className="w-12 h-12 object-contain drop-shadow-sm" />
+        </div>
         <h2 className="text-2xl font-black text-rose-500 tracking-tight uppercase">Defeat!</h2>
         <p className="text-xs text-slate-400 font-semibold mb-4">
           Shots depleted before sector objectives were fulfilled.

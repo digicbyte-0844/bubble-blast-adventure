@@ -34,13 +34,13 @@ export const LandingPage = () => {
   const [isJiggling, setIsJiggling] = useState(false);
 
   const MASCOT_TIPS = [
-    'Aim, match & pop! 🫧',
-    'Rescue my Mini-Jelly friends! ✨',
-    'Sever ceiling clusters for avalanches! 💥',
-    'Billiard bank-shots reflect off walls! 🎯',
-    'Tap launcher ammo tray to swap! ⇄',
-    'Cosmic Bomb clears a 2-hex ring! 💣',
-    'Ready to fly? Tap PLAY NOW! 🚀'
+    'Aim, match & pop!',
+    'Rescue my Mini-Jelly friends!',
+    'Sever ceiling clusters for avalanches!',
+    'Billiard bank-shots reflect off walls!',
+    'Tap launcher ammo tray to swap!',
+    'Cosmic Bomb clears a 2-hex ring!',
+    'Ready to fly? Tap PLAY NOW!'
   ];
 
   const handleMascotClick = () => {
@@ -137,7 +137,7 @@ export const LandingPage = () => {
         {/* Giant Tactile Play Button (Amber Gold Push-Down State) */}
         <button
           onClick={() => navigate(`/game/${highestUnlocked}`)}
-          className="w-full h-14 btn-arcade-gold rounded-2xl flex items-center justify-center gap-2.5 text-slate-950 font-display font-black text-lg tracking-wide uppercase shadow-lg shadow-amber-500/20 active:translate-y-1"
+          className="w-full h-14 btn-arcade-gold rounded-2xl flex items-center justify-center gap-2.5 text-slate-950 font-display font-black text-lg tracking-wide uppercase shadow-lg shadow-amber-500/20 border-b-4 border-amber-700 active:translate-y-1 active:border-b-0"
         >
           <Play className="w-6 h-6 fill-slate-950 text-slate-950" />
           <span>PLAY NOW</span>

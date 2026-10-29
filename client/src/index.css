@@ -3,23 +3,18 @@
 @tailwind utilities;
 
 @layer base {
-  html, body {
-    overflow-x: hidden;
-    max-width: 100vw;
-  }
-
-  html, body, #root {
+  body, html, #root {
     margin: 0;
     padding: 0;
     width: 100%;
-    max-width: 100vw;
-    height: 100%;
-    overflow-x: hidden;
+    height: 100dvh;
+    overflow: hidden;
     overscroll-behavior: none;
-    background-color: #0B0F19;
+    touch-action: none;
     user-select: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
+    background-color: #0B0F19;
   }
 
   /* Prevent iOS auto-zoom by enforcing >= 16px font-size on all form controls */
@@ -62,7 +57,7 @@
     padding-right: env(safe-area-inset-right, 0px);
   }
 
-  /* Tactile Arcade Buttons (3D Bevel Push States) */
+  /* Tactile Arcade Buttons (3D Bevel Push States with active:translate-y-1 active:border-b-0) */
   .btn-arcade-gold {
     background: linear-gradient(180deg, #FBBF24 0%, #F59E0B 100%);
     border-bottom: 4px solid #B45309;
@@ -70,13 +65,13 @@
     transition: transform 0.08s ease, border-bottom-width 0.08s ease, box-shadow 0.08s ease;
   }
   .btn-arcade-gold:active {
-    transform: translateY(3px);
-    border-bottom-width: 1px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    transform: translateY(4px);
+    border-bottom-width: 0px !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   }
 
   .btn-arcade-slate {
-    background: rgba(30, 41, 59, 0.85);
+    background: rgba(30, 41, 59, 0.9);
     backdrop-filter: blur(12px);
     border: 1px solid rgba(71, 85, 105, 0.4);
     border-bottom: 4px solid #0F172A;
@@ -84,9 +79,9 @@
     transition: transform 0.08s ease, border-bottom-width 0.08s ease, box-shadow 0.08s ease;
   }
   .btn-arcade-slate:active {
-    transform: translateY(2px);
-    border-bottom-width: 2px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+    transform: translateY(4px);
+    border-bottom-width: 0px !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
   }
 
   .btn-arcade-cyan {
@@ -96,8 +91,8 @@
     transition: transform 0.08s ease, border-bottom-width 0.08s ease;
   }
   .btn-arcade-cyan:active {
-    transform: translateY(3px);
-    border-bottom-width: 1px;
+    transform: translateY(4px);
+    border-bottom-width: 0px !important;
   }
 
   .btn-arcade-emerald {
@@ -107,8 +102,8 @@
     transition: transform 0.08s ease, border-bottom-width 0.08s ease;
   }
   .btn-arcade-emerald:active {
-    transform: translateY(3px);
-    border-bottom-width: 1px;
+    transform: translateY(4px);
+    border-bottom-width: 0px !important;
   }
 
   .btn-arcade-crimson {
@@ -118,8 +113,8 @@
     transition: transform 0.08s ease, border-bottom-width 0.08s ease;
   }
   .btn-arcade-crimson:active {
-    transform: translateY(3px);
-    border-bottom-width: 1px;
+    transform: translateY(4px);
+    border-bottom-width: 0px !important;
   }
 
   /* Glassmorphic Clay Card */

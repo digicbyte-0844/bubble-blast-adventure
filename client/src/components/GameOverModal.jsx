@@ -83,9 +83,9 @@ export const GameOverModal = ({ onRetry, onBackToMap, onSelectLevel, onQuit }) =
           {hasExtraShots ? (
             <button
               onClick={handleUseExtraShots}
-              className="w-full min-h-[48px] py-2.5 px-3 btn-arcade-emerald rounded-xl flex items-center justify-center gap-2 text-slate-950 font-display font-black text-xs"
+              className="w-full min-h-[48px] py-2.5 px-3 btn-arcade-emerald rounded-xl flex items-center justify-center gap-2 text-slate-950 font-display font-black text-xs border-b-4 border-emerald-800 active:translate-y-1 active:border-b-0"
             >
-              <PlusCircle className="w-4 h-4 text-slate-950" />
+              <img src="/assets/icons/plus.png" alt="Plus" className="w-4 h-4 object-contain" />
               <span>Use +5 Extra Shots ({boosters.extraShots} in bag)</span>
             </button>
           ) : (
@@ -94,11 +94,11 @@ export const GameOverModal = ({ onRetry, onBackToMap, onSelectLevel, onQuit }) =
               disabled={!canBuyShots}
               className={`w-full min-h-[48px] py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 text-xs font-display font-black transition-all ${
                 canBuyShots
-                  ? 'btn-arcade-gold text-slate-950 active:translate-y-0.5'
+                  ? 'btn-arcade-gold text-slate-950 border-b-4 border-amber-700 active:translate-y-1 active:border-b-0'
                   : 'bg-slate-800 text-slate-500 cursor-not-allowed opacity-60'
               }`}
             >
-              <Coins className="w-4 h-4 text-amber-900" />
+              <img src="/assets/icons/coin.png" alt="Coins" className="w-4 h-4 object-contain" />
               <span>Get +5 Extra Shots for 100 Coins</span>
             </button>
           )}
@@ -114,7 +114,7 @@ export const GameOverModal = ({ onRetry, onBackToMap, onSelectLevel, onQuit }) =
         <div className="flex flex-col gap-2">
           <button
             onClick={onRetry}
-            className="w-full h-12 min-h-[48px] btn-arcade-crimson rounded-2xl flex items-center justify-center gap-2 text-white font-display font-black text-sm tracking-wide uppercase active:translate-y-1"
+            className="w-full h-12 min-h-[48px] btn-arcade-crimson rounded-2xl flex items-center justify-center gap-2 text-white font-display font-black text-sm tracking-wide uppercase border-b-4 border-rose-900 active:translate-y-1 active:border-b-0"
           >
             <RotateCcw className="w-4 h-4 text-white" />
             <span>Retry Level</span>
@@ -122,7 +122,7 @@ export const GameOverModal = ({ onRetry, onBackToMap, onSelectLevel, onQuit }) =
 
           <button
             onClick={handleMapAction}
-            className="w-full min-h-[48px] py-2 btn-arcade-slate rounded-2xl flex items-center justify-center gap-1.5 text-xs font-display font-bold text-slate-300"
+            className="w-full min-h-[48px] py-2 btn-arcade-slate rounded-2xl flex items-center justify-center gap-1.5 text-xs font-display font-bold text-slate-300 border-b-4 border-slate-950 active:translate-y-1 active:border-b-0"
           >
             <Home className="w-3.5 h-3.5" />
             <span>Back to Map</span>
