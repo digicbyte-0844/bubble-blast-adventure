@@ -24,7 +24,7 @@ services:
       - key: ANTI_CHEAT_STRICT_MODE
         value: "true"
       - key: CLIENT_URL
-        value: https://bubble-blast-adventure-kz7jnrgsd-prabhutejas-projects-4815ed55.vercel.app
+        value: https://bubble-blast-adventure-alpha.vercel.app
 
   # 2. Production Vite Client Static Site (Render Mirror)
   - type: web

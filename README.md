@@ -381,7 +381,7 @@ To prevent browser console tampering (`score: 999999999`):
 
 | Component | Platform | URL |
 |---|---|---|
-| **Frontend Web App** | Vercel | [https://bubble-blast-adventure-kz7jnrgsd-prabhutejas-projects-4815ed55.vercel.app](https://bubble-blast-adventure-kz7jnrgsd-prabhutejas-projects-4815ed55.vercel.app) |
+| **Frontend Web App** | Vercel | [https://bubble-blast-adventure-alpha.vercel.app](https://bubble-blast-adventure-alpha.vercel.app) |
 | **Backend API** | Render | [https://bubble-blast-adventure-ci3t.onrender.com](https://bubble-blast-adventure-ci3t.onrender.com) |
 | **Database** | MongoDB Atlas | AWS / ap-south-1 (Mumbai) Cluster |
 | **Source Code** | GitHub | [https://github.com/digicbyte-0844/bubble-blast-adventure](https://github.com/digicbyte-0844/bubble-blast-adventure) |

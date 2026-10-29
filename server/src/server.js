@@ -21,9 +21,8 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
   'http://localhost:5000',
-  'https://bubble-blast-adventure-kz7jnrgsd-prabhutejas-projects-4815ed55.vercel.app',
-  'https://bubble-blast-adventure.vercel.app',
   'https://bubble-blast-adventure-alpha.vercel.app',
+  'https://bubble-blast-adventure.vercel.app',
   'https://bubble-blast-adventure-ci3t.onrender.com',
   'https://bubble-blast-adventure.onrender.com',
   process.env.CLIENT_URL
