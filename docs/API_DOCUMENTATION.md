@@ -7,7 +7,7 @@
 **Author:** Prabhuteja Koda ([@digicbyte-0844](https://github.com/digicbyte-0844))  
 **Email:** `prabhutejakoda@gmail.com`  
 **Repository:** [https://github.com/digicbyte-0844/bubble-blast-adventure](https://github.com/digicbyte-0844/bubble-blast-adventure)  
-**Base URL:** `http://localhost:5000/api` (or production Render URL: `https://bubble-blast-adventure-api.onrender.com/api`)  
+**Base URL:** `http://localhost:5000/api` (or production Render URL: `https://bubble-blast-adventure-ci3t.onrender.com/api`)  
 **Authentication Scheme:** `Authorization: Bearer <JWT_TOKEN>`
 
 ---

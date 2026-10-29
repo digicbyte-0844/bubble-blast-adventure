@@ -41,4 +41,4 @@ services:
       - key: VITE_GAME_NAME
         value: BUBBLE BLAST ADVENTURE
       - key: VITE_API_URL
-        value: https://bubble-blast-adventure-api.onrender.com/api
+        value: https://bubble-blast-adventure-ci3t.onrender.com/api
