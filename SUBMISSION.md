@@ -13,6 +13,7 @@
 * **Configured Game Name:** `BUBBLE BLAST ADVENTURE` (Tested dynamic swap: `POP MASTER` / `%VITE_GAME_NAME%`)
 * **GitHub Repository:** [https://github.com/digicbyte-0844/bubble-blast-adventure](https://github.com/digicbyte-0844/bubble-blast-adventure)
 * **Live Web Application (Frontend):** [https://bubble-blast-adventure-alpha.vercel.app](https://bubble-blast-adventure-alpha.vercel.app)
+* **Live Admin Portal:** [https://bubble-blast-adventure-alpha.vercel.app/admin](https://bubble-blast-adventure-alpha.vercel.app/admin)
 * **Live API Server (Backend):** [https://bubble-blast-adventure-ci3t.onrender.com](https://bubble-blast-adventure-ci3t.onrender.com)
 * **Live Database:** Cloud MongoDB Atlas Cluster (`bubbleshooter.ms5kfjo.mongodb.net`, AWS `ap-south-1` Mumbai)
 * **Demo Video Walkthrough:** [https://bubble-blast-adventure-alpha.vercel.app](https://bubble-blast-adventure-alpha.vercel.app)
@@ -57,10 +58,12 @@
 
 ## 🛡️ Administrative Portal Credentials
 * **SuperAdmin Account:**
-  - **Login URL:** [`/login`](http://localhost:5173/login)
-  - **Username:** `admin` (or `Always_Prabhu`)
-  - **Password:** `Admin@Bubble2026!`
-  - **Admin Portal URL:** [`/admin`](http://localhost:5173/admin) (accessible exclusively by users with `role: 'admin'`).
+  - **Live Web Login:** [https://bubble-blast-adventure-alpha.vercel.app/login](https://bubble-blast-adventure-alpha.vercel.app/login)
+  - **Live Admin Portal:** [https://bubble-blast-adventure-alpha.vercel.app/admin](https://bubble-blast-adventure-alpha.vercel.app/admin) (accessible exclusively by authenticated users with `role: 'admin'`)
+  - **Admin Email:** `prabhudemo@gmail.com`
+  - **Admin Username:** `admin` (or `Always_Prabhu`)
+  - **Admin Password:** `Admin@123` (or `Always_Prabhu`, `Admin@Bubble2026!`)
+  - **Local Development URL (Fallback):** [http://localhost:5173/login](http://localhost:5173/login) & [http://localhost:5173/admin](http://localhost:5173/admin)
 * **Features:** Live Atlas collection statistics, user search, full document payload inspector, test account purging, and user deletion.
 
 ---
