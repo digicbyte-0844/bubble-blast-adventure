@@ -52,10 +52,10 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
   const X_OFFSET = Math.max(0, Math.floor((canvasWidth - PHYSICS.GRID_COLS_EVEN * (BUBBLE_RADIUS * 2)) / 2));
   const Y_OFFSET = Math.max(8, Math.floor(BUBBLE_RADIUS * 0.45));
   const LAUNCHER_X = canvasWidth / 2;
-  const LAUNCHER_Y = canvasHeight - BUBBLE_RADIUS * 2.2;
-  const NEXT_BUBBLE_X = canvasWidth / 2 - BUBBLE_RADIUS * 3.5;
-  const NEXT_BUBBLE_Y = LAUNCHER_Y + BUBBLE_RADIUS * 0.35;
-  const DANGER_Y = LAUNCHER_Y - BUBBLE_RADIUS * 4.2;
+  const LAUNCHER_Y = canvasHeight - BUBBLE_RADIUS * 2.35;
+  const NEXT_BUBBLE_X = canvasWidth / 2 - BUBBLE_RADIUS * 2.75;
+  const NEXT_BUBBLE_Y = LAUNCHER_Y + BUBBLE_RADIUS * 0.45;
+  const DANGER_Y = LAUNCHER_Y - BUBBLE_RADIUS * 4.4;
 
   const {
     gridMatrix,
@@ -83,10 +83,12 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
   const gameStatusRef = useRef(gameStatus);
   const currentBubbleRef = useRef(currentBubble);
   const nextBubbleRef = useRef(nextBubble);
+  const shotsRemainingRef = useRef(shotsRemaining);
   const superAimActiveRef = useRef(superAimActive);
   const activeBoosterRef = useRef(activeBooster);
   const hintDataRef = useRef(hintData);
   const aimAngleRef = useRef(aimAngle || -Math.PI / 2);
+  const lastSwapTimeRef = useRef(0);
 
   useEffect(() => {
     gridMatrixRef.current = gridMatrix;
@@ -103,6 +105,10 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
   useEffect(() => {
     nextBubbleRef.current = nextBubble;
   }, [nextBubble]);
+
+  useEffect(() => {
+    shotsRemainingRef.current = shotsRemaining;
+  }, [shotsRemaining]);
 
   useEffect(() => {
     superAimActiveRef.current = superAimActive;
@@ -231,29 +237,83 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
       ctx.lineTo(canvasWidth - X_OFFSET, Y_OFFSET);
       ctx.stroke();
 
-      // Danger Line: 2-3 rows above launcher
-      let hasDangerBubbles = false;
-      for (let r = 10; r < activeGrid.length; r++) {
-        if (activeGrid[r]?.some((b) => b !== null)) {
-          hasDangerBubbles = true;
-          break;
+      // Danger Line: Multi-layer stylized horizontal energy beam
+      let dangerSeverity = 0; // 0 = safe, 1 = within 2 rows, 2 = critical
+      for (let r = 0; r < activeGrid.length; r++) {
+        if (!activeGrid[r]) continue;
+        for (let c = 0; c < activeGrid[r].length; c++) {
+          if (activeGrid[r][c]) {
+            const pos = gridToPixel(r, c, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
+            if (pos.y >= DANGER_Y - BUBBLE_RADIUS * 0.8) {
+              dangerSeverity = 2;
+            } else if (pos.y >= DANGER_Y - BUBBLE_RADIUS * 2.5 && dangerSeverity < 1) {
+              dangerSeverity = 1;
+            }
+          }
         }
       }
 
       ctx.save();
-      ctx.setLineDash([5, 5]);
-      ctx.lineWidth = hasDangerBubbles ? 2 : 1;
-      ctx.strokeStyle = hasDangerBubbles ? 'rgba(239, 68, 68, 0.85)' : 'rgba(239, 68, 68, 0.25)';
+      const isCritical = dangerSeverity === 2;
+      const isWarning = dangerSeverity === 1;
+      const pulseSpeed = isCritical ? 120 : 250;
+      const beamPulse = Math.sin(Date.now() / pulseSpeed);
+
+      // 1. Soft Outer Neon Aura
+      ctx.shadowBlur = isCritical ? 16 : (isWarning ? 12 : 8);
+      ctx.shadowColor = isCritical
+        ? 'rgba(239, 68, 68, 0.95)'
+        : (isWarning ? 'rgba(244, 63, 94, 0.75)' : 'rgba(244, 63, 94, 0.35)');
+
+      // 2. Crisp Gradient Core Line
+      const beamGrad = ctx.createLinearGradient(X_OFFSET + 8, DANGER_Y, canvasWidth - X_OFFSET - 8, DANGER_Y);
+      if (isCritical) {
+        beamGrad.addColorStop(0, 'rgba(239, 68, 68, 0.2)');
+        beamGrad.addColorStop(0.5, '#EF4444');
+        beamGrad.addColorStop(1, 'rgba(239, 68, 68, 0.2)');
+      } else if (isWarning) {
+        beamGrad.addColorStop(0, 'rgba(244, 63, 94, 0.15)');
+        beamGrad.addColorStop(0.5, '#F43F5E');
+        beamGrad.addColorStop(1, 'rgba(244, 63, 94, 0.15)');
+      } else {
+        beamGrad.addColorStop(0, 'rgba(244, 63, 94, 0.05)');
+        beamGrad.addColorStop(0.5, 'rgba(244, 63, 94, 0.45)');
+        beamGrad.addColorStop(1, 'rgba(244, 63, 94, 0.05)');
+      }
+
+      ctx.strokeStyle = beamGrad;
+      ctx.lineWidth = isCritical ? 3 + beamPulse : (isWarning ? 2.5 : 1.5);
       ctx.beginPath();
-      ctx.moveTo(X_OFFSET, DANGER_Y);
-      ctx.lineTo(canvasWidth - X_OFFSET, DANGER_Y);
+      ctx.moveTo(X_OFFSET + 10, DANGER_Y);
+      ctx.lineTo(canvasWidth - X_OFFSET - 10, DANGER_Y);
       ctx.stroke();
 
-      if (hasDangerBubbles) {
-        ctx.fillStyle = 'rgba(239, 68, 68, 0.9)';
-        ctx.font = 'bold 10px "Fredoka", sans-serif';
+      // 3. Glowing Diamond Anchor Nodes on Left & Right Walls
+      const drawAnchorDiamond = (dx, dy) => {
+        ctx.beginPath();
+        ctx.moveTo(dx, dy - 5);
+        ctx.lineTo(dx + 5, dy);
+        ctx.lineTo(dx, dy + 5);
+        ctx.lineTo(dx - 5, dy);
+        ctx.closePath();
+        ctx.fillStyle = isCritical ? '#EF4444' : (isWarning ? '#F43F5E' : '#FDA4AF');
+        ctx.fill();
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      };
+      drawAnchorDiamond(X_OFFSET + 10, DANGER_Y);
+      drawAnchorDiamond(canvasWidth - X_OFFSET - 10, DANGER_Y);
+
+      if (dangerSeverity >= 1) {
+        ctx.fillStyle = isCritical ? '#EF4444' : '#F43F5E';
+        ctx.font = '900 10px "Fredoka", "Nunito", sans-serif';
         ctx.textAlign = 'right';
-        ctx.fillText('DANGER LINE', canvasWidth - X_OFFSET - 4, DANGER_Y - 4);
+        ctx.fillText(
+          isCritical ? '⚠️ CRITICAL DANGER LINE' : 'BARRIER THRESHOLD',
+          canvasWidth - X_OFFSET - 18,
+          DANGER_Y - 5
+        );
       }
       ctx.restore();
 
@@ -280,7 +340,7 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
         ctx.restore();
       }
 
-      // 4. Render Trajectory Guide Laser (when ready or aiming)
+      // 4. Render Animated Glowing Pearl Orbs Trajectory Line (when ready or aiming)
       if (currentStatus === GAME_STATES.READY || currentStatus === GAME_STATES.AIMING) {
         const traj = calculateTrajectory(
           LAUNCHER_X,
@@ -294,28 +354,100 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
           Y_OFFSET
         );
 
-        ctx.save();
-        ctx.setLineDash([5, 6]);
-        ctx.lineWidth = isSuperAim ? 3 : 2;
-        ctx.strokeStyle = isSuperAim ? '#00F0FF' : 'rgba(255, 255, 255, 0.6)';
-        ctx.shadowColor = isSuperAim ? '#00F0FF' : 'rgba(255, 255, 255, 0.4)';
-        ctx.shadowBlur = isSuperAim ? 12 : 4;
+        const currentDef = getColorDef(curBubble);
+        const pearlColor = isSuperAim ? '#00F0FF' : currentDef.fill;
+        const pearlGlow = isSuperAim ? '#00F0FF' : (currentDef.glow || '#38BDF8');
 
-        ctx.beginPath();
-        traj.points.forEach((pt, idx) => {
-          if (idx === 0) ctx.moveTo(pt.x, pt.y);
-          else ctx.lineTo(pt.x, pt.y);
-        });
-        ctx.stroke();
+        // Walk trajectory polyline and place flowing animated pearls
+        if (traj.points && traj.points.length >= 2) {
+          const pearlSpacing = isSuperAim ? 16 : 18;
+          const phaseOffset = ((Date.now() / 25) % pearlSpacing);
 
-        // If Super Aim or collision detected, draw target landing preview circle
-        if (traj.landingTarget) {
+          // Calculate cumulative segment lengths
+          const segments = [];
+          let totalLength = 0;
+          for (let i = 0; i < traj.points.length - 1; i++) {
+            const p1 = traj.points[i];
+            const p2 = traj.points[i + 1];
+            const segLen = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+            segments.push({ p1, p2, len: segLen, startDist: totalLength });
+            totalLength += segLen;
+          }
+
+          ctx.save();
+          // Draw subtle connecting laser core line
           ctx.beginPath();
-          ctx.arc(traj.landingTarget.x, traj.landingTarget.y, BUBBLE_RADIUS, 0, Math.PI * 2);
-          ctx.strokeStyle = isSuperAim ? '#FACC15' : 'rgba(255, 255, 255, 0.5)';
+          traj.points.forEach((pt, idx) => {
+            if (idx === 0) ctx.moveTo(pt.x, pt.y);
+            else ctx.lineTo(pt.x, pt.y);
+          });
+          ctx.strokeStyle = isSuperAim ? 'rgba(0, 240, 255, 0.4)' : 'rgba(255, 255, 255, 0.18)';
+          ctx.lineWidth = isSuperAim ? 2 : 1;
           ctx.stroke();
+
+          // Render Animated Glowing Pearl Orbs along the path
+          for (let d = phaseOffset; d < totalLength; d += pearlSpacing) {
+            // Find which segment distance d falls into
+            const seg = segments.find(s => d >= s.startDist && d <= s.startDist + s.len);
+            if (!seg || seg.len === 0) continue;
+
+            const t = (d - seg.startDist) / seg.len;
+            const px = seg.p1.x + (seg.p2.x - seg.p1.x) * t;
+            const py = seg.p1.y + (seg.p2.y - seg.p1.y) * t;
+
+            // Outer glowing pearl sphere
+            ctx.shadowColor = pearlGlow;
+            ctx.shadowBlur = isSuperAim ? 12 : 7;
+            ctx.fillStyle = pearlColor;
+            ctx.beginPath();
+            ctx.arc(px, py, isSuperAim ? 4.5 : 3.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Specular white pearl core
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.arc(px - 0.8, py - 0.8, isSuperAim ? 2 : 1.4, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.restore();
         }
-        ctx.restore();
+
+        // Collision Endpoint: Holographic Ghost Preview & Pulsing Reticle
+        if (traj.landingTarget) {
+          const lx = traj.landingTarget.x;
+          const ly = traj.landingTarget.y;
+
+          ctx.save();
+          // 1. Translucent Ghost Bubble Preview
+          ctx.globalAlpha = 0.5 + Math.sin(Date.now() / 200) * 0.15;
+          drawBubble(ctx, lx, ly, BUBBLE_RADIUS, curBubble);
+          ctx.restore();
+
+          // 2. Concentric Pulsing Holographic Target Reticle
+          ctx.save();
+          const reticlePulse = Math.sin(Date.now() / 150) * 2.5;
+          const reticleR = BUBBLE_RADIUS + 3.5 + reticlePulse;
+
+          ctx.beginPath();
+          ctx.arc(lx, ly, reticleR, 0, Math.PI * 2);
+          ctx.strokeStyle = isSuperAim ? '#00F0FF' : '#FACC15';
+          ctx.lineWidth = 2;
+          ctx.setLineDash([4, 4]);
+          ctx.shadowColor = isSuperAim ? '#00F0FF' : '#FACC15';
+          ctx.shadowBlur = 10;
+          ctx.stroke();
+
+          // 4 Crosshair Tick Marks
+          ctx.setLineDash([]);
+          ctx.lineWidth = 1.8;
+          ctx.beginPath();
+          ctx.moveTo(lx - reticleR - 3, ly); ctx.lineTo(lx - reticleR + 3, ly);
+          ctx.moveTo(lx + reticleR - 3, ly); ctx.lineTo(lx + reticleR + 3, ly);
+          ctx.moveTo(lx, ly - reticleR - 3); ctx.lineTo(lx, ly - reticleR + 3);
+          ctx.moveTo(lx, ly + reticleR - 3); ctx.lineTo(lx, ly + reticleR + 3);
+          ctx.stroke();
+          ctx.restore();
+        }
       }
 
       // 5. Update & Render Active Flying Projectile
@@ -523,8 +655,8 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
         floatingTextsRef.current = floatingTextsRef.current.filter((t) => t.alpha > 0);
       }
 
-      // 9. Render Rotating Launcher Base & Loaded Ammo
-      drawLauncherAssembly(ctx, LAUNCHER_X, LAUNCHER_Y, currentAngle, curBubble, nxtBubble);
+      // 9. Render Rotating Launcher Base, Core Ammo Badge & Orbiting Swap Ring
+      drawLauncherAssembly(ctx, LAUNCHER_X, LAUNCHER_Y, currentAngle, curBubble, nxtBubble, shotsRemainingRef.current);
 
       animationFrameId = requestAnimationFrame(render);
     };
@@ -710,28 +842,30 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
   };
 
   /**
-   * Draw Launcher Pedestal, Cannon Barrel, and Ammo Indicators
+   * Draw Integrated Shooter Pedestal, Cannon Barrel, Core Ammo Badge & Orbiting Swap Ring
    */
-  const drawLauncherAssembly = (ctx, x, y, angle, current, next) => {
+  const drawLauncherAssembly = (ctx, x, y, angle, current, next, shotsLeft = 0) => {
     ctx.save();
 
-    // 1. Base Pedestal Ring
+    // 1. Sleek Armored Base Pedestal
     ctx.beginPath();
-    ctx.arc(x, y, BUBBLE_RADIUS * 1.8, 0, Math.PI * 2);
-    const baseGrad = ctx.createRadialGradient(x, y, 5, x, y, BUBBLE_RADIUS * 1.8);
-    baseGrad.addColorStop(0, '#334155');
-    baseGrad.addColorStop(0.7, '#1E293B');
+    ctx.arc(x, y, BUBBLE_RADIUS * 1.85, 0, Math.PI * 2);
+    const baseGrad = ctx.createRadialGradient(x, y - 4, 4, x, y, BUBBLE_RADIUS * 1.85);
+    baseGrad.addColorStop(0, '#475569');
+    baseGrad.addColorStop(0.5, '#1E293B');
     baseGrad.addColorStop(1, '#0F172A');
     ctx.fillStyle = baseGrad;
-    ctx.strokeStyle = '#475569';
+    ctx.strokeStyle = '#38BDF8';
     ctx.lineWidth = 2;
+    ctx.shadowColor = 'rgba(56, 189, 248, 0.4)';
+    ctx.shadowBlur = 8;
     ctx.fill();
     ctx.stroke();
 
-    // Inner bevel ring
+    // Inner glowing ring
     ctx.beginPath();
-    ctx.arc(x, y, BUBBLE_RADIUS * 1.4, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+    ctx.arc(x, y, BUBBLE_RADIUS * 1.45, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
     ctx.lineWidth = 1;
     ctx.stroke();
 
@@ -740,18 +874,29 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
     ctx.translate(x, y);
     ctx.rotate(angle + Math.PI / 2);
 
-    const barrelWidth = BUBBLE_RADIUS * 1.1;
-    const barrelLength = BUBBLE_RADIUS * 1.6;
+    const barrelWidth = BUBBLE_RADIUS * 1.15;
+    const barrelLength = BUBBLE_RADIUS * 1.65;
     ctx.beginPath();
-    ctx.rect(-barrelWidth / 2, -barrelLength - BUBBLE_RADIUS * 0.6, barrelWidth, barrelLength);
+    ctx.rect(-barrelWidth / 2, -barrelLength - BUBBLE_RADIUS * 0.5, barrelWidth, barrelLength);
     const barrelGrad = ctx.createLinearGradient(-barrelWidth / 2, 0, barrelWidth / 2, 0);
-    barrelGrad.addColorStop(0, '#1E293B');
-    barrelGrad.addColorStop(0.5, '#475569');
+    barrelGrad.addColorStop(0, '#0F172A');
+    barrelGrad.addColorStop(0.3, '#334155');
+    barrelGrad.addColorStop(0.7, '#64748B');
     barrelGrad.addColorStop(1, '#0F172A');
     ctx.fillStyle = barrelGrad;
-    ctx.strokeStyle = '#38BDF8';
+    ctx.strokeStyle = '#00F0FF';
     ctx.lineWidth = 1.5;
+    ctx.shadowColor = '#00F0FF';
+    ctx.shadowBlur = 6;
     ctx.fill();
+    ctx.stroke();
+
+    // Barrel Muzzle Highlight
+    ctx.beginPath();
+    ctx.moveTo(-barrelWidth / 2 + 2, -barrelLength - BUBBLE_RADIUS * 0.5);
+    ctx.lineTo(barrelWidth / 2 - 2, -barrelLength - BUBBLE_RADIUS * 0.5);
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 2;
     ctx.stroke();
 
     ctx.restore();
@@ -759,29 +904,114 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
     // 3. Current Loaded Bubble in Chamber
     drawBubble(ctx, x, y, BUBBLE_RADIUS, current);
 
-    // 4. Next Bubble Ammo Tray (Tap to Swap)
+    // 4. Primary Barrel Core Badge: Shots Remaining Counter
+    const badgeW = Math.max(38, BUBBLE_RADIUS * 1.65);
+    const badgeH = 19;
+    const badgeX = x - badgeW / 2;
+    const badgeY = y + BUBBLE_RADIUS * 0.78;
+    const isLowAmmo = shotsLeft <= 5;
+
+    ctx.save();
     ctx.beginPath();
-    ctx.arc(NEXT_BUBBLE_X, NEXT_BUBBLE_Y, BUBBLE_RADIUS * 1.15, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
-    ctx.strokeStyle = '#F59E0B';
-    ctx.lineWidth = 1.5;
+    ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 9);
+    ctx.fillStyle = isLowAmmo ? '#7F1D1D' : '#0F172A';
+    ctx.strokeStyle = isLowAmmo ? '#EF4444' : '#F59E0B';
+    ctx.lineWidth = 1.8;
+    ctx.shadowColor = isLowAmmo ? 'rgba(239, 68, 68, 0.9)' : 'rgba(245, 158, 11, 0.6)';
+    ctx.shadowBlur = 8;
     ctx.fill();
     ctx.stroke();
 
-    drawBubble(ctx, NEXT_BUBBLE_X, NEXT_BUBBLE_Y, BUBBLE_RADIUS * 0.8, next);
-
-    // Swap Hint Label
-    ctx.fillStyle = '#F59E0B';
-    ctx.font = 'bold 9px "Fredoka", sans-serif';
+    // Ammo Counter Text inside Badge
+    ctx.fillStyle = isLowAmmo ? '#FCA5A5' : '#FDE047';
+    ctx.font = '900 11px "Fredoka", "Nunito", sans-serif';
     ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-    ctx.fillText('⇄ SWAP', NEXT_BUBBLE_X, NEXT_BUBBLE_Y + BUBBLE_RADIUS * 1.25);
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`${shotsLeft}`, x, badgeY + badgeH / 2 + 0.5);
+    ctx.restore();
 
+    // 5. Integrated Orbiting Swap Ring (Next Bubble Satellite Pod)
+    const swapRadius = BUBBLE_RADIUS * 1.05;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(NEXT_BUBBLE_X, NEXT_BUBBLE_Y, swapRadius, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+    ctx.strokeStyle = '#38BDF8';
+    ctx.lineWidth = 2;
+    ctx.shadowColor = 'rgba(56, 189, 248, 0.6)';
+    ctx.shadowBlur = 10;
+    ctx.fill();
+    ctx.stroke();
+
+    // Rotating Cycle Arrows around satellite ring
+    const cycleAngle = (Date.now() / 900) % (Math.PI * 2);
+    ctx.save();
+    ctx.translate(NEXT_BUBBLE_X, NEXT_BUBBLE_Y);
+    ctx.rotate(cycleAngle);
+    ctx.strokeStyle = '#FACC15';
+    ctx.lineWidth = 1.8;
+
+    // Arrow Arc 1
+    ctx.beginPath();
+    ctx.arc(0, 0, swapRadius + 3, 0.2, Math.PI * 0.7);
+    ctx.stroke();
+    const a1x = Math.cos(Math.PI * 0.7) * (swapRadius + 3);
+    const a1y = Math.sin(Math.PI * 0.7) * (swapRadius + 3);
+    ctx.fillStyle = '#FACC15';
+    ctx.beginPath();
+    ctx.arc(a1x, a1y, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Arrow Arc 2
+    ctx.beginPath();
+    ctx.arc(0, 0, swapRadius + 3, Math.PI + 0.2, Math.PI * 1.7);
+    ctx.stroke();
+    const a2x = Math.cos(Math.PI * 1.7) * (swapRadius + 3);
+    const a2y = Math.sin(Math.PI * 1.7) * (swapRadius + 3);
+    ctx.beginPath();
+    ctx.arc(a2x, a2y, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // Draw Next Bubble inside Satellite Ring
+    drawBubble(ctx, NEXT_BUBBLE_X, NEXT_BUBBLE_Y, BUBBLE_RADIUS * 0.78, next);
+
+    // Mini Swap Pill Badge underneath
+    const swapBadgeW = 34;
+    const swapBadgeH = 12;
+    const swapBadgeX = NEXT_BUBBLE_X - swapBadgeW / 2;
+    const swapBadgeY = NEXT_BUBBLE_Y + swapRadius - 2;
+
+    ctx.beginPath();
+    ctx.roundRect(swapBadgeX, swapBadgeY, swapBadgeW, swapBadgeH, 6);
+    ctx.fillStyle = '#0F172A';
+    ctx.strokeStyle = '#38BDF8';
+    ctx.lineWidth = 1;
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#38BDF8';
+    ctx.font = '900 8px "Fredoka", "Nunito", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('SWAP', NEXT_BUBBLE_X, swapBadgeY + swapBadgeH / 2);
+
+    // Swap Flourish Flare (if recently swapped within 250ms)
+    if (Date.now() - lastSwapTimeRef.current < 250) {
+      const progress = (Date.now() - lastSwapTimeRef.current) / 250;
+      ctx.beginPath();
+      ctx.arc(NEXT_BUBBLE_X, NEXT_BUBBLE_Y, swapRadius * (1 + progress * 0.5), 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(56, 189, 248, ${1 - progress})`;
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+    }
+
+    ctx.restore();
     ctx.restore();
   };
 
   /**
-   * Pointer Angle Calculations with strict aspect-ratio mapping
+   * Pointer Angle Calculations with strict aspect-ratio mapping & Ergonomic Aim Exclusion Zone
    */
   const updateAimFromPointer = (clientX, clientY) => {
     const canvas = canvasRef.current;
@@ -795,7 +1025,7 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
     const pointerX = (clientX - rect.left) * scaleX;
     const pointerY = (clientY - rect.top) * scaleY;
 
-    // Check if clicked the next bubble ammo tray specifically to swap
+    // Check if clicked the next bubble satellite ring specifically to trigger swap
     const distToNext = Math.hypot(pointerX - NEXT_BUBBLE_X, pointerY - NEXT_BUBBLE_Y);
     if (distToNext < BUBBLE_RADIUS * 1.5) {
       return 'SWAP_TRIGGERED';
@@ -852,6 +1082,8 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
 
     const result = updateAimFromPointer(e.clientX, e.clientY);
     if (result === 'SWAP_TRIGGERED') {
+      lastSwapTimeRef.current = Date.now();
+      try { soundEngine.play('booster'); } catch {}
       swapBubbles();
       return;
     }
@@ -897,6 +1129,8 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
     const touch = e.touches[0];
     const result = updateAimFromPointer(touch.clientX, touch.clientY);
     if (result === 'SWAP_TRIGGERED') {
+      lastSwapTimeRef.current = Date.now();
+      try { soundEngine.play('booster'); } catch {}
       swapBubbles();
       return;
     }
@@ -922,7 +1156,7 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
     }
   };
 
-  // Global window listeners for drag release outside canvas & Spacebar key
+  // Global window listeners for drag release outside canvas & Keyboard shortcuts (Space = Shoot, S = Swap)
   useEffect(() => {
     const handleGlobalPointerUp = () => {
       if (isAimingRef.current) {
@@ -939,6 +1173,11 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
         if (gameStatusRef.current === GAME_STATES.READY || gameStatusRef.current === GAME_STATES.AIMING) {
           shootProjectile();
         }
+      } else if (e.code === 'KeyS' || e.key === 's' || e.key === 'S') {
+        e.preventDefault();
+        lastSwapTimeRef.current = Date.now();
+        try { soundEngine.play('booster'); } catch {}
+        swapBubbles();
       }
     };
 
