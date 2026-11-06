@@ -21,7 +21,8 @@ import {
 
 import {
   calculateTrajectory,
-  findSnapCell
+  findSnapCell,
+  stepProjectile
 } from '../client/src/game/collision.js';
 
 import {
@@ -110,6 +111,38 @@ assert('Raycasting hits wall and produces reflection segment', traj.points.lengt
 // 8. Multi-bounce Bank Shot
 const bankShotTraj = calculateTrajectory(190, 520, -0.4, grid, 380, false);
 assert('Multi-bounce bank shot calculates 3+ reflection points reaching target', bankShotTraj.points.length >= 3 && bankShotTraj.collision !== null);
+
+// 9. Robust Snap Cell Resolution (All 6 neighbors occupied)
+const denseGrid = createEmptyGrid();
+denseGrid[1][1] = { color: 'blue', type: SPECIAL_BUBBLES.NORMAL };
+// Fill all 6 neighbors of (1, 1)
+const neighbors11 = getHexNeighbors(1, 1);
+neighbors11.forEach(n => {
+  denseGrid[n.row][n.col] = { color: 'red', type: SPECIAL_BUBBLES.NORMAL };
+});
+const densePos = gridToPixel(1, 1, 18);
+// Now test finding snap cell for impact on (1, 1) where all immediate neighbors are full
+const fallbackSnap = findSnapCell(densePos.x, densePos.y, 1, 1, denseGrid, 18);
+assert('findSnapCell resolves valid empty slot even when all 6 neighbors are occupied', fallbackSnap !== null && !denseGrid[fallbackSnap.row][fallbackSnap.col]);
+
+// 10. Robust Ceiling Snap Cell (Row 0 full)
+const fullRow0Grid = createEmptyGrid();
+for (let c = 0; c < 11; c++) {
+  fullRow0Grid[0][c] = { color: 'green', type: SPECIAL_BUBBLES.NORMAL };
+}
+const ceilingSnap = findSnapCell(190, 18, null, null, fullRow0Grid, 18);
+assert('findSnapCell snaps to row 1 when row 0 ceiling is full', ceilingSnap !== null && ceilingSnap.row === 1 && !fullRow0Grid[ceilingSnap.row][ceilingSnap.col]);
+
+// 11. stepProjectile physics execution & collision
+const proj = { x: 216, y: 120, vx: 0, vy: -30, radius: 18 };
+const testGrid = createEmptyGrid();
+testGrid[1][5] = { color: 'yellow', type: SPECIAL_BUBBLES.NORMAL };
+let projResult = { hasCollided: false, snapCell: null };
+for (let step = 0; step < 10; step++) {
+  projResult = stepProjectile(proj, testGrid, 380);
+  if (projResult.hasCollided) break;
+}
+assert('stepProjectile detects collision and returns valid snap cell', projResult.hasCollided && projResult.snapCell !== null);
 
 console.log(`\n📊 Engine Unit Tests: ${passed}/${total} passed (${Math.round((passed / total) * 100)}%)`);
 if (passed === total) {

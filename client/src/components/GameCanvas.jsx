@@ -453,150 +453,166 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
       // 5. Update & Render Active Flying Projectile
       if (activeProjectileRef.current) {
         const proj = activeProjectileRef.current;
-        const collisionResult = stepProjectile(proj, activeGrid, canvasWidth, X_OFFSET, Y_OFFSET);
+        let collisionResult = { hasCollided: false, snapCell: null, collision: null };
+        try {
+          collisionResult = stepProjectile(proj, activeGrid, canvasWidth, X_OFFSET, Y_OFFSET);
+        } catch (err) {
+          console.error('stepProjectile physics error:', err);
+          collisionResult = { hasCollided: true, snapCell: null, collision: null };
+        }
 
         drawBubble(ctx, proj.x, proj.y, BUBBLE_RADIUS, proj.color, proj.type);
 
-        if (collisionResult.hasCollided && collisionResult.snapCell) {
-          const { row, col } = collisionResult.snapCell;
-          activeProjectileRef.current = null;
+        const isOutOfBounds = proj.y < -60 || proj.y > canvasHeight + 80 || proj.x < -60 || proj.x > canvasWidth + 60;
 
-          // Sound effect on docking
-          soundEngine.playSnap();
+        if (collisionResult.hasCollided || isOutOfBounds) {
+          const snapTarget = collisionResult.snapCell;
+          activeProjectileRef.current = null; // Always safely release flying projectile
 
-          // Snapshot grid and insert new bubble into cell
-          const isRainbowShot = proj.type === SPECIAL_BUBBLES.RAINBOW || proj.color === 'rainbow';
-          const isBombShot = proj.type === SPECIAL_BUBBLES.BOMB || proj.color === 'bomb';
+          if (!snapTarget) {
+            // Safety fallback: projectile went out of bounds or board had no open slot
+            replenishBubbles();
+            evaluateLevelEnd();
+          } else {
+            const { row, col } = snapTarget;
 
-          const newGrid = cloneGrid(activeGrid);
-          newGrid[row][col] = {
-            color: isRainbowShot ? 'rainbow' : (isBombShot ? 'bomb' : proj.color),
-            type: isRainbowShot ? SPECIAL_BUBBLES.RAINBOW : (isBombShot ? SPECIAL_BUBBLES.BOMB : (proj.type || SPECIAL_BUBBLES.NORMAL))
-          };
+            // Sound effect on docking
+            soundEngine.playSnap();
 
-          gridMatrixRef.current = newGrid;
-          setGridMatrix(newGrid);
-          setGameStatus(GAME_STATES.RESOLVING);
+            // Snapshot grid and insert new bubble into cell
+            const isRainbowShot = proj.type === SPECIAL_BUBBLES.RAINBOW || proj.color === 'rainbow';
+            const isBombShot = proj.type === SPECIAL_BUBBLES.BOMB || proj.color === 'bomb';
 
-          try {
-            // Handle special bomb booster blast
-            if (isBombShot) {
-              soundEngine.playBombExplode();
-              const bombPops = [];
-              const directNeighbors = getHexNeighbors(row, col);
-              bombPops.push({ row, col });
+            const newGrid = cloneGrid(activeGrid);
+            newGrid[row][col] = {
+              color: isRainbowShot ? 'rainbow' : (isBombShot ? 'bomb' : proj.color),
+              type: isRainbowShot ? SPECIAL_BUBBLES.RAINBOW : (isBombShot ? SPECIAL_BUBBLES.BOMB : (proj.type || SPECIAL_BUBBLES.NORMAL))
+            };
 
-              directNeighbors.forEach(n => {
-                bombPops.push(n);
-                getHexNeighbors(n.row, n.col).forEach(n2 => bombPops.push(n2));
-              });
+            gridMatrixRef.current = newGrid;
+            setGridMatrix(newGrid);
+            setGameStatus(GAME_STATES.RESOLVING);
 
-              // Unique cells
-              const uniquePops = Array.from(new Set(bombPops.map(p => `${p.row},${p.col}`)))
-                .map(str => {
-                  const [r, c] = str.split(',').map(Number);
-                  return { row: r, col: c };
-                })
-                .filter(p => newGrid[p.row] && newGrid[p.row][p.col]);
+            try {
+              // Handle special bomb booster blast
+              if (isBombShot) {
+                soundEngine.playBombExplode();
+                const bombPops = [];
+                const directNeighbors = getHexNeighbors(row, col);
+                bombPops.push({ row, col });
 
-              uniquePops.forEach(p => {
-                const b = newGrid[p.row][p.col];
-                if (b) {
-                  const pos = gridToPixel(p.row, p.col, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
-                  spawnPopParticles(pos.x, pos.y, getColorDef(b.color), 12);
-                  newGrid[p.row][p.col] = null;
-                }
-              });
-
-              // Floating drop check
-              const dropped = findFloatingBubbles(newGrid, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
-              if (dropped.length > 0) {
-                dropped.forEach(d => {
-                  const pos = gridToPixel(d.row, d.col, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
-                  floatingBubblesRef.current.push(createDroppingBubble(d.bubble, pos.x, pos.y, BUBBLE_RADIUS));
-                  newGrid[d.row][d.col] = null;
+                directNeighbors.forEach(n => {
+                  bombPops.push(n);
+                  getHexNeighbors(n.row, n.col).forEach(n2 => bombPops.push(n2));
                 });
-                soundEngine.playDrop();
+
+                // Unique cells
+                const uniquePops = Array.from(new Set(bombPops.map(p => `${p.row},${p.col}`)))
+                  .map(str => {
+                    const [r, c] = str.split(',').map(Number);
+                    return { row: r, col: c };
+                  })
+                  .filter(p => newGrid[p.row] && newGrid[p.row][p.col]);
+
+                uniquePops.forEach(p => {
+                  const b = newGrid[p.row][p.col];
+                  if (b) {
+                    const pos = gridToPixel(p.row, p.col, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
+                    spawnPopParticles(pos.x, pos.y, getColorDef(b.color), 12);
+                    newGrid[p.row][p.col] = null;
+                  }
+                });
+
+                // Floating drop check
+                const dropped = findFloatingBubbles(newGrid, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
+                if (dropped.length > 0) {
+                  dropped.forEach(d => {
+                    const pos = gridToPixel(d.row, d.col, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
+                    floatingBubblesRef.current.push(createDroppingBubble(d.bubble, pos.x, pos.y, BUBBLE_RADIUS));
+                    newGrid[d.row][d.col] = null;
+                  });
+                  soundEngine.playDrop();
+                }
+
+                gridMatrixRef.current = newGrid;
+                setGridMatrix(newGrid);
+                recordTurnResolution(uniquePops.length, dropped.length, 0);
+                spawnFloatingText(LAUNCHER_X, LAUNCHER_Y - 80, `BOMB BLAST! +${uniquePops.length * 50}`, '#FF4500');
+
+                replenishBubbles();
+                evaluateLevelEnd();
+                return;
               }
 
-              gridMatrixRef.current = newGrid;
-              setGridMatrix(newGrid);
-              recordTurnResolution(uniquePops.length, dropped.length, 0);
-              spawnFloatingText(LAUNCHER_X, LAUNCHER_Y - 80, `BOMB BLAST! +${uniquePops.length * 50}`, '#FF4500');
-
-              replenishBubbles();
-              evaluateLevelEnd();
-              return;
-            }
-
-            // Standard Match-3 or Rainbow Wildcard BFS Check
-            let matchedCluster = [];
-
-            if (isRainbowShot) {
-              matchedCluster = resolveRainbowMatch(newGrid, row, col);
-            } else {
-              matchedCluster = findConnectedMatch(newGrid, row, col);
-            }
-
-            if (matchedCluster.length >= 3 || (isRainbowShot && matchedCluster.length >= 1)) {
-              // Trigger Pop Audio with Combo Pitch
-              soundEngine.playPop(1);
-
-              // Spawn Particles & Clear Cluster
-              matchedCluster.forEach((cell) => {
-                const b = newGrid[cell.row][cell.col];
-                const pos = gridToPixel(cell.row, cell.col, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
-                spawnPopParticles(pos.x, pos.y, getColorDef(b?.color), 14);
-                newGrid[cell.row][cell.col] = null;
-              });
+              // Standard Match-3 or Rainbow Wildcard BFS Check
+              let matchedCluster = [];
 
               if (isRainbowShot) {
-                spawnFloatingText(LAUNCHER_X, LAUNCHER_Y - 80, `RAINBOW POP! +${matchedCluster.length * 60}`, '#EC4899');
+                matchedCluster = resolveRainbowMatch(newGrid, row, col);
+              } else {
+                matchedCluster = findConnectedMatch(newGrid, row, col);
               }
 
-              // Check for rescued Starlight Jellies
-              const rescued = checkRescuedJellies(newGrid, matchedCluster);
-              const rescuedCount = rescued.length;
-              if (rescuedCount > 0) {
-                soundEngine.playRescue();
-                rescued.forEach((r) => {
-                  const pos = gridToPixel(r.row, r.col, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
-                  spawnPopParticles(pos.x, pos.y, { fill: '#38BDF8', glow: 'rgba(56, 189, 248, 0.8)' }, 16);
-                  newGrid[r.row][r.col] = null;
-                });
-                spawnFloatingText(LAUNCHER_X, LAUNCHER_Y - 90, `+${rescuedCount * 100} JELLY RESCUED!`, '#38BDF8');
-              }
+              if (matchedCluster.length >= 3 || (isRainbowShot && matchedCluster.length >= 1)) {
+                // Trigger Pop Audio with Combo Pitch
+                soundEngine.playPop(1);
 
-              // Check for Floating Bubbles to Detach
-              const floating = findFloatingBubbles(newGrid, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
-              if (floating.length > 0) {
-                soundEngine.playDrop();
-                floating.forEach((cell) => {
+                // Spawn Particles & Clear Cluster
+                matchedCluster.forEach((cell) => {
+                  const b = newGrid[cell.row][cell.col];
                   const pos = gridToPixel(cell.row, cell.col, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
-                  floatingBubblesRef.current.push(createDroppingBubble(cell.bubble, pos.x, pos.y, BUBBLE_RADIUS));
+                  spawnPopParticles(pos.x, pos.y, getColorDef(b?.color), 14);
                   newGrid[cell.row][cell.col] = null;
                 });
-                spawnFloatingText(LAUNCHER_X, LAUNCHER_Y - 50, `+${floating.length * 20} AVALANCHE!`, '#10B981');
-              }
 
-              // Commit new grid and compute turn score
-              gridMatrixRef.current = newGrid;
-              setGridMatrix(newGrid);
-              recordTurnResolution(matchedCluster.length, floating.length, rescuedCount);
+                if (isRainbowShot) {
+                  spawnFloatingText(LAUNCHER_X, LAUNCHER_Y - 80, `RAINBOW POP! +${matchedCluster.length * 60}`, '#EC4899');
+                }
 
-              if (matchedCluster.length >= 5 && !isRainbowShot) {
-                spawnFloatingText(LAUNCHER_X, LAUNCHER_Y - 80, 'GREAT POP! x2', '#FACC15');
+                // Check for rescued Starlight Jellies
+                const rescued = checkRescuedJellies(newGrid, matchedCluster);
+                const rescuedCount = rescued.length;
+                if (rescuedCount > 0) {
+                  soundEngine.playRescue();
+                  rescued.forEach((r) => {
+                    const pos = gridToPixel(r.row, r.col, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
+                    spawnPopParticles(pos.x, pos.y, { fill: '#38BDF8', glow: 'rgba(56, 189, 248, 0.8)' }, 16);
+                    newGrid[r.row][r.col] = null;
+                  });
+                  spawnFloatingText(LAUNCHER_X, LAUNCHER_Y - 90, `+${rescuedCount * 100} JELLY RESCUED!`, '#38BDF8');
+                }
+
+                // Check for Floating Bubbles to Detach
+                const floating = findFloatingBubbles(newGrid, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
+                if (floating.length > 0) {
+                  soundEngine.playDrop();
+                  floating.forEach((cell) => {
+                    const pos = gridToPixel(cell.row, cell.col, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
+                    floatingBubblesRef.current.push(createDroppingBubble(cell.bubble, pos.x, pos.y, BUBBLE_RADIUS));
+                    newGrid[cell.row][cell.col] = null;
+                  });
+                  spawnFloatingText(LAUNCHER_X, LAUNCHER_Y - 50, `+${floating.length * 20} AVALANCHE!`, '#10B981');
+                }
+
+                // Commit new grid and compute turn score
+                gridMatrixRef.current = newGrid;
+                setGridMatrix(newGrid);
+                recordTurnResolution(matchedCluster.length, floating.length, rescuedCount);
+
+                if (matchedCluster.length >= 5 && !isRainbowShot) {
+                  spawnFloatingText(LAUNCHER_X, LAUNCHER_Y - 80, 'GREAT POP! x2', '#FACC15');
+                }
+              } else {
+                // Missed match - combo reset
+                recordTurnResolution(0, 0, 0);
               }
-            } else {
-              // Missed match - combo reset
-              recordTurnResolution(0, 0, 0);
+            } catch (err) {
+              console.error('Match resolution error:', err);
             }
-          } catch (err) {
-            console.error('Match resolution error:', err);
-          }
 
-          replenishBubbles();
-          evaluateLevelEnd();
+            replenishBubbles();
+            evaluateLevelEnd();
+          }
         }
       }
 

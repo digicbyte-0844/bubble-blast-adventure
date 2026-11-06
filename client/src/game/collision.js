@@ -61,11 +61,11 @@ export function findSnapCell(
   // If projectile hit the top ceiling without hitting another bubble first
   if (hitRow === null || hitCol === null) {
     const colsInRow0 = getColsInRow(0);
-    let bestCol = 0;
+    let bestCol = null;
     let minDistance = Infinity;
 
     for (let c = 0; c < colsInRow0; c++) {
-      if (!grid[0][c]) {
+      if (grid[0] && !grid[0][c]) {
         const p = gridToPixel(0, c, radius, xOffset, yOffset);
         const dist = Math.abs(impactX - p.x);
         if (dist < minDistance) {
@@ -75,32 +75,46 @@ export function findSnapCell(
       }
     }
 
-    const snapPixel = gridToPixel(0, bestCol, radius, xOffset, yOffset);
-    return { row: 0, col: bestCol, x: snapPixel.x, y: snapPixel.y };
+    if (bestCol !== null) {
+      const snapPixel = gridToPixel(0, bestCol, radius, xOffset, yOffset);
+      return { row: 0, col: bestCol, x: snapPixel.x, y: snapPixel.y };
+    }
   }
 
   // Hit an existing bubble: examine all 6 hex neighbors for the closest unoccupied slot
-  const candidateNeighbors = getHexNeighbors(hitRow, hitCol);
   let bestSlot = null;
   let minDistanceSq = Infinity;
 
-  for (const n of candidateNeighbors) {
-    if (!grid[n.row][n.col]) {
-      const p = gridToPixel(n.row, n.col, radius, xOffset, yOffset);
-      const dSq = (impactX - p.x) ** 2 + (impactY - p.y) ** 2;
-      if (dSq < minDistanceSq) {
-        minDistanceSq = dSq;
-        bestSlot = { row: n.row, col: n.col, x: p.x, y: p.y };
+  if (hitRow !== null && hitCol !== null) {
+    const candidateNeighbors = getHexNeighbors(hitRow, hitCol);
+    for (const n of candidateNeighbors) {
+      if (grid[n.row] && !grid[n.row][n.col]) {
+        const p = gridToPixel(n.row, n.col, radius, xOffset, yOffset);
+        const dSq = (impactX - p.x) ** 2 + (impactY - p.y) ** 2;
+        if (dSq < minDistanceSq) {
+          minDistanceSq = dSq;
+          bestSlot = { row: n.row, col: n.col, x: p.x, y: p.y };
+        }
       }
     }
   }
 
-  // Fallback: If all adjacent slots around the hit bubble are occupied, check global nearest empty cell
+  // Robust Fallback: If all adjacent slots around the hit bubble are occupied, or ceiling row 0 is full:
+  // Exhaustively search the entire grid for the closest valid unoccupied cell
   if (!bestSlot) {
-    const fallback = pixelToGrid(impactX, impactY, radius, xOffset, yOffset);
-    if (!grid[fallback.row][fallback.col]) {
-      const p = gridToPixel(fallback.row, fallback.col, radius, xOffset, yOffset);
-      return { row: fallback.row, col: fallback.col, x: p.x, y: p.y };
+    for (let r = 0; r < grid.length; r++) {
+      if (!grid[r]) continue;
+      const cols = getColsInRow(r);
+      for (let c = 0; c < cols; c++) {
+        if (!grid[r][c]) {
+          const p = gridToPixel(r, c, radius, xOffset, yOffset);
+          const dSq = (impactX - p.x) ** 2 + (impactY - p.y) ** 2;
+          if (dSq < minDistanceSq) {
+            minDistanceSq = dSq;
+            bestSlot = { row: r, col: c, x: p.x, y: p.y };
+          }
+        }
+      }
     }
   }
 
@@ -192,14 +206,15 @@ export function calculateTrajectory(
       if (bounceCount > maxBounces) break;
     }
 
-    // 3. Bubble Collision Check
+    // 3. Bubble Collision Check: Select closest collision along the step
     let hitBubble = null;
+    let minHitDist = Infinity;
     for (let i = 0; i < activeBubbles.length; i++) {
       const b = activeBubbles[i];
       const dSq = (currentX - b.x) ** 2 + (currentY - b.y) ** 2;
-      if (dSq <= collisionDistSq) {
+      if (dSq <= collisionDistSq && dSq < minHitDist) {
+        minHitDist = dSq;
         hitBubble = b;
-        break;
       }
     }
 
@@ -313,22 +328,30 @@ export function stepProjectile(
       };
     }
 
-    // 4. Bubble-to-bubble collision
+    // 4. Bubble-to-bubble collision: Select closest colliding bubble along the trajectory
+    let closestHit = null;
+    let minHitDistSq = Infinity;
     for (let r = 0; r < grid.length; r++) {
+      if (!grid[r]) continue;
       for (let c = 0; c < grid[r].length; c++) {
         if (grid[r][c]) {
           const pos = gridToPixel(r, c, radius, xOffset, yOffset);
           const dSq = (projectile.x - pos.x) ** 2 + (projectile.y - pos.y) ** 2;
-          if (dSq <= collisionDistSq) {
-            const snapCell = findSnapCell(projectile.x, projectile.y, r, c, grid, radius, xOffset, yOffset);
-            return {
-              hasCollided: true,
-              collision: { x: projectile.x, y: projectile.y, hitRow: r, hitCol: c },
-              snapCell
-            };
+          if (dSq <= collisionDistSq && dSq < minHitDistSq) {
+            minHitDistSq = dSq;
+            closestHit = { r, c };
           }
         }
       }
+    }
+
+    if (closestHit) {
+      const snapCell = findSnapCell(projectile.x, projectile.y, closestHit.r, closestHit.c, grid, radius, xOffset, yOffset);
+      return {
+        hasCollided: true,
+        collision: { x: projectile.x, y: projectile.y, hitRow: closestHit.r, hitCol: closestHit.c },
+        snapCell
+      };
     }
   }
 
