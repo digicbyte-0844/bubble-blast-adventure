@@ -107,6 +107,10 @@ assert('Level 45 generates procedurally with deterministic seed', lvl45.id === 4
 const traj = calculateTrajectory(190, 520, -Math.PI / 3, grid, 380, true);
 assert('Raycasting hits wall and produces reflection segment', traj.points.length >= 2);
 
+// 8. Multi-bounce Bank Shot
+const bankShotTraj = calculateTrajectory(190, 520, -0.4, grid, 380, false);
+assert('Multi-bounce bank shot calculates 3+ reflection points reaching target', bankShotTraj.points.length >= 3 && bankShotTraj.collision !== null);
+
 console.log(`\n📊 Engine Unit Tests: ${passed}/${total} passed (${Math.round((passed / total) * 100)}%)`);
 if (passed === total) {
   console.log('🎉 ALL ENGINE MATHEMATICAL INVARIANTS SATISFIED!');

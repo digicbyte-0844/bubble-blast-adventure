@@ -154,8 +154,8 @@ export function calculateTrajectory(
   let collisionEvent = null;
   let landingTarget = null;
 
-  const stepDistance = 4; // Sub-pixel precision raymarch step
-  const maxRaySteps = 600; // Hard cutoff to prevent runaway loops
+  const stepDistance = 3.5; // Sub-pixel precision raymarch step
+  const maxRaySteps = 1500; // Deep multi-bounce raymarch step budget ensuring bank shots reach targets
 
   // Pre-filter active bubbles to optimize collision lookups
   const activeBubbles = [];

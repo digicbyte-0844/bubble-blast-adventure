@@ -36,7 +36,7 @@ export class BallisticsEngine {
   }
 
   /**
-   * Raycasts trajectory with specular wall reflection up to maxBounces (1 default, 2 with Super Aim)
+   * Raycasts trajectory with specular wall reflection up to maxBounces (6 default, 10 with Super Aim)
    */
   public static predictTrajectory(
     startX: number,
@@ -45,7 +45,7 @@ export class BallisticsEngine {
     arenaWidth: number,
     gridMatrix: (string | null)[][],
     hexEngine: HexGridEngine,
-    maxBounces: number = 1
+    maxBounces: number = 6
   ): TrajectoryPrediction {
     const segments: TrajectorySegment[] = [];
     let currX = startX;
@@ -61,8 +61,8 @@ export class BallisticsEngine {
     let impactPos: { x: number; y: number } | null = null;
     let ghostCell: { col: number; row: number } | null = null;
 
-    const stepSize = 4;
-    const maxSteps = 400;
+    const stepSize = 3.5;
+    const maxSteps = 1500;
     let stepCount = 0;
     let segmentStartX = currX;
     let segmentStartY = currY;

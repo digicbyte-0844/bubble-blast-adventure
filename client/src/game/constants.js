@@ -113,8 +113,8 @@ export const PHYSICS = {
   MIN_AIM_ANGLE: -168 * (Math.PI / 180), // -2.93215 rad (clamped to prevent horizontal shots)
   MAX_AIM_ANGLE: -12 * (Math.PI / 180),  // -0.20944 rad
   COLLISION_TOLERANCE: 0.93, // Multiplier on (2 * radius) for snappy circle collision
-  NORMAL_MAX_BOUNCES: 1, // Standard aim trajectory reflection limit
-  SUPER_AIM_BOUNCES: 2   // Super Aim booster reflection limit
+  NORMAL_MAX_BOUNCES: 6, // Multi-bounce bank shot reflection limit (follows full flow path)
+  SUPER_AIM_BOUNCES: 10   // Super Aim booster reflection limit
 };
 
 // Scoring & Multiplier Weights
