@@ -255,6 +255,15 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
     let animationFrameId;
 
     const render = () => {
+      const activeGrid = gridMatrixRef.current || [];
+      const currentStatus = gameStatusRef.current;
+      const currentAngle = aimAngleRef.current;
+      const isSuperAim = superAimActiveRef.current || activeBoosterRef.current === 'superAim' || activeBoosterRef.current === 'aimGuide';
+      const curBubble = currentBubbleRef.current;
+      const nxtBubble = nextBubbleRef.current;
+      const shotsLeft = shotsRemainingRef.current;
+      const curHint = hintDataRef.current;
+
       // 1. Clear Arena & Render Cosmic Arcade Backdrop (prevents flat black void)
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 

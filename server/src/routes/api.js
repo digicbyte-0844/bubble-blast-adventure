@@ -26,11 +26,11 @@ router.get('/levels', optionalAuth, levelCtrl.getAllLevels);
 router.get('/levels/:id', optionalAuth, levelCtrl.getLevelById);
 router.post('/levels', protectRoute, levelCtrl.createLevel);
 
-// Game Session & Anti-Cheat Routes (State-Modifying Endpoints protected by protectRoute)
+// Game Session & Anti-Cheat Routes (State-Modifying Endpoints support guests + authenticated pilots via optionalAuth)
 // POST /api/games/start — Initialize anti-cheat game session token
-router.post('/games/start', protectRoute, gameCtrl.startSession);
+router.post('/games/start', optionalAuth, gameCtrl.startSession);
 // POST /api/games/complete — Submit game score with anti-cheat verification
-router.post('/games/complete', protectRoute, gameCtrl.completeSession);
+router.post('/games/complete', optionalAuth, gameCtrl.completeSession);
 router.get('/games/history', protectRoute, gameCtrl.getGameHistory);
 router.get('/games/:id', protectRoute, gameCtrl.getGameById);
 
