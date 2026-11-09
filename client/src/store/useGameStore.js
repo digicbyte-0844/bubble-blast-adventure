@@ -291,8 +291,27 @@ export const useGameStore = create((set, get) => ({
     return {
       color: currentBubble,
       angle: finalAngle,
-      isBooster: activeBooster
+      isBooster: activeBooster,
+      isBomb: activeBooster === 'bomb' || currentBubble === 'bomb',
+      isRainbow: activeBooster === 'rainbow' || currentBubble === 'rainbow'
     };
+  },
+
+  /**
+   * Rewards +1 Bomb on successful match-3+ pop
+   */
+  rewardBombOnSuccess: () => {
+    const { boosters } = get();
+    const updated = {
+      ...boosters,
+      bomb: (boosters.bomb || 0) + 1
+    };
+    set({
+      boosters: updated,
+      recentBombReward: Date.now(),
+      bannerNotice: { text: '+1 BOMB EARNED!', color: '#F97316', id: Date.now() }
+    });
+    savePersistedBoosters(updated);
   },
 
   /**
@@ -340,8 +359,15 @@ export const useGameStore = create((set, get) => ({
       newQueue.push(getBalancedAmmoColor(gridMatrix, fallbackPalette));
     }
 
-    const nextCurrent = nextBubble;
-    const nextNext = newQueue.shift();
+    let nextCurrent = nextBubble;
+    // CRITICAL: Ensure currentBubble is NEVER null or undefined, and NEVER a booster ID
+    if (!nextCurrent || nextCurrent === 'bomb' || nextCurrent === 'rainbow') {
+      nextCurrent = newQueue.shift() || getBalancedAmmoColor(gridMatrix, fallbackPalette);
+    }
+    let nextNext = newQueue.shift();
+    if (!nextNext || nextNext === 'bomb' || nextNext === 'rainbow') {
+      nextNext = getBalancedAmmoColor(gridMatrix, fallbackPalette);
+    }
 
     set({
       currentBubble: nextCurrent,

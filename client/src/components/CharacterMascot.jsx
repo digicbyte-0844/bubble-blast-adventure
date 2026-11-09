@@ -10,6 +10,7 @@ export const CharacterMascot = ({
   emotion = 'idle',
   size = 'md',
   speech = null,
+  showSpeech = true,
   className = '',
   onClick = undefined
 }) => {
@@ -24,6 +25,7 @@ export const CharacterMascot = ({
 
   // Emotion-driven speech tip fallback
   const speechText = useMemo(() => {
+    if (!showSpeech || speech === false) return null;
     if (speech) return speech;
     switch (emotion) {
       case 'aiming':
@@ -37,9 +39,9 @@ export const CharacterMascot = ({
       case 'hint':
         return 'Target that cluster for maximum pops!';
       default:
-        return 'Tap launcher to swap colors!';
+        return null;
     }
-  }, [emotion, speech]);
+  }, [emotion, speech, showSpeech]);
 
   return (
     <div

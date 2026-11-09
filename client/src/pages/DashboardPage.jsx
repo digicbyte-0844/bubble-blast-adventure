@@ -60,12 +60,55 @@ export const DashboardPage = () => {
   }, [highestLevel, totalScore]);
 
   const statCards = [
-    { label: 'Highest Sector', value: `Sector ${highestLevel}`, icon: Compass, color: 'text-sky-400' },
-    { label: 'Cumulative Stars', value: `${cumulativeStars} ★`, icon: Star, color: 'text-amber-400' },
-    { label: 'Total Score', value: (totalScore || 14200).toLocaleString(), icon: Trophy, color: 'text-amber-300' },
-    { label: 'Starlight Coins', value: (coins || 500).toLocaleString(), icon: Sparkles, color: 'text-yellow-400' },
-    { label: 'Current Energy', value: `${energy || 5} / 5 ⚡`, icon: Zap, color: 'text-emerald-400' },
-    { label: 'Pilot Standing', value: 'Rank #2 🏆', icon: Target, color: 'text-rose-400' }
+    {
+      label: 'Highest Sector',
+      value: `Sector ${highestLevel}`,
+      icon: Compass,
+      gradient: 'from-blue-600 via-indigo-600 to-cyan-600',
+      border: 'border-b-blue-950',
+      shadow: 'shadow-blue-500/20'
+    },
+    {
+      label: 'Cumulative Stars',
+      value: `${cumulativeStars} / 120`,
+      icon: Star,
+      iconImg: '/assets/icons/star.png',
+      gradient: 'from-amber-500 via-amber-600 to-orange-600',
+      border: 'border-b-orange-950',
+      shadow: 'shadow-amber-500/20'
+    },
+    {
+      label: 'Total Score',
+      value: (totalScore || 14200).toLocaleString(),
+      icon: Trophy,
+      gradient: 'from-emerald-500 via-teal-600 to-emerald-700',
+      border: 'border-b-emerald-950',
+      shadow: 'shadow-emerald-500/20'
+    },
+    {
+      label: 'Starlight Coins',
+      value: (coins || 500).toLocaleString(),
+      icon: Sparkles,
+      gradient: 'from-yellow-400 via-amber-500 to-amber-600',
+      border: 'border-b-yellow-950',
+      shadow: 'shadow-yellow-500/20'
+    },
+    {
+      label: 'Current Energy',
+      value: `${energy || 5} / 5 Cells`,
+      icon: Zap,
+      gradient: 'from-fuchsia-600 via-pink-600 to-rose-600',
+      border: 'border-b-rose-950',
+      shadow: 'shadow-rose-500/20'
+    },
+    {
+      label: 'Pilot Standing',
+      value: 'Rank #2 Ace',
+      icon: Target,
+      gradient: 'from-purple-600 via-violet-600 to-indigo-700',
+      border: 'border-b-purple-950',
+      shadow: 'shadow-purple-500/20'
+    }
   ];
 
   if (loading) {
@@ -86,8 +129,8 @@ export const DashboardPage = () => {
       {/* Top Welcome Banner */}
       <div className="p-6 md:p-8 rounded-3xl clay-card flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-b from-amber-400 to-amber-500 border border-amber-300 flex items-center justify-center text-3xl shadow-lg">
-            🧑‍🚀
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-b from-amber-400 via-amber-500 to-orange-600 border-2 border-amber-200 border-b-4 border-b-amber-800 flex items-center justify-center shadow-lg shadow-amber-500/30">
+            <Compass className="w-8 h-8 text-slate-950" />
           </div>
           <div>
             <span className="text-[10px] font-display font-black uppercase text-amber-400 tracking-wider block">
@@ -121,16 +164,23 @@ export const DashboardPage = () => {
           return (
             <div
               key={idx}
-              className="p-4 rounded-2xl clay-card flex items-center gap-3.5 hover:border-slate-600 transition-colors"
+              className={`relative overflow-hidden p-4 rounded-2xl bg-gradient-to-br ${card.gradient} border border-white/20 border-b-4 ${card.border} shadow-lg ${card.shadow} flex items-center gap-3.5 transition-transform hover:-translate-y-0.5`}
             >
-              <div className={`p-2.5 rounded-xl bg-slate-950 border border-slate-800 ${card.color}`}>
-                <Icon className="w-5 h-5" />
+              {/* Glossy Top Sheen */}
+              <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent pointer-events-none rounded-t-2xl" />
+
+              <div className="relative p-2.5 rounded-xl bg-black/25 backdrop-blur-sm border border-white/20 shadow-inner flex items-center justify-center">
+                {card.iconImg ? (
+                  <img src={card.iconImg} alt="" className="w-5 h-5 object-contain drop-shadow" />
+                ) : (
+                  <Icon className="w-5 h-5 text-white drop-shadow" />
+                )}
               </div>
-              <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block font-body">
+              <div className="relative z-10">
+                <span className="text-[10px] uppercase font-display font-black text-white/80 tracking-wider block">
                   {card.label}
                 </span>
-                <span className="font-display font-black text-lg md:text-xl text-white">
+                <span className="font-display font-black text-lg md:text-xl text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]">
                   {card.value}
                 </span>
               </div>
@@ -140,12 +190,12 @@ export const DashboardPage = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Recent Game History Table (2 Columns) */}
+        {/* Mission Victory Log Table (2 Columns) */}
         <div className="md:col-span-2 p-6 rounded-3xl clay-card">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-display font-black text-sm text-white uppercase tracking-wider flex items-center gap-2">
-              <Clock className="w-4 h-4 text-sky-400" />
-              <span>Recent Flight Logs</span>
+              <Trophy className="w-4 h-4 text-amber-400" />
+              <span>Mission Victory Log</span>
             </h3>
             <Link to="/levels" className="font-display text-xs text-amber-400 hover:underline font-bold flex items-center gap-1">
               <span>View All Sectors</span>
@@ -153,34 +203,36 @@ export const DashboardPage = () => {
             </Link>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             {history.map((item, idx) => (
               <div
                 key={idx}
-                className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 flex items-center justify-between text-xs"
+                className="p-3.5 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900/90 to-slate-950 border border-slate-800 border-b-2 border-b-slate-950 flex items-center justify-between text-xs hover:border-slate-700 transition-colors shadow-sm"
               >
                 <div className="flex items-center gap-3 font-display">
-                  <span className="w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center font-black text-white">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-b from-emerald-400 to-teal-700 border border-emerald-300 border-b-2 border-b-teal-950 flex items-center justify-center font-black text-white shadow-md shadow-emerald-500/20 text-sm">
                     {item.sector}
-                  </span>
+                  </div>
                   <div>
-                    <span className="font-bold text-white block">Sector {item.sector} Cleared</span>
-                    <span className="text-[10px] font-body text-slate-400">{item.date}</span>
+                    <span className="font-black text-white block tracking-wide">Sector {item.sector} Cleared</span>
+                    <span className="text-[10px] font-body text-slate-400 font-semibold">{item.date}</span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3 font-display">
-                  <div className="flex items-center gap-0.5">
+                  <div className="flex items-center gap-1 bg-black/40 px-2 py-1 rounded-lg border border-white/5">
                     {[1, 2, 3].map((s) => (
-                      <Star
+                      <img
                         key={s}
-                        className={`w-3 h-3 ${
-                          s <= item.stars ? 'text-amber-400 fill-amber-400' : 'text-slate-700'
+                        src="/assets/icons/star.png"
+                        alt="star"
+                        className={`w-3.5 h-3.5 object-contain ${
+                          s <= item.stars ? 'drop-shadow-sm brightness-110' : 'opacity-20 grayscale'
                         }`}
                       />
                     ))}
                   </div>
-                  <span className="font-black text-amber-300 text-sm">
+                  <span className="px-2.5 py-1 rounded-lg bg-amber-400/10 border border-amber-400/30 font-black text-amber-300 text-xs shadow-inner">
                     {item.score.toLocaleString()} pts
                   </span>
                 </div>

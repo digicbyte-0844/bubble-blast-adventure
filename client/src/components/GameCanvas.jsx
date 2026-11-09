@@ -52,10 +52,10 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
   const X_OFFSET = Math.max(0, Math.floor((canvasWidth - PHYSICS.GRID_COLS_EVEN * (BUBBLE_RADIUS * 2)) / 2));
   const Y_OFFSET = Math.max(8, Math.floor(BUBBLE_RADIUS * 0.45));
   const LAUNCHER_X = canvasWidth / 2;
-  const LAUNCHER_Y = canvasHeight - BUBBLE_RADIUS * 2.35;
-  const NEXT_BUBBLE_X = canvasWidth / 2 - BUBBLE_RADIUS * 2.75;
-  const NEXT_BUBBLE_Y = LAUNCHER_Y + BUBBLE_RADIUS * 0.45;
-  const DANGER_Y = LAUNCHER_Y - BUBBLE_RADIUS * 4.4;
+  const LAUNCHER_Y = Math.max(BUBBLE_RADIUS * 8, canvasHeight - 48);
+  const NEXT_BUBBLE_X = canvasWidth / 2 - Math.max(48, BUBBLE_RADIUS * 2.65);
+  const NEXT_BUBBLE_Y = LAUNCHER_Y + 10;
+  const DANGER_Y = LAUNCHER_Y - BUBBLE_RADIUS * 4.2;
 
   const {
     gridMatrix,
@@ -137,6 +137,7 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
 
   // Particle systems & animated entities
   const particlesRef = useRef([]);
+  const shockwavesRef = useRef([]);
   const floatingBubblesRef = useRef([]);
   const floatingTextsRef = useRef([]);
 
@@ -172,6 +173,42 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
         size: Math.random() * 4 + 2,
         life: 1.0,
         decay: Math.random() * 0.03 + 0.025
+      });
+    }
+  };
+
+  /**
+   * Spawn expanding fiery explosion shockwave ring for Bomb Power-Up
+   */
+  const spawnBombShockwave = (x, y) => {
+    shockwavesRef.current.push({
+      x,
+      y,
+      radius: 8,
+      maxRadius: BUBBLE_RADIUS * 4.6,
+      alpha: 1.0,
+      color: '#FF5500'
+    });
+  };
+
+  /**
+   * Spawn intense fiery blast particles for Bomb Power-Up
+   */
+  const spawnFieryExplosion = (x, y, count = 30) => {
+    const fireColors = ['#FF4500', '#FF8C00', '#FACC15', '#FFFFFF', '#EF4444', '#F97316'];
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = Math.random() * 8 + 3.5;
+      particlesRef.current.push({
+        x,
+        y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        color: fireColors[Math.floor(Math.random() * fireColors.length)],
+        alpha: 1.0,
+        size: Math.random() * 5 + 2.5,
+        life: 1.0,
+        decay: Math.random() * 0.035 + 0.02
       });
     }
   };
@@ -218,19 +255,34 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
     let animationFrameId;
 
     const render = () => {
-      // 1. Clear Arena
+      // 1. Clear Arena & Render Cosmic Arcade Backdrop (prevents flat black void)
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-      const activeGrid = gridMatrixRef.current || [];
-      const currentStatus = gameStatusRef.current;
-      const currentAngle = aimAngleRef.current;
-      const curBubble = currentBubbleRef.current;
-      const nxtBubble = nextBubbleRef.current;
-      const isSuperAim = superAimActiveRef.current || activeBoosterRef.current === 'superAim';
-      const curHint = hintDataRef.current;
+      // Deep space subtle radial ambiance
+      const arenaGrad = ctx.createRadialGradient(
+        canvasWidth / 2, canvasHeight * 0.42, 20,
+        canvasWidth / 2, canvasHeight * 0.5, canvasHeight * 0.78
+      );
+      arenaGrad.addColorStop(0, '#0F172A');
+      arenaGrad.addColorStop(0.55, '#0B0F19');
+      arenaGrad.addColorStop(1, '#060913');
+      ctx.fillStyle = arenaGrad;
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+      // Glowing Arena Energy Side Rails
+      ctx.save();
+      ctx.lineWidth = 1.2;
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.22)';
+      ctx.beginPath();
+      ctx.moveTo(X_OFFSET + 1, Y_OFFSET);
+      ctx.lineTo(X_OFFSET + 1, DANGER_Y + BUBBLE_RADIUS * 2);
+      ctx.moveTo(canvasWidth - X_OFFSET - 1, Y_OFFSET);
+      ctx.lineTo(canvasWidth - X_OFFSET - 1, DANGER_Y + BUBBLE_RADIUS * 2);
+      ctx.stroke();
+      ctx.restore();
 
       // Draw subtle grid guide ceiling line
-      ctx.strokeStyle = 'rgba(56, 189, 248, 0.25)';
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(X_OFFSET, Y_OFFSET);
@@ -467,7 +519,96 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
 
         if (collisionResult.hasCollided || isOutOfBounds) {
           const snapTarget = collisionResult.snapCell;
+          const isBombShot = proj.isBomb || proj.special === 'bomb' || proj.type === SPECIAL_BUBBLES.BOMB || proj.color === 'bomb' || activeBoosterRef.current === 'bomb';
+          const isRainbowShot = proj.isRainbow || proj.special === 'rainbow' || proj.type === SPECIAL_BUBBLES.RAINBOW || proj.color === 'rainbow' || activeBoosterRef.current === 'rainbow';
+          const impactX = collisionResult.collision?.x ?? proj.x;
+          const impactY = collisionResult.collision?.y ?? proj.y;
+
           activeProjectileRef.current = null; // Always safely release flying projectile
+
+          // =========================================================================
+          // 1. CRITICAL ENGINE FIX: IMMEDIATE BOMB DETONATION ON IMPACT
+          // =========================================================================
+          if (isBombShot && collisionResult.hasCollided) {
+            try {
+              soundEngine.playBombExplode();
+            } catch (e) {
+              try { soundEngine.play('bomb'); } catch (e2) {}
+            }
+
+            // Spawn dramatic explosion shockwave + 30 fiery particles
+            spawnBombShockwave(impactX, impactY);
+            spawnFieryExplosion(impactX, impactY, 30);
+
+            const newGrid = cloneGrid(activeGrid);
+            const bombPops = [];
+            const blastDistSq = (BUBBLE_RADIUS * 4.5) ** 2;
+
+            // Check every occupied cell in the grid within blast radius (or 2-hex distance)
+            for (let r = 0; r < newGrid.length; r++) {
+              if (!newGrid[r]) continue;
+              for (let c = 0; c < newGrid[r].length; c++) {
+                if (newGrid[r][c]) {
+                  const bPos = gridToPixel(r, c, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
+                  const dSq = (bPos.x - impactX) ** 2 + (bPos.y - impactY) ** 2;
+                  if (dSq <= blastDistSq) {
+                    bombPops.push({ row: r, col: c, bubble: newGrid[r][c], pos: bPos });
+                  }
+                }
+              }
+            }
+
+            // If collision was adjacent to a snap cell, also guarantee all 2-hex neighbors are included
+            if (snapTarget) {
+              const { row, col } = snapTarget;
+              const directN = getHexNeighbors(row, col);
+              directN.forEach((n) => {
+                if (newGrid[n.row] && newGrid[n.row][n.col]) {
+                  const bPos = gridToPixel(n.row, n.col, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
+                  bombPops.push({ row: n.row, col: n.col, bubble: newGrid[n.row][n.col], pos: bPos });
+                }
+                getHexNeighbors(n.row, n.col).forEach((n2) => {
+                  if (newGrid[n2.row] && newGrid[n2.row][n2.col]) {
+                    const bPos = gridToPixel(n2.row, n2.col, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
+                    bombPops.push({ row: n2.row, col: n2.col, bubble: newGrid[n2.row][n2.col], pos: bPos });
+                  }
+                });
+              });
+            }
+
+            // Deduplicate pops
+            const uniquePopsMap = new Map();
+            bombPops.forEach((p) => uniquePopsMap.set(`${p.row},${p.col}`, p));
+            const uniquePops = Array.from(uniquePopsMap.values());
+
+            // Remove all bubbles in blast radius immediately
+            uniquePops.forEach((p) => {
+              spawnPopParticles(p.pos.x, p.pos.y, getColorDef(p.bubble?.color), 14);
+              newGrid[p.row][p.col] = null;
+            });
+
+            // Immediately check for floating disconnected bubbles underneath and drop them!
+            const dropped = findFloatingBubbles(newGrid, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
+            if (dropped.length > 0) {
+              dropped.forEach((d) => {
+                const pos = gridToPixel(d.row, d.col, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
+                floatingBubblesRef.current.push(createDroppingBubble(d.bubble, pos.x, pos.y, BUBBLE_RADIUS));
+                newGrid[d.row][d.col] = null;
+              });
+              try { soundEngine.playDrop(); } catch (e) {}
+            }
+
+            // Commit new grid & score
+            gridMatrixRef.current = newGrid;
+            setGridMatrix(newGrid);
+            recordTurnResolution(uniquePops.length, dropped.length, 0);
+            spawnFloatingText(impactX, impactY - 25, `BOMB BLAST! +${uniquePops.length * 60}`, '#FF4500');
+
+            // CLEAN STATE RESET FINALLY GUARANTEE
+            replenishBubbles();
+            evaluateLevelEnd();
+            return;
+          }
 
           if (!snapTarget) {
             // Safety fallback: projectile went out of bounds or board had no open slot
@@ -480,13 +621,10 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
             soundEngine.playSnap();
 
             // Snapshot grid and insert new bubble into cell
-            const isRainbowShot = proj.type === SPECIAL_BUBBLES.RAINBOW || proj.color === 'rainbow';
-            const isBombShot = proj.type === SPECIAL_BUBBLES.BOMB || proj.color === 'bomb';
-
             const newGrid = cloneGrid(activeGrid);
             newGrid[row][col] = {
-              color: isRainbowShot ? 'rainbow' : (isBombShot ? 'bomb' : proj.color),
-              type: isRainbowShot ? SPECIAL_BUBBLES.RAINBOW : (isBombShot ? SPECIAL_BUBBLES.BOMB : (proj.type || SPECIAL_BUBBLES.NORMAL))
+              color: isRainbowShot ? 'rainbow' : proj.color,
+              type: isRainbowShot ? SPECIAL_BUBBLES.RAINBOW : (proj.type || SPECIAL_BUBBLES.NORMAL)
             };
 
             gridMatrixRef.current = newGrid;
@@ -494,56 +632,6 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
             setGameStatus(GAME_STATES.RESOLVING);
 
             try {
-              // Handle special bomb booster blast
-              if (isBombShot) {
-                soundEngine.playBombExplode();
-                const bombPops = [];
-                const directNeighbors = getHexNeighbors(row, col);
-                bombPops.push({ row, col });
-
-                directNeighbors.forEach(n => {
-                  bombPops.push(n);
-                  getHexNeighbors(n.row, n.col).forEach(n2 => bombPops.push(n2));
-                });
-
-                // Unique cells
-                const uniquePops = Array.from(new Set(bombPops.map(p => `${p.row},${p.col}`)))
-                  .map(str => {
-                    const [r, c] = str.split(',').map(Number);
-                    return { row: r, col: c };
-                  })
-                  .filter(p => newGrid[p.row] && newGrid[p.row][p.col]);
-
-                uniquePops.forEach(p => {
-                  const b = newGrid[p.row][p.col];
-                  if (b) {
-                    const pos = gridToPixel(p.row, p.col, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
-                    spawnPopParticles(pos.x, pos.y, getColorDef(b.color), 12);
-                    newGrid[p.row][p.col] = null;
-                  }
-                });
-
-                // Floating drop check
-                const dropped = findFloatingBubbles(newGrid, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
-                if (dropped.length > 0) {
-                  dropped.forEach(d => {
-                    const pos = gridToPixel(d.row, d.col, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
-                    floatingBubblesRef.current.push(createDroppingBubble(d.bubble, pos.x, pos.y, BUBBLE_RADIUS));
-                    newGrid[d.row][d.col] = null;
-                  });
-                  soundEngine.playDrop();
-                }
-
-                gridMatrixRef.current = newGrid;
-                setGridMatrix(newGrid);
-                recordTurnResolution(uniquePops.length, dropped.length, 0);
-                spawnFloatingText(LAUNCHER_X, LAUNCHER_Y - 80, `BOMB BLAST! +${uniquePops.length * 50}`, '#FF4500');
-
-                replenishBubbles();
-                evaluateLevelEnd();
-                return;
-              }
-
               // Standard Match-3 or Rainbow Wildcard BFS Check
               let matchedCluster = [];
 
@@ -599,6 +687,10 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
                 setGridMatrix(newGrid);
                 recordTurnResolution(matchedCluster.length, floating.length, rescuedCount);
 
+                // REWARD A BOMB ON SUCCESSFUL MATCH-3+ SHOT
+                useGameStore.getState().rewardBombOnSuccess();
+                spawnFloatingText(LAUNCHER_X, LAUNCHER_Y - 110, '+1 BOMB EARNED!', '#F97316');
+
                 if (matchedCluster.length >= 5 && !isRainbowShot) {
                   spawnFloatingText(LAUNCHER_X, LAUNCHER_Y - 80, 'GREAT POP! x2', '#FACC15');
                 }
@@ -629,7 +721,27 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
         });
       }
 
-      // 7. Update & Render Particles (Batched 60 FPS mobile optimization)
+      // 7. Update & Render Shockwaves & Particles (Batched 60 FPS mobile optimization)
+      if (shockwavesRef.current.length > 0) {
+        ctx.save();
+        shockwavesRef.current.forEach((sw) => {
+          sw.radius += 5.5;
+          sw.alpha -= 0.045;
+          if (sw.alpha > 0) {
+            ctx.beginPath();
+            ctx.arc(sw.x, sw.y, sw.radius, 0, Math.PI * 2);
+            ctx.strokeStyle = sw.color;
+            ctx.globalAlpha = Math.max(0, Math.min(1, sw.alpha));
+            ctx.lineWidth = Math.max(1, 4 * sw.alpha);
+            ctx.shadowColor = '#FF8C00';
+            ctx.shadowBlur = 12;
+            ctx.stroke();
+          }
+        });
+        ctx.restore();
+        shockwavesRef.current = shockwavesRef.current.filter((sw) => sw.alpha > 0);
+      }
+
       if (particlesRef.current.length > 0) {
         ctx.save();
         particlesRef.current.forEach((p) => {
@@ -858,71 +970,90 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
   };
 
   /**
-   * Draw Integrated Shooter Pedestal, Cannon Barrel, Core Ammo Badge & Orbiting Swap Ring
+   * Draw Integrated Arcade Turret Cannon, Loaded Bubble Muzzle, Orbiting Swap Ring & Shots Left Badge
    */
   const drawLauncherAssembly = (ctx, x, y, angle, current, next, shotsLeft = 0) => {
     ctx.save();
 
-    // 1. Sleek Armored Base Pedestal
+    // 1. Sleek Metallic/Golden Arcade Base Pedestal
     ctx.beginPath();
     ctx.arc(x, y, BUBBLE_RADIUS * 1.85, 0, Math.PI * 2);
-    const baseGrad = ctx.createRadialGradient(x, y - 4, 4, x, y, BUBBLE_RADIUS * 1.85);
-    baseGrad.addColorStop(0, '#475569');
-    baseGrad.addColorStop(0.5, '#1E293B');
-    baseGrad.addColorStop(1, '#0F172A');
+    const baseGrad = ctx.createRadialGradient(x, y - 6, 4, x, y, BUBBLE_RADIUS * 1.85);
+    baseGrad.addColorStop(0, '#D97706'); // Warm gold core
+    baseGrad.addColorStop(0.35, '#334155');
+    baseGrad.addColorStop(0.8, '#1E293B');
+    baseGrad.addColorStop(1, '#0B0F19');
     ctx.fillStyle = baseGrad;
-    ctx.strokeStyle = '#38BDF8';
-    ctx.lineWidth = 2;
-    ctx.shadowColor = 'rgba(56, 189, 248, 0.4)';
-    ctx.shadowBlur = 8;
+    ctx.strokeStyle = '#F59E0B';
+    ctx.lineWidth = 2.2;
+    ctx.shadowColor = 'rgba(245, 158, 11, 0.45)';
+    ctx.shadowBlur = 10;
     ctx.fill();
     ctx.stroke();
 
-    // Inner glowing ring
+    // Inner glowing cyan energy conduit ring
     ctx.beginPath();
     ctx.arc(x, y, BUBBLE_RADIUS * 1.45, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = '#00F0FF';
+    ctx.lineWidth = 1.2;
+    ctx.shadowColor = '#00F0FF';
+    ctx.shadowBlur = 6;
     ctx.stroke();
 
-    // 2. Rotating Cannon Barrel
+    // Decorative metallic rivets on base
+    for (let r = 0; r < 6; r++) {
+      const rAng = (r * Math.PI) / 3;
+      const rx = x + Math.cos(rAng) * (BUBBLE_RADIUS * 1.62);
+      const ry = y + Math.sin(rAng) * (BUBBLE_RADIUS * 1.62);
+      ctx.beginPath();
+      ctx.arc(rx, ry, 1.8, 0, Math.PI * 2);
+      ctx.fillStyle = '#FEF08A';
+      ctx.fill();
+    }
+
+    // 2. Rotating Turret Cannon Barrel
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(angle + Math.PI / 2);
 
-    const barrelWidth = BUBBLE_RADIUS * 1.15;
-    const barrelLength = BUBBLE_RADIUS * 1.65;
+    const barrelWidth = BUBBLE_RADIUS * 1.2;
+    const barrelLength = BUBBLE_RADIUS * 1.75;
     ctx.beginPath();
-    ctx.rect(-barrelWidth / 2, -barrelLength - BUBBLE_RADIUS * 0.5, barrelWidth, barrelLength);
+    ctx.rect(-barrelWidth / 2, -barrelLength - BUBBLE_RADIUS * 0.45, barrelWidth, barrelLength);
     const barrelGrad = ctx.createLinearGradient(-barrelWidth / 2, 0, barrelWidth / 2, 0);
-    barrelGrad.addColorStop(0, '#0F172A');
-    barrelGrad.addColorStop(0.3, '#334155');
-    barrelGrad.addColorStop(0.7, '#64748B');
+    barrelGrad.addColorStop(0, '#1E293B');
+    barrelGrad.addColorStop(0.25, '#475569');
+    barrelGrad.addColorStop(0.5, '#94A3B8');
+    barrelGrad.addColorStop(0.75, '#475569');
     barrelGrad.addColorStop(1, '#0F172A');
     ctx.fillStyle = barrelGrad;
-    ctx.strokeStyle = '#00F0FF';
-    ctx.lineWidth = 1.5;
-    ctx.shadowColor = '#00F0FF';
-    ctx.shadowBlur = 6;
+    ctx.strokeStyle = '#F59E0B';
+    ctx.lineWidth = 2;
+    ctx.shadowColor = 'rgba(245, 158, 11, 0.7)';
+    ctx.shadowBlur = 8;
     ctx.fill();
     ctx.stroke();
 
-    // Barrel Muzzle Highlight
+    // Barrel Muzzle Glowing Golden Rim
     ctx.beginPath();
-    ctx.moveTo(-barrelWidth / 2 + 2, -barrelLength - BUBBLE_RADIUS * 0.5);
-    ctx.lineTo(barrelWidth / 2 - 2, -barrelLength - BUBBLE_RADIUS * 0.5);
-    ctx.strokeStyle = '#FFFFFF';
-    ctx.lineWidth = 2;
+    ctx.moveTo(-barrelWidth / 2 + 1, -barrelLength - BUBBLE_RADIUS * 0.45);
+    ctx.lineTo(barrelWidth / 2 - 1, -barrelLength - BUBBLE_RADIUS * 0.45);
+    ctx.strokeStyle = '#FEF08A';
+    ctx.lineWidth = 2.5;
     ctx.stroke();
 
     ctx.restore();
 
-    // 3. Current Loaded Bubble in Chamber
-    drawBubble(ctx, x, y, BUBBLE_RADIUS, current);
+    // 3. Current Loaded Bubble Glowing in Chamber
+    ctx.save();
+    ctx.shadowColor = 'rgba(0, 240, 255, 0.6)';
+    ctx.shadowBlur = 10;
+    drawBubble(ctx, x, y, BUBBLE_RADIUS, current || 'cyan');
+    ctx.restore();
 
-    // 4. Primary Barrel Core Badge: Shots Remaining Counter
-    const badgeW = Math.max(38, BUBBLE_RADIUS * 1.65);
-    const badgeH = 19;
+    // 4. Primary Barrel Core Badge: SHOTS LEFT Pill
+    const badgeW = Math.max(68, BUBBLE_RADIUS * 2.5);
+    const badgeH = 18;
     const badgeX = x - badgeW / 2;
     const badgeY = y + BUBBLE_RADIUS * 0.78;
     const isLowAmmo = shotsLeft <= 5;
@@ -930,20 +1061,20 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
     ctx.save();
     ctx.beginPath();
     ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 9);
-    ctx.fillStyle = isLowAmmo ? '#7F1D1D' : '#0F172A';
+    ctx.fillStyle = isLowAmmo ? '#7F1D1D' : '#0B0F19';
     ctx.strokeStyle = isLowAmmo ? '#EF4444' : '#F59E0B';
     ctx.lineWidth = 1.8;
-    ctx.shadowColor = isLowAmmo ? 'rgba(239, 68, 68, 0.9)' : 'rgba(245, 158, 11, 0.6)';
+    ctx.shadowColor = isLowAmmo ? 'rgba(239, 68, 68, 0.9)' : 'rgba(245, 158, 11, 0.7)';
     ctx.shadowBlur = 8;
     ctx.fill();
     ctx.stroke();
 
     // Ammo Counter Text inside Badge
-    ctx.fillStyle = isLowAmmo ? '#FCA5A5' : '#FDE047';
-    ctx.font = '900 11px "Fredoka", "Nunito", sans-serif';
+    ctx.fillStyle = isLowAmmo ? '#FCA5A5' : '#FEF08A';
+    ctx.font = '900 10px "Fredoka", "Nunito", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(`${shotsLeft}`, x, badgeY + badgeH / 2 + 0.5);
+    ctx.fillText(`${shotsLeft} SHOTS`, x, badgeY + badgeH / 2 + 0.5);
     ctx.restore();
 
     // 5. Integrated Orbiting Swap Ring (Next Bubble Satellite Pod)
@@ -951,7 +1082,7 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
     ctx.save();
     ctx.beginPath();
     ctx.arc(NEXT_BUBBLE_X, NEXT_BUBBLE_Y, swapRadius, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
     ctx.strokeStyle = '#38BDF8';
     ctx.lineWidth = 2;
     ctx.shadowColor = 'rgba(56, 189, 248, 0.6)';
@@ -990,7 +1121,7 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
     ctx.restore();
 
     // Draw Next Bubble inside Satellite Ring
-    drawBubble(ctx, NEXT_BUBBLE_X, NEXT_BUBBLE_Y, BUBBLE_RADIUS * 0.78, next);
+    drawBubble(ctx, NEXT_BUBBLE_X, NEXT_BUBBLE_Y, BUBBLE_RADIUS * 0.78, next || 'yellow');
 
     // Mini Swap Pill Badge underneath
     const swapBadgeW = 34;
@@ -1071,13 +1202,19 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
 
     if (shot) {
       gameStatusRef.current = GAME_STATES.SHOOTING;
+      const isBomb = shot.isBomb || shot.isBooster === 'bomb' || shot.color === 'bomb' || activeBoosterRef.current === 'bomb';
+      const isRainbow = shot.isRainbow || shot.isBooster === 'rainbow' || shot.color === 'rainbow' || activeBoosterRef.current === 'rainbow';
+
       activeProjectileRef.current = {
         x: LAUNCHER_X,
         y: LAUNCHER_Y,
         vx: Math.cos(shot.angle) * PHYSICS.LAUNCH_SPEED,
         vy: Math.sin(shot.angle) * PHYSICS.LAUNCH_SPEED,
-        color: shot.color,
-        type: shot.isBooster || SPECIAL_BUBBLES.NORMAL,
+        color: isBomb ? 'bomb' : (isRainbow ? 'rainbow' : shot.color),
+        type: isBomb ? SPECIAL_BUBBLES.BOMB : (isRainbow ? SPECIAL_BUBBLES.RAINBOW : SPECIAL_BUBBLES.NORMAL),
+        special: isBomb ? 'bomb' : (isRainbow ? 'rainbow' : null),
+        isBomb: isBomb,
+        isRainbow: isRainbow,
         radius: BUBBLE_RADIUS
       };
     } else {

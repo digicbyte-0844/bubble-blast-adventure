@@ -27,7 +27,7 @@ export const BoardWrapper = () => {
     >
       {/* Reactive Bloopi Mascot Overlay in top-right */}
       <div className="absolute top-2 right-4 z-10 pointer-events-none drop-shadow-md">
-        <CharacterMascot emotion={mascotEmotion || 'idle'} size="sm" />
+        <CharacterMascot emotion={mascotEmotion || 'idle'} size="sm" showSpeech={false} />
       </div>
 
       {/* Dynamic 60 FPS HTML5 Game Canvas */}

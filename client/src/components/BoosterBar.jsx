@@ -13,10 +13,12 @@ export const BoosterBar = () => {
     activeBooster,
     superAimActive,
     activateBooster,
-    gameStatus
+    gameStatus,
+    recentBombReward
   } = useGameStore();
 
   const isInteractive = gameStatus === 'READY' || gameStatus === 'AIMING';
+  const isBombRewarded = recentBombReward && Date.now() - recentBombReward < 2400;
 
   const boosterList = [
     {
@@ -26,7 +28,10 @@ export const BoosterBar = () => {
       iconImg: '/assets/icons/target.png',
       altText: 'Super Aim',
       isActive: superAimActive || activeBooster === 'superAim' || activeBooster === 'aimGuide',
-      disabled: !isInteractive || (boosters.superAim ?? boosters.aimGuide ?? 0) <= 0
+      disabled: !isInteractive || (boosters.superAim ?? boosters.aimGuide ?? 0) <= 0,
+      gradient: 'from-sky-400 via-blue-500 to-indigo-700',
+      border: 'border-b-indigo-950',
+      shadow: 'shadow-blue-500/25'
     },
     {
       id: 'bomb',
@@ -35,7 +40,10 @@ export const BoosterBar = () => {
       iconImg: '/assets/icons/bomb.png',
       altText: 'Bomb',
       isActive: activeBooster === 'bomb',
-      disabled: !isInteractive || (boosters.bomb || 0) <= 0
+      disabled: !isInteractive || (boosters.bomb || 0) <= 0,
+      gradient: 'from-amber-400 via-orange-500 to-red-600',
+      border: 'border-b-red-950',
+      shadow: 'shadow-orange-500/35'
     },
     {
       id: 'rainbow',
@@ -44,7 +52,10 @@ export const BoosterBar = () => {
       iconImg: '/assets/icons/rainbow.png',
       altText: 'Rainbow',
       isActive: activeBooster === 'rainbow',
-      disabled: !isInteractive || (boosters.rainbow || 0) <= 0
+      disabled: !isInteractive || (boosters.rainbow || 0) <= 0,
+      gradient: 'from-pink-500 via-purple-500 to-indigo-600',
+      border: 'border-b-purple-950',
+      shadow: 'shadow-purple-500/30'
     },
     {
       id: 'extraShots',
@@ -53,7 +64,10 @@ export const BoosterBar = () => {
       iconImg: '/assets/icons/plus.png',
       altText: '+5 Shots',
       isActive: false,
-      disabled: !isInteractive || (boosters.extraShots || 0) <= 0
+      disabled: !isInteractive || (boosters.extraShots || 0) <= 0,
+      gradient: 'from-emerald-400 via-teal-500 to-emerald-700',
+      border: 'border-b-teal-950',
+      shadow: 'shadow-emerald-500/25'
     },
     {
       id: 'shuffle',
@@ -62,34 +76,45 @@ export const BoosterBar = () => {
       iconImg: '/assets/icons/shuffle.png',
       altText: 'Shuffle',
       isActive: false,
-      disabled: !isInteractive || (boosters.shuffle || 0) <= 0
+      disabled: !isInteractive || (boosters.shuffle || 0) <= 0,
+      gradient: 'from-violet-400 via-purple-600 to-fuchsia-700',
+      border: 'border-b-fuchsia-950',
+      shadow: 'shadow-purple-500/25'
     }
   ];
 
   return (
-    <div className="w-full max-w-[420px] mx-auto select-none pb-safe pt-1">
+    <div className="w-full max-w-[440px] mx-auto select-none pb-safe pt-1">
       <div className="h-[62px] px-2 py-1 bg-slate-900/95 border border-slate-800 rounded-2xl backdrop-blur-md shadow-2xl flex items-center justify-around gap-1.5">
         {boosterList.map((item) => {
+          const isBombSlot = item.id === 'bomb';
           return (
             <button
               key={item.id}
               onClick={() => !item.disabled && activateBooster(item.id)}
               disabled={item.disabled}
-              className={`relative flex flex-col items-center justify-center w-12 h-12 rounded-xl transition-all duration-100 min-w-[48px] min-h-[48px] ${
+              className={`relative flex flex-col items-center justify-center w-12 h-12 rounded-xl transition-all duration-150 min-w-[48px] min-h-[48px] border-b-4 ${
                 item.isActive
-                  ? 'bg-amber-400/20 border-2 border-amber-400 border-b-4 border-b-amber-600 ring-2 ring-amber-400/50 shadow-md shadow-black/40 active:translate-y-1 active:border-b-0'
+                  ? `bg-gradient-to-b ${item.gradient} ${item.border} ring-2 ring-yellow-300 scale-105 shadow-lg active:translate-y-1 active:border-b-0`
                   : item.disabled
-                  ? 'opacity-35 bg-slate-950/60 border border-slate-800/40 cursor-not-allowed'
-                  : 'btn-arcade-slate hover:border-slate-600 border-b-4 border-b-slate-950 active:translate-y-1 active:border-b-0'
+                  ? 'opacity-35 bg-slate-950/60 border border-slate-800/40 cursor-not-allowed border-b-slate-950'
+                  : `bg-gradient-to-b ${item.gradient} ${item.border} ${item.shadow} shadow-md hover:scale-105 active:translate-y-1 active:border-b-0 active:scale-95`
               }`}
               title={`${item.name} (${item.count} in bag)`}
               aria-label={item.name}
             >
+              {/* Floating +1 BOMB! Reward Badge Animation */}
+              {isBombSlot && isBombRewarded && (
+                <span className="absolute -top-7 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full bg-gradient-to-r from-orange-500 to-amber-400 text-slate-950 font-display font-black text-[9px] shadow-xl animate-bounce whitespace-nowrap z-30 border border-yellow-200">
+                  +1 BOMB!
+                </span>
+              )}
+
               {/* Count Badge */}
               <span
                 className={`absolute -top-1.5 -right-1 text-xs font-display font-black px-1.5 py-0.5 rounded-full border shadow-sm ${
                   item.count > 0
-                    ? 'bg-amber-400 text-slate-950 border-amber-300'
+                    ? 'bg-amber-300 text-slate-950 border-amber-200 shadow-md'
                     : 'bg-slate-800 text-slate-400 border-slate-700'
                 }`}
               >
@@ -104,7 +129,7 @@ export const BoosterBar = () => {
               />
 
               {/* Label */}
-              <span className="text-xs font-display font-bold text-slate-300 leading-tight mt-0.5 truncate max-w-[48px]">
+              <span className="text-xs font-display font-bold text-white leading-tight mt-0.5 truncate max-w-[48px] drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                 {item.name}
               </span>
             </button>
