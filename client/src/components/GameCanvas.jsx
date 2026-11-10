@@ -528,6 +528,13 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
 
         if (collisionResult.hasCollided || isOutOfBounds) {
           const snapTarget = collisionResult.snapCell;
+          const hitRow = collisionResult.collision?.hitRow;
+          const hitCol = collisionResult.collision?.hitCol;
+          const impactedBubble = (hitRow !== null && hitRow !== undefined && hitCol !== null && hitCol !== undefined) 
+            ? activeGrid[hitRow]?.[hitCol] 
+            : null;
+          const isGridBombImpact = impactedBubble?.type === SPECIAL_BUBBLES.BOMB || impactedBubble?.color === 'bomb';
+
           const isBombShot = proj.isBomb || proj.special === 'bomb' || proj.type === SPECIAL_BUBBLES.BOMB || proj.color === 'bomb' || activeBoosterRef.current === 'bomb';
           const isRainbowShot = proj.isRainbow || proj.special === 'rainbow' || proj.type === SPECIAL_BUBBLES.RAINBOW || proj.color === 'rainbow' || activeBoosterRef.current === 'rainbow';
           const impactX = collisionResult.collision?.x ?? proj.x;
@@ -537,23 +544,32 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
 
           // =========================================================================
           // 1. CRITICAL ENGINE FIX: IMMEDIATE BOMB DETONATION ON IMPACT
+          // Detonates whenever:
+          // A) Projectile is a Bomb (fired by player), OR
+          // B) Projectile collides with an existing Bomb bubble on the grid!
           // =========================================================================
-          if (isBombShot && collisionResult.hasCollided) {
+          if (isBombShot || (isGridBombImpact && collisionResult.hasCollided)) {
             try {
               soundEngine.playBombExplode();
             } catch (e) {
               try { soundEngine.play('bomb'); } catch (e2) {}
             }
 
-            // Spawn dramatic explosion shockwave + 30 fiery particles
+            // Spawn dramatic explosion shockwave + 35 fiery particles
             spawnBombShockwave(impactX, impactY);
-            spawnFieryExplosion(impactX, impactY, 30);
+            spawnFieryExplosion(impactX, impactY, 35);
 
             const newGrid = cloneGrid(activeGrid);
             const bombPops = [];
-            const blastDistSq = (BUBBLE_RADIUS * 4.5) ** 2;
+            const blastDistSq = (BUBBLE_RADIUS * 4.8) ** 2;
 
-            // Check every occupied cell in the grid within blast radius (or 2-hex distance)
+            // 1. Explicitly include the directly impacted bubble
+            if (hitRow !== null && hitRow !== undefined && hitCol !== null && hitCol !== undefined && newGrid[hitRow]?.[hitCol]) {
+              const bPos = gridToPixel(hitRow, hitCol, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
+              bombPops.push({ row: hitRow, col: hitCol, bubble: newGrid[hitRow][hitCol], pos: bPos });
+            }
+
+            // 2. Scan every occupied cell in the grid within blast radius (or 2-hex distance)
             for (let r = 0; r < newGrid.length; r++) {
               if (!newGrid[r]) continue;
               for (let c = 0; c < newGrid[r].length; c++) {
@@ -567,22 +583,43 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
               }
             }
 
-            // If collision was adjacent to a snap cell, also guarantee all 2-hex neighbors are included
-            if (snapTarget) {
-              const { row, col } = snapTarget;
-              const directN = getHexNeighbors(row, col);
+            // 3. Guarantee all 1st and 2nd hex neighbors around snapTarget or impact are included
+            const centerHexRow = hitRow ?? snapTarget?.row;
+            const centerHexCol = hitCol ?? snapTarget?.col;
+            if (centerHexRow !== null && centerHexRow !== undefined && centerHexCol !== null && centerHexCol !== undefined) {
+              const directN = getHexNeighbors(centerHexRow, centerHexCol);
               directN.forEach((n) => {
-                if (newGrid[n.row] && newGrid[n.row][n.col]) {
+                if (newGrid[n.row]?.[n.col]) {
                   const bPos = gridToPixel(n.row, n.col, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
                   bombPops.push({ row: n.row, col: n.col, bubble: newGrid[n.row][n.col], pos: bPos });
                 }
                 getHexNeighbors(n.row, n.col).forEach((n2) => {
-                  if (newGrid[n2.row] && newGrid[n2.row][n2.col]) {
+                  if (newGrid[n2.row]?.[n2.col]) {
                     const bPos = gridToPixel(n2.row, n2.col, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
                     bombPops.push({ row: n2.row, col: n2.col, bubble: newGrid[n2.row][n2.col], pos: bPos });
                   }
                 });
               });
+            }
+
+            // 4. Fallback: If bombPops is still empty (e.g. hit ceiling), find closest bubble
+            if (bombPops.length === 0) {
+              let closestB = null;
+              let minDist = Infinity;
+              for (let r = 0; r < newGrid.length; r++) {
+                if (!newGrid[r]) continue;
+                for (let c = 0; c < newGrid[r].length; c++) {
+                  if (newGrid[r][c]) {
+                    const bPos = gridToPixel(r, c, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
+                    const d = (bPos.x - impactX) ** 2 + (bPos.y - impactY) ** 2;
+                    if (d < minDist) {
+                      minDist = d;
+                      closestB = { row: r, col: c, bubble: newGrid[r][c], pos: bPos };
+                    }
+                  }
+                }
+              }
+              if (closestB) bombPops.push(closestB);
             }
 
             // Deduplicate pops
@@ -592,7 +629,7 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
 
             // Remove all bubbles in blast radius immediately
             uniquePops.forEach((p) => {
-              spawnPopParticles(p.pos.x, p.pos.y, getColorDef(p.bubble?.color), 14);
+              spawnPopParticles(p.pos.x, p.pos.y, getColorDef(p.bubble?.color), 16);
               newGrid[p.row][p.col] = null;
             });
 
@@ -614,8 +651,10 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
             spawnFloatingText(impactX, impactY - 25, `BOMB BLAST! +${uniquePops.length * 60}`, '#FF4500');
 
             // CLEAN STATE RESET FINALLY GUARANTEE
+            activeBoosterRef.current = null;
+            gameStatusRef.current = GAME_STATES.READY;
             replenishBubbles();
-            evaluateLevelEnd();
+            evaluateLevelEnd(newGrid);
             return;
           }
 

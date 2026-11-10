@@ -21,15 +21,21 @@ export const BottomDock = () => {
   const isInteractive = gameStatus === GAME_STATES.READY || gameStatus === GAME_STATES.AIMING;
   const isBombRewarded = recentBombReward && Date.now() - recentBombReward < 2400;
 
+  const aimCount = boosters?.superAim ?? boosters?.aimGuide ?? 5;
+  const bombCount = boosters?.bomb ?? 5;
+  const rainbowCount = boosters?.rainbow ?? 5;
+  const extraShotsCount = boosters?.extraShots ?? 5;
+  const shuffleCount = boosters?.shuffle ?? 5;
+
   const boosterList = [
     {
       id: 'superAim',
       name: 'Super Aim',
-      count: boosters.superAim ?? boosters.aimGuide ?? 5,
+      count: aimCount,
       iconImg: '/assets/icons/target.png',
       altText: 'Super Aim',
       isActive: activeBooster === 'superAim' || activeBooster === 'aimGuide',
-      disabled: !isInteractive || (boosters.superAim ?? boosters.aimGuide ?? 0) <= 0,
+      disabled: !isInteractive || aimCount <= 0,
       gradient: 'from-sky-400 via-blue-500 to-indigo-700',
       border: 'border-b-indigo-950',
       shadow: 'shadow-blue-500/25'
@@ -37,11 +43,11 @@ export const BottomDock = () => {
     {
       id: 'bomb',
       name: 'Bomb',
-      count: boosters.bomb ?? 5,
+      count: bombCount,
       iconImg: '/assets/icons/bomb.png',
       altText: 'Bomb',
       isActive: activeBooster === 'bomb',
-      disabled: !isInteractive || (boosters.bomb || 0) <= 0,
+      disabled: !isInteractive || bombCount <= 0,
       gradient: 'from-amber-400 via-orange-500 to-red-600',
       border: 'border-b-red-950',
       shadow: 'shadow-orange-500/35'
@@ -49,11 +55,11 @@ export const BottomDock = () => {
     {
       id: 'rainbow',
       name: 'Rainbow',
-      count: boosters.rainbow ?? 5,
+      count: rainbowCount,
       iconImg: '/assets/icons/rainbow.png',
       altText: 'Rainbow',
       isActive: activeBooster === 'rainbow',
-      disabled: !isInteractive || (boosters.rainbow || 0) <= 0,
+      disabled: !isInteractive || rainbowCount <= 0,
       gradient: 'from-pink-500 via-purple-500 to-indigo-600',
       border: 'border-b-purple-950',
       shadow: 'shadow-purple-500/30'
@@ -61,11 +67,11 @@ export const BottomDock = () => {
     {
       id: 'extraShots',
       name: '+5 Shots',
-      count: boosters.extraShots ?? 5,
+      count: extraShotsCount,
       iconImg: '/assets/icons/plus.png',
       altText: '+5 Shots',
       isActive: false,
-      disabled: !isInteractive || (boosters.extraShots || 0) <= 0,
+      disabled: !isInteractive || extraShotsCount <= 0,
       gradient: 'from-emerald-400 via-teal-500 to-emerald-700',
       border: 'border-b-teal-950',
       shadow: 'shadow-emerald-500/25'
@@ -73,11 +79,11 @@ export const BottomDock = () => {
     {
       id: 'shuffle',
       name: 'Shuffle',
-      count: boosters.shuffle ?? 5,
+      count: shuffleCount,
       iconImg: '/assets/icons/shuffle.png',
       altText: 'Shuffle',
       isActive: false,
-      disabled: !isInteractive || (boosters.shuffle || 0) <= 0,
+      disabled: !isInteractive || shuffleCount <= 0,
       gradient: 'from-violet-400 via-purple-600 to-fuchsia-700',
       border: 'border-b-fuchsia-950',
       shadow: 'shadow-purple-500/25'

@@ -95,26 +95,33 @@ export const LevelSelectPage = () => {
   }, [unlockedUpTo]);
 
   // Sinusoidal Math & Node Coordinate Calculation
-  // Container width = 380, center = 190, amplitude = 85, stepY = 145, startY = 150
+  // Container width = 380, center = 190, amplitude = 80, stepY = 110, startY = 140, chapter gap = 95
   const MAP_WIDTH = 380;
   const CENTER_X = MAP_WIDTH / 2;
-  const AMPLITUDE = 85;
-  const STEP_Y = 145;
-  const START_Y = 150;
+  const AMPLITUDE = 80;
+  const STEP_Y = 110;
+  const START_Y = 140;
+  const BIOME_CHAPTER_GAP = 95;
   const TOTAL_LEVELS = 40;
 
   const nodePositions = useMemo(() => {
     const pos = [];
+    let curY = START_Y;
     for (let lvl = 1; lvl <= TOTAL_LEVELS; lvl++) {
       const idx = lvl - 1;
+      if (lvl > 1) {
+        curY += STEP_Y;
+        if (lvl === 11 || lvl === 21 || lvl === 31) {
+          curY += BIOME_CHAPTER_GAP;
+        }
+      }
       const x = CENTER_X + Math.sin(idx * 0.65) * AMPLITUDE;
-      const y = START_Y + idx * STEP_Y;
-      pos.push({ levelId: lvl, x, y, idx });
+      pos.push({ levelId: lvl, x, y: curY, idx });
     }
     return pos;
   }, []);
 
-  const totalMapHeight = START_Y + TOTAL_LEVELS * STEP_Y + 100;
+  const totalMapHeight = START_Y + TOTAL_LEVELS * STEP_Y + 3 * BIOME_CHAPTER_GAP + 120;
 
   // Generate SVG Path Beziers
   const { completedPathD, lockedPathD } = useMemo(() => {
@@ -243,22 +250,25 @@ export const LevelSelectPage = () => {
           const node = nodePositions.find((n) => n.levelId === firstLevelInBiome);
           if (!node) return null;
 
+          // Generous vertical margin so the banner is NEVER covered by any node or mascot
+          const bannerTop = firstLevelInBiome === 1 ? 40 : node.y - 65;
+
           return (
             <div
               key={b.id}
-              className="absolute left-1/2 -translate-x-1/2 z-0 w-72 pointer-events-none text-center"
-              style={{ top: `${node.y - 82}px` }}
+              className="absolute left-1/2 -translate-x-1/2 z-0 w-64 max-w-[270px] pointer-events-none text-center"
+              style={{ top: `${bannerTop}px` }}
             >
               <div
-                className={`py-2 px-4 rounded-2xl bg-gradient-to-r ${b.themeBg} border ${b.border} backdrop-blur-md shadow-xl`}
+                className={`py-1.5 px-3 rounded-2xl bg-gradient-to-r ${b.themeBg} border ${b.border} backdrop-blur-md shadow-lg`}
               >
                 <span className="font-display font-black text-[9px] uppercase tracking-wider text-slate-300 block">
                   {b.badge}
                 </span>
-                <h2 className="font-display font-black text-sm text-white leading-tight">
+                <h2 className="font-display font-black text-xs sm:text-sm text-white leading-tight">
                   {b.name}
                 </h2>
-                <span className="font-display font-bold text-[9px] text-slate-400 block mt-0.5">
+                <span className="font-display font-bold text-[8px] text-slate-400 block mt-0.5">
                   Sectors {b.range[0]}–{b.range[1]}
                 </span>
               </div>
@@ -266,7 +276,7 @@ export const LevelSelectPage = () => {
           );
         })}
 
-        {/* Render the 40 Level 3D Cards */}
+        {/* Render the 40 Level 3D Medallion Nodes */}
         {nodePositions.map((pos) => {
           const { levelId, x, y } = pos;
           const record = progressMap.get(levelId);
@@ -274,12 +284,10 @@ export const LevelSelectPage = () => {
           const isCurrent = levelId === unlockedUpTo;
           const isCompleted = levelId < unlockedUpTo || (record && record.stars > 0);
           const starsEarned = record?.stars || (isCompleted ? 3 : 0);
-          const stageCode = `STAGE ${String(levelId).padStart(2, '0')}`;
-          const isRescue = levelId % 3 === 0;
 
-          // Card dimensions: w-24 h-28 (96px by 112px)
-          const cardW = 96;
-          const cardH = 112;
+          // Sleek, compact circular 3D node sizing (56px by 56px) to avoid crowding or covering roadmap text
+          const cardW = 56;
+          const cardH = 56;
 
           return (
             <div
@@ -293,105 +301,80 @@ export const LevelSelectPage = () => {
                 height: `${cardH}px`
               }}
             >
-              {/* CURRENT LEVEL: HERO 3D GOLD CARD */}
+              {/* CURRENT LEVEL: HERO 3D GOLD MEDALLION */}
               {isCurrent && (
-                <div className="relative w-full h-full flex flex-col items-center">
+                <div className="relative w-full h-full flex flex-col items-center justify-center">
                   {/* Outer Pulsing Sonar Ring */}
-                  <div className="absolute -inset-2.5 rounded-2xl border-2 border-amber-400 animate-ping opacity-60 pointer-events-none" />
+                  <div className="absolute -inset-2 rounded-full border-2 border-amber-400 animate-ping opacity-60 pointer-events-none" />
 
                   {/* Floating "PLAY" Crown Badge */}
-                  <div className="absolute -top-3.5 z-20 flex items-center justify-center">
-                    <span className="px-3.5 py-0.5 rounded-full bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-300 text-slate-950 font-display font-black text-[10px] uppercase tracking-wider shadow-xl border border-amber-100 animate-bounce">
+                  <div className="absolute -top-5 z-20 flex items-center justify-center pointer-events-none">
+                    <span className="px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-300 text-slate-950 font-display font-black text-[9px] uppercase tracking-wider shadow-lg border border-amber-100 animate-bounce">
                       PLAY
                     </span>
                   </div>
 
-                  {/* Mascot Sitting beside Hero Card (Speech bubble hidden on map) */}
-                  <div className="absolute -right-12 -top-4 pointer-events-none animate-mascot-bob drop-shadow-2xl z-20">
-                    <CharacterMascot emotion="cheering" size="sm" showSpeech={false} />
+                  {/* Bloopi Mascot Sitting beside Hero Node */}
+                  <div className="absolute -right-8 -top-3 pointer-events-none animate-mascot-bob drop-shadow-xl z-20">
+                    <CharacterMascot emotion="cheering" size="xs" showSpeech={false} />
                   </div>
 
-                  {/* Hero 3D Gold Card Button */}
+                  {/* Hero 3D Gold Circular Button */}
                   <button
                     onClick={() => navigate(`/game/${levelId}`)}
-                    className="w-full h-full rounded-2xl bg-gradient-to-b from-amber-300 via-amber-500 to-orange-600 border-2 border-amber-200 border-b-4 border-b-orange-950 shadow-[0_0_30px_rgba(245,158,11,0.65)] flex flex-col items-center justify-between p-2 active:translate-y-1 active:border-b-0 transition-transform hover:scale-105 select-none"
+                    className="w-14 h-14 rounded-full bg-gradient-to-b from-amber-300 via-amber-400 to-amber-600 border-2 border-amber-100 border-b-4 border-b-amber-900 shadow-[0_0_24px_rgba(245,158,11,0.7)] flex items-center justify-center active:translate-y-1 active:border-b-0 transition-transform hover:scale-105 select-none"
                     title={`Engage Sector ${levelId}`}
                     aria-label={`Play sector ${levelId}`}
                   >
-                    <span className="text-[9px] font-display font-black text-amber-950 uppercase tracking-wider bg-amber-200/60 px-2 py-0.5 rounded-full mt-1">
-                      {stageCode}
-                    </span>
-
-                    <span className="font-display font-black text-3xl text-slate-950 leading-none my-auto drop-shadow-sm">
+                    <span className="font-display font-black text-xl text-slate-950 leading-none drop-shadow-sm">
                       {levelId}
                     </span>
-
-                    {/* Objective Badge & 3-Star Slot Preview */}
-                    <div className="w-full flex items-center justify-between px-1">
-                      <span className="text-[8px] font-display font-black text-amber-950 uppercase bg-amber-300/80 px-1 rounded">
-                        {isRescue ? 'RESCUE' : 'CLEAR'}
-                      </span>
-                      <div className="flex gap-0.5">
-                        {[1, 2, 3].map((s) => (
-                          <div key={s} className="w-2.5 h-2.5 rounded-full bg-amber-800/40 border border-amber-900/50" />
-                        ))}
-                      </div>
-                    </div>
                   </button>
                 </div>
               )}
 
-              {/* COMPLETED LEVEL: GLOSSY 3D EMERALD MEDALLION CARD */}
+              {/* COMPLETED LEVEL: GLOSSY 3D EMERALD MEDALLION */}
               {isCompleted && !isCurrent && (
-                <div className="relative w-full h-full flex flex-col items-center">
+                <div className="relative w-full h-full flex flex-col items-center justify-center">
                   <button
                     onClick={() => navigate(`/game/${levelId}`)}
-                    className="w-full h-full rounded-2xl bg-gradient-to-b from-emerald-400 via-teal-500 to-teal-700 border border-emerald-300/40 border-b-4 border-b-teal-950 shadow-xl flex flex-col items-center justify-between p-2 hover:scale-105 active:translate-y-1 active:border-b-0 transition-all select-none"
+                    className="w-12 h-12 sm:w-13 sm:h-13 rounded-full bg-gradient-to-b from-emerald-400 via-teal-500 to-teal-700 border border-emerald-200/50 border-b-4 border-b-teal-950 shadow-md flex items-center justify-center hover:scale-105 active:translate-y-1 active:border-b-0 transition-all select-none"
                     title={`Replay Sector ${levelId} (${starsEarned} Stars)`}
                     aria-label={`Replay sector ${levelId}`}
                   >
-                    <span className="text-[9px] font-display font-black text-emerald-100 uppercase tracking-wider bg-emerald-950/40 px-2 py-0.5 rounded-full mt-0.5">
-                      {stageCode}
-                    </span>
-
-                    <span className="font-display font-black text-2xl text-white leading-none my-auto drop-shadow-md">
+                    <span className="font-display font-black text-base text-white leading-none drop-shadow-md">
                       {levelId}
                     </span>
-
-                    {/* 1–3 Glowing Golden Star Icons Ribbon */}
-                    <div className="flex items-center justify-center gap-1 bg-slate-950/80 border border-amber-400/40 px-2 py-0.5 rounded-full shadow-inner mb-0.5">
-                      {[1, 2, 3].map((s) => (
-                        <img
-                          key={s}
-                          src="/assets/icons/star.png"
-                          alt="Star"
-                          className={`w-3 h-3 object-contain transition-opacity ${
-                            s <= starsEarned ? 'opacity-100 drop-shadow-[0_1px_3px_rgba(251,191,36,0.7)]' : 'opacity-20 grayscale'
-                          }`}
-                        />
-                      ))}
-                    </div>
                   </button>
+
+                  {/* 1–3 Glowing Golden Star Icons Ribbon */}
+                  <div className="absolute -bottom-2 flex items-center justify-center gap-0.5 bg-slate-950/90 border border-amber-400/40 px-1.5 py-0.2 rounded-full shadow-inner z-10">
+                    {[1, 2, 3].map((s) => (
+                      <img
+                        key={s}
+                        src="/assets/icons/star.png"
+                        alt="Star"
+                        className={`w-2.5 h-2.5 object-contain transition-opacity ${
+                          s <= starsEarned ? 'opacity-100 drop-shadow-[0_1px_2px_rgba(251,191,36,0.7)]' : 'opacity-20 grayscale'
+                        }`}
+                      />
+                    ))}
+                  </div>
                 </div>
               )}
 
-              {/* LOCKED / UPCOMING LEVEL: FROSTED INDIGO CRYSTAL TREASURE CARD */}
+              {/* LOCKED / UPCOMING LEVEL: FROSTED INDIGO 3D MEDALLION */}
               {!isCurrent && !isCompleted && (
                 <div
-                  className="w-full h-full rounded-2xl bg-gradient-to-b from-indigo-950/90 via-slate-900 to-slate-950 border-2 border-indigo-500/30 border-b-4 border-b-slate-950 shadow-inner flex flex-col items-center justify-between p-2 opacity-80 cursor-not-allowed select-none"
+                  className="w-full h-full flex flex-col items-center justify-center opacity-70 select-none"
                   title={`Sector ${levelId} Locked`}
                 >
-                  <span className="text-[9px] font-display font-black text-slate-400 uppercase tracking-wider bg-slate-950/50 px-2 py-0.5 rounded-full mt-0.5">
-                    {stageCode}
-                  </span>
-
-                  <div className="w-8 h-8 rounded-xl bg-slate-950/80 border border-slate-700/60 flex items-center justify-center shadow-inner my-auto">
-                    <Lock className="w-4 h-4 text-slate-400" />
+                  <div className="w-11 h-11 rounded-full bg-gradient-to-b from-slate-800 via-slate-900 to-slate-950 border border-slate-700/60 border-b-4 border-b-slate-950 shadow-inner flex flex-col items-center justify-center cursor-not-allowed">
+                    <Lock className="w-3 h-3 text-slate-400" />
+                    <span className="text-[9px] font-display font-bold text-slate-400 mt-0.5 leading-none">
+                      {levelId}
+                    </span>
                   </div>
-
-                  <span className="text-[8px] font-display font-bold text-indigo-300 uppercase bg-indigo-950/60 border border-indigo-800/40 px-2 py-0.5 rounded-full mb-0.5">
-                    {isRescue ? 'RESCUE' : 'TARGET'}
-                  </span>
                 </div>
               )}
             </div>

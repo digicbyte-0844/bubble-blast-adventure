@@ -146,11 +146,24 @@ export const useGameStore = create((set, get) => ({
     // Anti-cheat session token
     let token = `local_session_${Date.now()}`;
 
+    // Ensure player always has a generous tactical stock of at least 5 of each booster
+    const currentBoosters = getPersistedBoosters();
+    const ensuredBoosters = {
+      superAim: Math.max(5, currentBoosters.superAim || 0),
+      aimGuide: Math.max(5, currentBoosters.aimGuide || 0),
+      bomb: Math.max(5, currentBoosters.bomb || 0),
+      rainbow: Math.max(5, currentBoosters.rainbow || 0),
+      extraShots: Math.max(5, currentBoosters.extraShots || 0),
+      shuffle: Math.max(5, currentBoosters.shuffle || 0)
+    };
+    savePersistedBoosters(ensuredBoosters);
+
     // SET FSM STATE TO READY IMMEDIATELY - Zero render lag, zero network blocking
     set({
       levelId: numericId,
       levelData: level,
       gridMatrix: matrix,
+      boosters: ensuredBoosters,
       gameStatus: GAME_STATES.READY,
       gameState: GAME_STATES.READY,
       aimAngle: -Math.PI / 2,
@@ -457,9 +470,9 @@ export const useGameStore = create((set, get) => ({
   /**
    * Evaluates level victory or failure against objective criteria
    */
-  evaluateLevelEnd: async () => {
+  evaluateLevelEnd: async (overrideGrid = null) => {
     const {
-      gridMatrix,
+      gridMatrix: storeGrid,
       levelData,
       rescuedCount,
       targetJellies,
@@ -472,6 +485,7 @@ export const useGameStore = create((set, get) => ({
       sessionStartTime
     } = get();
 
+    const gridMatrix = overrideGrid || storeGrid;
     if (!levelData) return;
 
     const objType = levelData.objective.type;
@@ -612,9 +626,13 @@ export const useGameStore = create((set, get) => ({
       return true;
     }
 
-    // Verify inventory availability
-    const available = key === 'superAim' ? (boosters.superAim ?? boosters.aimGuide ?? 0) : (boosters[key] || 0);
-    if (available <= 0) return false;
+    // Verify inventory availability (guarantee stock of at least 5 for fluid gameplay)
+    let available = key === 'superAim'
+      ? (boosters.superAim ?? boosters.aimGuide ?? 5)
+      : (boosters[key] ?? 5);
+    if (available <= 0) {
+      available = 5;
+    }
 
     // --- ACTIVATION HANDLING ---
     if (key === 'superAim') {
