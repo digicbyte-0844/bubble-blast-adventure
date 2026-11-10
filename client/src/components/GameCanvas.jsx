@@ -540,11 +540,11 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
           collisionResult = { hasCollided: true, snapCell: null, collision: null };
         }
 
+        const isOutOfBounds = proj.y < -60 || proj.y > canvasHeight + 80 || proj.x < -60 || proj.x > canvasWidth + 60;
+
         if (!collisionResult.hasCollided && !isOutOfBounds) {
           drawBubble(ctx, proj.x, proj.y, BUBBLE_RADIUS, proj.color, proj.type);
         }
-
-        const isOutOfBounds = proj.y < -60 || proj.y > canvasHeight + 80 || proj.x < -60 || proj.x > canvasWidth + 60;
 
         if (collisionResult.hasCollided || isOutOfBounds) {
           const snapTarget = collisionResult.snapCell;

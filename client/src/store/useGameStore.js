@@ -193,8 +193,6 @@ export const useGameStore = create((set, get) => ({
       mascotEmotion: 'idle'
     });
 
-    soundEngine.play('click');
-
     // Asynchronously obtain remote session token if backend is reachable
     try {
       const authRes = await ApiService.startGameSession(numericId);
