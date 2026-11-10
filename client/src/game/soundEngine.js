@@ -391,6 +391,10 @@ class SoundEngine {
   }
 
   // Aliases for gameplay compatibility
+  bomb() {
+    return this.playBomb();
+  }
+
   playBombExplode() {
     return this.playBomb();
   }

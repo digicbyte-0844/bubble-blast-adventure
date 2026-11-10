@@ -76,6 +76,7 @@ export const useGameStore = create((set, get) => ({
   levelId: 1,
   levelData: null,
   gridMatrix: [],
+  board: [], // Direct alias for gridMatrix
   gameStatus: GAME_STATES.LOADING,
   gameState: GAME_STATES.LOADING, // Backward-compat alias
 
@@ -163,6 +164,7 @@ export const useGameStore = create((set, get) => ({
       levelId: numericId,
       levelData: level,
       gridMatrix: matrix,
+      board: matrix,
       boosters: ensuredBoosters,
       gameStatus: GAME_STATES.READY,
       gameState: GAME_STATES.READY,
@@ -408,7 +410,20 @@ export const useGameStore = create((set, get) => ({
   },
 
   setGridMatrix: (matrix) => {
-    set({ gridMatrix: matrix });
+    set({ gridMatrix: matrix, board: matrix });
+  },
+
+  /**
+   * Generates a balanced next bubble color from active board colors
+   */
+  generateNextBubble: () => {
+    const { bubbleQueue, gridMatrix, levelData } = get();
+    const fallbackPalette = levelData?.palette || PRIMARY_COLOR_IDS;
+    if (bubbleQueue && bubbleQueue.length > 0) {
+      const next = bubbleQueue[0];
+      if (next && next !== 'bomb' && next !== 'rainbow') return next;
+    }
+    return getBalancedAmmoColor(gridMatrix, fallbackPalette);
   },
 
   /**

@@ -139,6 +139,7 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
   const particlesRef = useRef([]);
   const shockwavesRef = useRef([]);
   const floatingBubblesRef = useRef([]);
+  const fallingBubblesRef = floatingBubblesRef; // Direct alias for gameplay drop mechanics
   const floatingTextsRef = useRef([]);
 
   // Active flying projectile
@@ -255,14 +256,31 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
     let animationFrameId;
 
     const render = () => {
-      const activeGrid = gridMatrixRef.current || [];
-      const currentStatus = gameStatusRef.current;
-      const currentAngle = aimAngleRef.current;
-      const isSuperAim = superAimActiveRef.current || activeBoosterRef.current === 'superAim' || activeBoosterRef.current === 'aimGuide';
-      const curBubble = currentBubbleRef.current;
-      const nxtBubble = nextBubbleRef.current;
-      const shotsLeft = shotsRemainingRef.current;
-      const curHint = hintDataRef.current;
+      // 1. Bulletproof 60 FPS loop guarantee: Request next animation frame immediately at start
+      animationFrameId = requestAnimationFrame(render);
+
+      try {
+        const liveStore = useGameStore.getState();
+        const activeGrid = gridMatrixRef.current || liveStore.gridMatrix || liveStore.board || [];
+        const currentStatus = gameStatusRef.current || liveStore.gameStatus || liveStore.gameState || GAME_STATES.READY;
+        const currentAngle = aimAngleRef.current ?? liveStore.aimAngle ?? -Math.PI / 2;
+        const activeBooster = activeBoosterRef.current || liveStore.activeBooster;
+        const isSuperAim = superAimActiveRef.current || liveStore.superAimActive || activeBooster === 'superAim' || activeBooster === 'aimGuide';
+        const curBubble = currentBubbleRef.current || liveStore.currentBubble || 'cyan';
+        const nxtBubble = nextBubbleRef.current || liveStore.nextBubble || 'yellow';
+        const shotsLeft = shotsRemainingRef.current ?? liveStore.shotsRemaining ?? 0;
+        const curHint = hintDataRef.current || liveStore.hintData;
+
+        // Safety Watchdog: If gameStatus is stuck in SHOOTING or RESOLVING but no projectile is active and animations are quiet, auto-heal to READY
+        if (!activeProjectileRef.current && (currentStatus === GAME_STATES.SHOOTING || currentStatus === GAME_STATES.RESOLVING)) {
+          if (floatingBubblesRef.current.length === 0 && particlesRef.current.length === 0 && shockwavesRef.current.length === 0) {
+            gameStatusRef.current = GAME_STATES.READY;
+            setGameStatus(GAME_STATES.READY);
+            replenishBubbles();
+            currentBubbleRef.current = useGameStore.getState().currentBubble;
+            nextBubbleRef.current = useGameStore.getState().nextBubble;
+          }
+        }
 
       // 1. Clear Arena & Render Cosmic Arcade Backdrop (prevents flat black void)
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
@@ -522,7 +540,9 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
           collisionResult = { hasCollided: true, snapCell: null, collision: null };
         }
 
-        drawBubble(ctx, proj.x, proj.y, BUBBLE_RADIUS, proj.color, proj.type);
+        if (!collisionResult.hasCollided && !isOutOfBounds) {
+          drawBubble(ctx, proj.x, proj.y, BUBBLE_RADIUS, proj.color, proj.type);
+        }
 
         const isOutOfBounds = proj.y < -60 || proj.y > canvasHeight + 80 || proj.x < -60 || proj.x > canvasWidth + 60;
 
@@ -549,10 +569,11 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
           // B) Projectile collides with an existing Bomb bubble on the grid!
           // =========================================================================
           if (isBombShot || (isGridBombImpact && collisionResult.hasCollided)) {
+            // AudioContext bulletproof execution: error can never halt collision resolution
             try {
-              soundEngine.playBombExplode();
+              soundEngine.bomb();
             } catch (e) {
-              try { soundEngine.play('bomb'); } catch (e2) {}
+              try { soundEngine.playBomb(); } catch (e2) {}
             }
 
             // Spawn dramatic explosion shockwave + 35 fiery particles
@@ -644,23 +665,38 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
               try { soundEngine.playDrop(); } catch (e) {}
             }
 
-            // Commit new grid & score
+            // Synchronously update Zustand state with nextBoard and reset launcher & booster
+            const store = useGameStore.getState();
+            const nextB = store.generateNextBubble ? store.generateNextBubble() : 'yellow';
+            const curB = (store.nextBubble && store.nextBubble !== 'bomb' && store.nextBubble !== 'rainbow') ? store.nextBubble : 'cyan';
+
+            useGameStore.setState({
+              gridMatrix: newGrid,
+              board: newGrid,
+              activeBooster: null,
+              gameStatus: GAME_STATES.READY,
+              gameState: GAME_STATES.READY,
+              currentBubble: curB,
+              nextBubble: nextB
+            });
+
+            // Keep internal synchronous refs strictly aligned
             gridMatrixRef.current = newGrid;
-            setGridMatrix(newGrid);
+            activeBoosterRef.current = null;
+            gameStatusRef.current = GAME_STATES.READY;
+            currentBubbleRef.current = curB;
+            nextBubbleRef.current = nextB;
+
             recordTurnResolution(uniquePops.length, dropped.length, 0);
             spawnFloatingText(impactX, impactY - 25, `BOMB BLAST! +${uniquePops.length * 60}`, '#FF4500');
-
-            // CLEAN STATE RESET FINALLY GUARANTEE
+            evaluateLevelEnd(newGrid);
+          } else if (!snapTarget) {
+            // Safety fallback: projectile went out of bounds or board had no open slot
             activeBoosterRef.current = null;
             gameStatusRef.current = GAME_STATES.READY;
             replenishBubbles();
-            evaluateLevelEnd(newGrid);
-            return;
-          }
-
-          if (!snapTarget) {
-            // Safety fallback: projectile went out of bounds or board had no open slot
-            replenishBubbles();
+            currentBubbleRef.current = useGameStore.getState().currentBubble;
+            nextBubbleRef.current = useGameStore.getState().nextBubble;
             evaluateLevelEnd();
           } else {
             const { row, col } = snapTarget;
@@ -750,7 +786,11 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
               console.error('Match resolution error:', err);
             }
 
+            activeBoosterRef.current = null;
+            gameStatusRef.current = GAME_STATES.READY;
             replenishBubbles();
+            currentBubbleRef.current = useGameStore.getState().currentBubble;
+            nextBubbleRef.current = useGameStore.getState().nextBubble;
             evaluateLevelEnd();
           }
         }
@@ -833,8 +873,9 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
 
       // 9. Render Rotating Launcher Base, Core Ammo Badge & Orbiting Swap Ring
       drawLauncherAssembly(ctx, LAUNCHER_X, LAUNCHER_Y, currentAngle, curBubble, nxtBubble, shotsRemainingRef.current);
-
-      animationFrameId = requestAnimationFrame(render);
+      } catch (err) {
+        console.error('GameCanvas 60 FPS render loop caught error:', err);
+      }
     };
 
     animationFrameId = requestAnimationFrame(render);
@@ -1096,7 +1137,8 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
     ctx.save();
     ctx.shadowColor = 'rgba(0, 240, 255, 0.6)';
     ctx.shadowBlur = 10;
-    drawBubble(ctx, x, y, BUBBLE_RADIUS, current || 'cyan');
+    const resolvedLoadedColor = (current === 'bomb' && activeBoosterRef.current !== 'bomb') ? 'cyan' : (current || 'cyan');
+    drawBubble(ctx, x, y, BUBBLE_RADIUS, resolvedLoadedColor);
     ctx.restore();
 
     // 4. Primary Barrel Core Badge: SHOTS LEFT Pill
@@ -1169,7 +1211,8 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
     ctx.restore();
 
     // Draw Next Bubble inside Satellite Ring
-    drawBubble(ctx, NEXT_BUBBLE_X, NEXT_BUBBLE_Y, BUBBLE_RADIUS * 0.78, next || 'yellow');
+    const resolvedNextColor = (next === 'bomb' || next === 'rainbow') ? 'yellow' : (next || 'yellow');
+    drawBubble(ctx, NEXT_BUBBLE_X, NEXT_BUBBLE_Y, BUBBLE_RADIUS * 0.78, resolvedNextColor);
 
     // Mini Swap Pill Badge underneath
     const swapBadgeW = 34;
