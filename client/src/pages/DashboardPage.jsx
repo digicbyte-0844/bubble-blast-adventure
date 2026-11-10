@@ -72,7 +72,7 @@ export const DashboardPage = () => {
       label: 'Cumulative Stars',
       value: `${cumulativeStars} / 120`,
       icon: Star,
-      iconImg: '/assets/icons/star.png',
+      isStarBadge: true,
       gradient: 'from-amber-500 via-amber-600 to-orange-600',
       border: 'border-b-orange-950',
       shadow: 'shadow-amber-500/20'
@@ -170,7 +170,9 @@ export const DashboardPage = () => {
               <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 to-transparent pointer-events-none rounded-t-2xl" />
 
               <div className="relative p-2.5 rounded-xl bg-black/25 backdrop-blur-sm border border-white/20 shadow-inner flex items-center justify-center">
-                {card.iconImg ? (
+                {card.isStarBadge ? (
+                  <Star className="w-5 h-5 fill-amber-300 text-amber-200 drop-shadow" />
+                ) : card.iconImg ? (
                   <img src={card.iconImg} alt="" className="w-5 h-5 object-contain drop-shadow" />
                 ) : (
                   <Icon className="w-5 h-5 text-white drop-shadow" />
@@ -222,12 +224,12 @@ export const DashboardPage = () => {
                 <div className="flex items-center gap-3 font-display">
                   <div className="flex items-center gap-1 bg-black/40 px-2 py-1 rounded-lg border border-white/5">
                     {[1, 2, 3].map((s) => (
-                      <img
+                      <Star
                         key={s}
-                        src="/assets/icons/star.png"
-                        alt="star"
-                        className={`w-3.5 h-3.5 object-contain ${
-                          s <= item.stars ? 'drop-shadow-sm brightness-110' : 'opacity-20 grayscale'
+                        className={`w-3.5 h-3.5 ${
+                          s <= item.stars
+                            ? 'fill-amber-400 text-amber-300 drop-shadow-sm'
+                            : 'fill-slate-800 text-slate-600'
                         }`}
                       />
                     ))}

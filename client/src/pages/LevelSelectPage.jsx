@@ -2,13 +2,14 @@
  * Level Select Saga Roadmap Screen
  * King / Supercell / Rovio Caliber:
  * Winding Sinusoidal Saga Adventure Path across 4 Themed Biome Chapters,
- * Continuous SVG Golden/Stone Connecting Trail, 3 Distinct Node States (Emerald Medal, Hero Sonar Node, Frosted Slate Lock),
- * and Auto-Scroll to Current Hero Level.
+ * Rich 3D Arcade Stage Cards (w-36 sm:w-44) with State-specific 3D Gradients,
+ * Continuous SVG Golden/Stone Connecting Trail, Cleanly Positioned Bloopi Mascot,
+ * Atmospheric Biome Nebulae, and Real 5-Point Golden Stars.
  */
 
 import React, { useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Star, Lock, Play, ChevronRight, Award, Compass, Sparkles } from 'lucide-react';
+import { Star, Lock, Play, ChevronRight, Compass, Sparkles, Target, Trophy } from 'lucide-react';
 import { GAME_NAME } from '../config/gameConfig.js';
 import { useUserStore } from '../store/useUserStore';
 import CharacterMascot from '../components/CharacterMascot.jsx';
@@ -22,8 +23,9 @@ const BIOMES = [
     range: [1, 10],
     accent: '#10B981',
     badge: 'BIOME 1',
-    themeBg: 'from-emerald-950/60 via-teal-900/30 to-transparent',
-    border: 'border-emerald-500/40'
+    themeBg: 'from-emerald-950/80 via-teal-900/50 to-slate-950/80',
+    border: 'border-emerald-500/50',
+    glowColor: 'bg-emerald-500/15'
   },
   {
     id: 2,
@@ -32,8 +34,9 @@ const BIOMES = [
     range: [11, 20],
     accent: '#6366F1',
     badge: 'BIOME 2',
-    themeBg: 'from-indigo-950/60 via-blue-900/30 to-transparent',
-    border: 'border-indigo-500/40'
+    themeBg: 'from-indigo-950/80 via-blue-900/50 to-slate-950/80',
+    border: 'border-indigo-500/50',
+    glowColor: 'bg-blue-500/15'
   },
   {
     id: 3,
@@ -42,8 +45,9 @@ const BIOMES = [
     range: [21, 30],
     accent: '#F97316',
     badge: 'BIOME 3',
-    themeBg: 'from-orange-950/60 via-red-900/30 to-transparent',
-    border: 'border-orange-500/40'
+    themeBg: 'from-orange-950/80 via-red-900/50 to-slate-950/80',
+    border: 'border-orange-500/50',
+    glowColor: 'bg-orange-500/15'
   },
   {
     id: 4,
@@ -52,8 +56,9 @@ const BIOMES = [
     range: [31, 40],
     accent: '#EC4899',
     badge: 'BIOME 4',
-    themeBg: 'from-fuchsia-950/60 via-purple-900/30 to-transparent',
-    border: 'border-pink-500/40'
+    themeBg: 'from-fuchsia-950/80 via-purple-900/50 to-slate-950/80',
+    border: 'border-pink-500/50',
+    glowColor: 'bg-fuchsia-500/15'
   }
 ];
 
@@ -95,13 +100,13 @@ export const LevelSelectPage = () => {
   }, [unlockedUpTo]);
 
   // Sinusoidal Math & Node Coordinate Calculation
-  // Container width = 380, center = 190, amplitude = 80, stepY = 110, startY = 140, chapter gap = 95
+  // Container width = 380, center = 190, amplitude = 48, stepY = 160, startY = 260, chapter gap = 180
   const MAP_WIDTH = 380;
   const CENTER_X = MAP_WIDTH / 2;
-  const AMPLITUDE = 80;
-  const STEP_Y = 110;
-  const START_Y = 140;
-  const BIOME_CHAPTER_GAP = 95;
+  const AMPLITUDE = 48;
+  const STEP_Y = 160;
+  const START_Y = 260;
+  const BIOME_CHAPTER_GAP = 180;
   const TOTAL_LEVELS = 40;
 
   const nodePositions = useMemo(() => {
@@ -121,7 +126,7 @@ export const LevelSelectPage = () => {
     return pos;
   }, []);
 
-  const totalMapHeight = START_Y + TOTAL_LEVELS * STEP_Y + 3 * BIOME_CHAPTER_GAP + 120;
+  const totalMapHeight = START_Y + TOTAL_LEVELS * STEP_Y + 3 * BIOME_CHAPTER_GAP + 160;
 
   // Generate SVG Path Beziers
   const { completedPathD, lockedPathD } = useMemo(() => {
@@ -149,13 +154,25 @@ export const LevelSelectPage = () => {
     };
   }, [nodePositions, unlockedUpTo]);
 
+  // Objective icon helper
+  const getObjectiveIcon = (lvl) => {
+    if (lvl % 3 === 0) return Sparkles;
+    if (lvl % 5 === 0) return Trophy;
+    return Target;
+  };
+
   return (
-    <div className="min-h-[calc(100dvh-56px)] bg-[#0B0F19] text-slate-100 flex flex-col items-center select-none pt-16 pb-32 relative overflow-x-hidden">
+    <div className="min-h-[calc(100dvh-56px)] bg-[#0B0F19] text-slate-100 flex flex-col items-center select-none pt-14 pb-44 relative overflow-x-hidden">
       {/* Background Star Ambient Dust & Atmospheric Glowing Nebulas */}
       <div className="fixed inset-0 opacity-25 bg-[radial-gradient(#94A3B8_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
-      <div className="fixed top-1/4 -left-20 w-80 h-80 rounded-full bg-emerald-600/10 blur-3xl pointer-events-none" />
-      <div className="fixed top-2/4 -right-20 w-80 h-80 rounded-full bg-indigo-600/10 blur-3xl pointer-events-none" />
-      <div className="fixed top-3/4 -left-20 w-80 h-80 rounded-full bg-orange-600/10 blur-3xl pointer-events-none" />
+      <div className="fixed top-1/4 -left-20 w-80 h-80 rounded-full bg-emerald-600/15 blur-3xl pointer-events-none" />
+      <div className="fixed top-2/4 -right-20 w-80 h-80 rounded-full bg-indigo-600/15 blur-3xl pointer-events-none" />
+      <div className="fixed top-3/4 -left-20 w-80 h-80 rounded-full bg-orange-600/15 blur-3xl pointer-events-none" />
+
+      {/* Floating decorative cosmic bubbles */}
+      <div className="fixed top-24 left-6 w-10 h-10 rounded-full bg-cyan-400/10 border border-cyan-400/20 blur-[1px] pointer-events-none animate-pulse" />
+      <div className="fixed top-96 right-8 w-14 h-14 rounded-full bg-pink-400/10 border border-pink-400/20 blur-[1px] pointer-events-none animate-pulse" />
+      <div className="fixed bottom-36 left-10 w-12 h-12 rounded-full bg-amber-400/10 border border-amber-400/20 blur-[1px] pointer-events-none animate-pulse" />
 
       {/* Sticky Header Bar */}
       <div className="sticky top-[56px] z-30 w-full bg-[#0B0F19]/95 backdrop-blur-md border-b border-slate-800/80 px-4 py-3 flex items-center justify-between max-w-lg mx-auto shadow-xl">
@@ -173,9 +190,9 @@ export const LevelSelectPage = () => {
           </div>
         </div>
 
-        {/* Cumulative Stars Counter */}
+        {/* Cumulative Stars Counter with Authentic 5-Point Star */}
         <div className="flex items-center gap-1.5 bg-slate-950 border border-amber-400/40 px-3 py-1.5 rounded-full shadow-inner">
-          <img src="/assets/icons/star.png" alt="Star" className="w-4 h-4 object-contain drop-shadow-sm" />
+          <Star className="w-4 h-4 fill-amber-400 text-amber-300 drop-shadow-sm" />
           <span className="font-display font-black text-sm text-amber-300">{totalStars}</span>
           <span className="font-display font-bold text-xs text-slate-400">/ 120</span>
         </div>
@@ -183,7 +200,7 @@ export const LevelSelectPage = () => {
 
       {/* Main Saga Canvas Container */}
       <div
-        className="relative w-full max-w-[380px] mx-auto pt-6"
+        className="relative w-full max-w-[380px] mx-auto pt-4"
         style={{ height: `${totalMapHeight}px` }}
       >
         {/* SVG Connecting Path Layer */}
@@ -195,7 +212,7 @@ export const LevelSelectPage = () => {
         >
           <defs>
             <filter id="goldGlow" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor="#F59E0B" floodOpacity="0.85" />
+              <feDropShadow dx="0" dy="0" stdDeviation="6" floodColor="#F59E0B" floodOpacity="0.85" />
             </filter>
           </defs>
 
@@ -208,7 +225,7 @@ export const LevelSelectPage = () => {
               strokeDasharray="8 8"
               strokeLinecap="round"
               fill="none"
-              opacity="0.8"
+              opacity="0.85"
             />
           )}
 
@@ -250,8 +267,8 @@ export const LevelSelectPage = () => {
           const node = nodePositions.find((n) => n.levelId === firstLevelInBiome);
           if (!node) return null;
 
-          // Generous vertical margin so the banner is NEVER covered by any node or mascot
-          const bannerTop = firstLevelInBiome === 1 ? 40 : node.y - 65;
+          // Generous vertical margin so the banner is NEVER touched by any node or floating badge
+          const bannerTop = firstLevelInBiome === 1 ? 28 : node.y - 130;
 
           return (
             <div
@@ -260,7 +277,7 @@ export const LevelSelectPage = () => {
               style={{ top: `${bannerTop}px` }}
             >
               <div
-                className={`py-1.5 px-3 rounded-2xl bg-gradient-to-r ${b.themeBg} border ${b.border} backdrop-blur-md shadow-lg`}
+                className={`py-2 px-3 rounded-2xl bg-gradient-to-r ${b.themeBg} border ${b.border} backdrop-blur-md shadow-xl`}
               >
                 <span className="font-display font-black text-[9px] uppercase tracking-wider text-slate-300 block">
                   {b.badge}
@@ -269,14 +286,14 @@ export const LevelSelectPage = () => {
                   {b.name}
                 </h2>
                 <span className="font-display font-bold text-[8px] text-slate-400 block mt-0.5">
-                  Sectors {b.range[0]}–{b.range[1]}
+                  Sectors {b.range[0]}–{b.range[1]} • {b.subtitle}
                 </span>
               </div>
             </div>
           );
         })}
 
-        {/* Render the 40 Level 3D Medallion Nodes */}
+        {/* Render the 40 Level 3D Stage Cards */}
         {nodePositions.map((pos) => {
           const { levelId, x, y } = pos;
           const record = progressMap.get(levelId);
@@ -284,10 +301,11 @@ export const LevelSelectPage = () => {
           const isCurrent = levelId === unlockedUpTo;
           const isCompleted = levelId < unlockedUpTo || (record && record.stars > 0);
           const starsEarned = record?.stars || (isCompleted ? 3 : 0);
+          const ObjIcon = getObjectiveIcon(levelId);
 
-          // Sleek, compact circular 3D node sizing (56px by 56px) to avoid crowding or covering roadmap text
-          const cardW = 56;
-          const cardH = 56;
+          // Rich 3D Arcade Stage Card sizing (148px by 134px)
+          const cardW = 148;
+          const cardH = 134;
 
           return (
             <div
@@ -301,79 +319,133 @@ export const LevelSelectPage = () => {
                 height: `${cardH}px`
               }}
             >
-              {/* CURRENT LEVEL: HERO 3D GOLD MEDALLION */}
+              {/* CURRENT LEVEL: VIBRANT GOLD/AMBER 3D STAGE CARD */}
               {isCurrent && (
-                <div className="relative w-full h-full flex flex-col items-center justify-center">
-                  {/* Outer Pulsing Sonar Ring */}
-                  <div className="absolute -inset-2 rounded-full border-2 border-amber-400 animate-ping opacity-60 pointer-events-none" />
-
-                  {/* Floating "PLAY" Crown Badge */}
-                  <div className="absolute -top-5 z-20 flex items-center justify-center pointer-events-none">
-                    <span className="px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-300 text-slate-950 font-display font-black text-[9px] uppercase tracking-wider shadow-lg border border-amber-100 animate-bounce">
-                      PLAY
+                <div className="relative w-full h-full">
+                  {/* Floating "PLAY NOW" Crown Badge with ample spacing above card */}
+                  <div className="absolute -top-6 inset-x-0 z-20 flex items-center justify-center pointer-events-none">
+                    <span className="px-3 py-0.5 rounded-full bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-300 text-slate-950 font-display font-black text-[10px] uppercase tracking-wider shadow-xl border border-amber-100 animate-bounce">
+                      PLAY NOW
                     </span>
                   </div>
 
-                  {/* Bloopi Mascot Sitting beside Hero Node */}
-                  <div className="absolute -right-8 -top-3 pointer-events-none animate-mascot-bob drop-shadow-xl z-20">
+                  {/* Bloopi Mascot Positioned Cleanly OUTSIDE to the Right (Zero Overlap with Number) */}
+                  <div className="absolute -right-14 top-2 pointer-events-none animate-mascot-bob drop-shadow-2xl z-20">
                     <CharacterMascot emotion="cheering" size="xs" showSpeech={false} />
                   </div>
 
-                  {/* Hero 3D Gold Circular Button */}
+                  {/* 3D Gold Stage Card Button */}
                   <button
                     onClick={() => navigate(`/game/${levelId}`)}
-                    className="w-14 h-14 rounded-full bg-gradient-to-b from-amber-300 via-amber-400 to-amber-600 border-2 border-amber-100 border-b-4 border-b-amber-900 shadow-[0_0_24px_rgba(245,158,11,0.7)] flex items-center justify-center active:translate-y-1 active:border-b-0 transition-transform hover:scale-105 select-none"
+                    className="w-full h-full rounded-2xl bg-gradient-to-b from-amber-400 via-orange-500 to-amber-600 border-2 border-amber-200 border-b-4 border-amber-800 shadow-[0_0_35px_rgba(245,158,11,0.55)] p-2.5 flex flex-col justify-between items-center active:translate-y-1 active:border-b-2 hover:scale-[1.02] transition-transform select-none cursor-pointer"
                     title={`Engage Sector ${levelId}`}
                     aria-label={`Play sector ${levelId}`}
                   >
-                    <span className="font-display font-black text-xl text-slate-950 leading-none drop-shadow-sm">
-                      {levelId}
-                    </span>
+                    {/* Top Ribbon */}
+                    <div className="flex items-center justify-between w-full px-1">
+                      <span className="font-display font-black text-[10px] text-amber-950 uppercase tracking-wider bg-amber-200/90 px-2 py-0.5 rounded-md">
+                        STAGE {levelId < 10 ? `0${levelId}` : levelId}
+                      </span>
+                      <div className="w-5 h-5 rounded-full bg-amber-950/30 flex items-center justify-center">
+                        <ObjIcon className="w-3 h-3 text-amber-100" />
+                      </div>
+                    </div>
+
+                    {/* Center 3D Gold Number Medallion */}
+                    <div className="w-13 h-13 rounded-full bg-gradient-to-b from-amber-200 via-amber-300 to-yellow-400 border border-white border-b-2 border-amber-700 shadow-md flex items-center justify-center my-0.5">
+                      <span className="font-display font-black text-2xl text-slate-950 leading-none drop-shadow-sm">
+                        {levelId}
+                      </span>
+                    </div>
+
+                    {/* Bottom 3-Star Slot Bar */}
+                    <div className="flex items-center justify-center gap-1.5 w-full pt-1 border-t border-amber-900/30">
+                      {[1, 2, 3].map((s) => (
+                        <Star
+                          key={s}
+                          className="w-3.5 h-3.5 fill-amber-200 text-amber-100 drop-shadow-sm"
+                        />
+                      ))}
+                    </div>
                   </button>
                 </div>
               )}
 
-              {/* COMPLETED LEVEL: GLOSSY 3D EMERALD MEDALLION */}
+              {/* COMPLETED LEVEL: GLOSSY EMERALD/TEAL 3D STAGE CARD */}
               {isCompleted && !isCurrent && (
-                <div className="relative w-full h-full flex flex-col items-center justify-center">
+                <div className="w-full h-full">
                   <button
                     onClick={() => navigate(`/game/${levelId}`)}
-                    className="w-12 h-12 sm:w-13 sm:h-13 rounded-full bg-gradient-to-b from-emerald-400 via-teal-500 to-teal-700 border border-emerald-200/50 border-b-4 border-b-teal-950 shadow-md flex items-center justify-center hover:scale-105 active:translate-y-1 active:border-b-0 transition-all select-none"
+                    className="w-full h-full rounded-2xl bg-gradient-to-b from-emerald-500 via-teal-600 to-teal-700 border-2 border-emerald-300/80 border-b-4 border-teal-950 shadow-lg p-2.5 flex flex-col justify-between items-center hover:scale-[1.02] active:translate-y-1 active:border-b-2 transition-transform select-none cursor-pointer"
                     title={`Replay Sector ${levelId} (${starsEarned} Stars)`}
                     aria-label={`Replay sector ${levelId}`}
                   >
-                    <span className="font-display font-black text-base text-white leading-none drop-shadow-md">
-                      {levelId}
-                    </span>
-                  </button>
+                    {/* Top Ribbon */}
+                    <div className="flex items-center justify-between w-full px-1">
+                      <span className="font-display font-black text-[9px] text-teal-950 uppercase tracking-wider bg-emerald-200/90 px-1.5 py-0.5 rounded-md">
+                        STAGE {levelId < 10 ? `0${levelId}` : levelId}
+                      </span>
+                      <div className="w-5 h-5 rounded-full bg-teal-950/40 flex items-center justify-center">
+                        <ObjIcon className="w-3 h-3 text-emerald-200" />
+                      </div>
+                    </div>
 
-                  {/* 1–3 Glowing Golden Star Icons Ribbon */}
-                  <div className="absolute -bottom-2 flex items-center justify-center gap-0.5 bg-slate-950/90 border border-amber-400/40 px-1.5 py-0.2 rounded-full shadow-inner z-10">
-                    {[1, 2, 3].map((s) => (
-                      <img
-                        key={s}
-                        src="/assets/icons/star.png"
-                        alt="Star"
-                        className={`w-2.5 h-2.5 object-contain transition-opacity ${
-                          s <= starsEarned ? 'opacity-100 drop-shadow-[0_1px_2px_rgba(251,191,36,0.7)]' : 'opacity-20 grayscale'
-                        }`}
-                      />
-                    ))}
-                  </div>
+                    {/* Center Emerald Number Medallion */}
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-b from-emerald-300 via-teal-400 to-teal-600 border border-emerald-200 border-b-2 border-teal-950 shadow-md flex items-center justify-center my-0.5">
+                      <span className="font-display font-black text-xl text-white leading-none drop-shadow-md">
+                        {levelId}
+                      </span>
+                    </div>
+
+                    {/* Bottom 3-Star Slot Bar with Genuine 5-Point Stars */}
+                    <div className="flex items-center justify-center gap-1.5 w-full pt-1 border-t border-teal-950/40">
+                      {[1, 2, 3].map((s) => (
+                        <Star
+                          key={s}
+                          className={`w-3.5 h-3.5 ${
+                            s <= starsEarned
+                              ? 'fill-amber-400 text-amber-300 drop-shadow-[0_1px_2px_rgba(251,191,36,0.8)]'
+                              : 'fill-slate-900/60 text-slate-600'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </button>
                 </div>
               )}
 
-              {/* LOCKED / UPCOMING LEVEL: FROSTED INDIGO 3D MEDALLION */}
+              {/* LOCKED LEVEL: RICH ROYAL INDIGO/PURPLE CRYSTAL CARD */}
               {!isCurrent && !isCompleted && (
                 <div
-                  className="w-full h-full flex flex-col items-center justify-center opacity-70 select-none"
+                  className="w-full h-full rounded-2xl bg-gradient-to-b from-indigo-900/90 via-slate-800 to-slate-900 border-2 border-indigo-400/30 border-b-4 border-slate-950 shadow-md p-2.5 flex flex-col justify-between items-center opacity-90 select-none"
                   title={`Sector ${levelId} Locked`}
                 >
-                  <div className="w-11 h-11 rounded-full bg-gradient-to-b from-slate-800 via-slate-900 to-slate-950 border border-slate-700/60 border-b-4 border-b-slate-950 shadow-inner flex flex-col items-center justify-center cursor-not-allowed">
-                    <Lock className="w-3 h-3 text-slate-400" />
-                    <span className="text-[9px] font-display font-bold text-slate-400 mt-0.5 leading-none">
+                  {/* Top Ribbon */}
+                  <div className="flex items-center justify-between w-full px-1">
+                    <span className="font-display font-black text-[9px] text-indigo-300 uppercase tracking-wider bg-indigo-950/80 px-1.5 py-0.5 rounded-md border border-indigo-500/20">
+                      STAGE {levelId < 10 ? `0${levelId}` : levelId}
+                    </span>
+                    <div className="w-5 h-5 rounded-full bg-indigo-950/80 flex items-center justify-center">
+                      <ObjIcon className="w-3 h-3 text-indigo-400/60" />
+                    </div>
+                  </div>
+
+                  {/* Center Frosted Indigo Padlock Emblem */}
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-b from-slate-800 to-slate-950 border border-indigo-500/30 border-b-2 border-slate-950 shadow-inner flex flex-col items-center justify-center my-0.5">
+                    <Lock className="w-4 h-4 text-indigo-300" />
+                    <span className="text-[9px] font-display font-black text-indigo-200 mt-0.5 leading-none">
                       {levelId}
                     </span>
+                  </div>
+
+                  {/* Bottom 3-Star Slot Bar (Unearned) */}
+                  <div className="flex items-center justify-center gap-1.5 w-full pt-1 border-t border-indigo-950/60">
+                    {[1, 2, 3].map((s) => (
+                      <Star
+                        key={s}
+                        className="w-3.5 h-3.5 fill-slate-900/80 text-slate-700"
+                      />
+                    ))}
                   </div>
                 </div>
               )}

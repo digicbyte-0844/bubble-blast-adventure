@@ -264,8 +264,8 @@ export const SettingsPage = () => {
       {showResetConfirm && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
           <div className="w-full max-w-sm clay-card border border-rose-500/60 p-6 rounded-3xl text-center shadow-2xl space-y-4">
-            <div className="w-14 h-14 mx-auto rounded-2xl bg-rose-500/20 text-rose-400 flex items-center justify-center text-2xl border border-rose-500/30">
-              ⚠️
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-rose-500/20 text-rose-400 flex items-center justify-center border border-rose-500/30">
+              <AlertTriangle className="w-7 h-7 text-rose-400" />
             </div>
             <div>
               <h3 className="text-lg font-display font-black text-white">Confirm Cache Reset?</h3>

@@ -53,10 +53,49 @@ export const LeaderboardPage = () => {
   const top3 = leaderboard.slice(0, 3);
   const remainingPlayers = leaderboard.slice(3);
 
-  const podiumColors = [
-    { rank: 1, badge: '1st Place Champion', bg: 'from-amber-300 to-amber-500', textColor: 'text-slate-950', ring: 'ring-amber-400', icon: Trophy, iconColor: 'text-amber-400' },
-    { rank: 2, badge: '2nd Place Elite', bg: 'from-slate-200 to-slate-400', textColor: 'text-slate-950', ring: 'ring-slate-300', icon: Medal, iconColor: 'text-slate-300' },
-    { rank: 3, badge: '3rd Place Master', bg: 'from-amber-700 to-amber-900', textColor: 'text-amber-100', ring: 'ring-amber-600', icon: Medal, iconColor: 'text-amber-600' }
+  const podiumStyles = [
+    {
+      rank: 1,
+      badge: 'CHAMPION',
+      cardClass: 'bg-gradient-to-br from-amber-400 via-yellow-500 to-orange-600 text-slate-950 border-2 border-amber-200 border-b-4 border-amber-800 shadow-[0_0_30px_rgba(245,158,11,0.45)] md:-translate-y-3',
+      emblemBg: 'bg-gradient-to-b from-amber-100 to-yellow-300 border-2 border-amber-500 shadow-md',
+      badgeBg: 'bg-amber-950 text-amber-200 border border-amber-700',
+      titleColor: 'text-slate-950',
+      scoreColor: 'text-slate-950 font-black',
+      starColor: 'fill-amber-950 text-amber-800',
+      subTextColor: 'text-slate-900 font-bold',
+      borderColor: 'border-amber-800/40',
+      icon: Trophy,
+      iconClass: 'w-6 h-6 text-amber-900'
+    },
+    {
+      rank: 2,
+      badge: 'RUNNER UP',
+      cardClass: 'bg-gradient-to-br from-cyan-400 via-sky-500 to-blue-700 text-white border-2 border-cyan-200/60 border-b-4 border-blue-900 shadow-lg shadow-sky-500/25',
+      emblemBg: 'bg-gradient-to-b from-cyan-100 to-sky-300 border-2 border-cyan-500 shadow-md',
+      badgeBg: 'bg-blue-950 text-cyan-200 border border-cyan-700',
+      titleColor: 'text-white',
+      scoreColor: 'text-cyan-100 font-black',
+      starColor: 'fill-cyan-200 text-cyan-100',
+      subTextColor: 'text-sky-100 font-bold',
+      borderColor: 'border-blue-900/40',
+      icon: Medal,
+      iconClass: 'w-6 h-6 text-blue-900'
+    },
+    {
+      rank: 3,
+      badge: '3RD PLACE',
+      cardClass: 'bg-gradient-to-br from-orange-400 via-rose-500 to-amber-800 text-white border-2 border-orange-200/60 border-b-4 border-orange-950 shadow-lg shadow-rose-500/25',
+      emblemBg: 'bg-gradient-to-b from-orange-100 to-rose-300 border-2 border-orange-500 shadow-md',
+      badgeBg: 'bg-orange-950 text-orange-200 border border-orange-700',
+      titleColor: 'text-white',
+      scoreColor: 'text-amber-100 font-black',
+      starColor: 'fill-orange-200 text-orange-100',
+      subTextColor: 'text-rose-100 font-bold',
+      borderColor: 'border-orange-950/40',
+      icon: Medal,
+      iconClass: 'w-6 h-6 text-orange-950'
+    }
   ];
 
   return (
@@ -101,37 +140,51 @@ export const LeaderboardPage = () => {
         </div>
       ) : (
         <>
-          {/* Top 3 Podium Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+          {/* Top 3 Championship Podium Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             {top3.map((player, idx) => {
-              const meta = podiumColors[idx] || podiumColors[0];
+              const meta = podiumStyles[idx] || podiumStyles[0];
+              const IconComp = meta.icon;
               return (
                 <div
                   key={player.rank}
-                  className="clay-card p-5 rounded-3xl flex flex-col justify-between relative overflow-hidden"
+                  className={`p-5 rounded-3xl flex flex-col justify-between relative overflow-hidden transition-transform duration-200 ${meta.cardClass}`}
                 >
-                  <div className="flex items-center gap-3.5 mb-3">
-                    <div className={`w-12 h-12 rounded-2xl bg-slate-950 border-2 ${meta.ring} flex items-center justify-center flex-shrink-0 shadow-inner`}>
-                      {React.createElement(meta.icon, { className: `w-6 h-6 ${meta.iconColor} drop-shadow` })}
-                    </div>
-                    <div className="text-left flex-1 min-w-0">
-                      <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-display font-black ${meta.textColor || 'text-slate-950'} bg-gradient-to-r ${meta.bg} mb-1 shadow-sm`}>
+                  {/* Subtle Top Gloss Sheen */}
+                  <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent pointer-events-none rounded-t-3xl" />
+
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-display font-black tracking-wider uppercase shadow-sm ${meta.badgeBg}`}>
                         {meta.badge}
                       </span>
-                      <h2 className="font-display font-black text-base text-white truncate">
-                        {player.name || player.username}
-                      </h2>
+                      <span className="font-display font-black text-xs opacity-75">
+                        RANK #{player.rank}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3.5 mb-4">
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${meta.emblemBg}`}>
+                        <IconComp className={meta.iconClass} />
+                      </div>
+                      <div className="text-left flex-1 min-w-0">
+                        <h2 className={`font-display font-black text-lg truncate drop-shadow-sm ${meta.titleColor}`}>
+                          {player.name || player.username}
+                        </h2>
+                        <span className={`text-[11px] font-display block ${meta.subTextColor}`}>
+                          Sector {player.levelsCompleted || 40} Reached
+                        </span>
+                      </div>
                     </div>
                   </div>
                   
-                  <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between">
-                    <span className="font-display font-black text-lg text-amber-300">
-                      {(player.totalScore || player.score).toLocaleString()} pts
+                  <div className={`pt-3 border-t flex items-center justify-between ${meta.borderColor}`}>
+                    <span className={`font-display text-xl ${meta.scoreColor}`}>
+                      {(player.totalScore || player.score).toLocaleString()} <span className="text-xs font-bold uppercase opacity-80">pts</span>
                     </span>
-                    <div className="flex items-center gap-1.5 text-xs text-slate-300 font-display font-bold">
-                      <span>{player.totalStars || 3} ★</span>
-                      <span>•</span>
-                      <span>Sec {player.levelsCompleted || 40}</span>
+                    <div className="flex items-center gap-1 font-display font-black text-xs">
+                      <Star className={`w-3.5 h-3.5 ${meta.starColor}`} />
+                      <span>{player.totalStars || 3}</span>
                     </div>
                   </div>
                 </div>
@@ -177,38 +230,64 @@ export const LeaderboardPage = () => {
               ) : (
                 <table className="w-full text-left text-xs font-display">
                   <thead>
-                    <tr className="border-b border-slate-800 text-slate-300 uppercase text-xs tracking-wider">
-                      <th className="py-2.5 font-bold">Rank</th>
-                      <th className="py-2.5 font-bold">Pilot</th>
-                      <th className="py-2.5 font-bold">Verified Score</th>
-                      <th className="py-2.5 font-bold">Stars</th>
-                      <th className="py-2.5 font-bold text-right">Status</th>
+                    <tr className="border-b border-slate-800 text-slate-400 uppercase text-[11px] tracking-wider">
+                      <th className="py-3 px-3 font-bold">Rank</th>
+                      <th className="py-3 px-3 font-bold">Pilot Callsign</th>
+                      <th className="py-3 px-3 font-bold">Verified Score</th>
+                      <th className="py-3 px-3 font-bold">Stars</th>
+                      <th className="py-3 px-3 font-bold text-right">Integrity</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/60 font-body">
+                  <tbody className="divide-y divide-slate-800/40 font-body">
                     {leaderboard
                       .filter((item) => (item.name || item.username || '').toLowerCase().includes(searchQuery.toLowerCase().trim()))
-                      .map((item, idx) => (
-                        <tr key={idx} className="hover:bg-slate-800/40 transition-colors">
-                          <td className="py-3 font-display font-black text-sm text-amber-400">
-                            #{item.rank}
-                          </td>
-                          <td className="py-3 font-semibold text-white">
-                            {item.name || item.username}
-                          </td>
-                          <td className="py-3 font-display font-black text-amber-300">
-                            {(item.totalScore || item.score).toLocaleString()}
-                          </td>
-                          <td className="py-3 font-display font-bold text-slate-300">
-                            {item.totalStars || 0} ★
-                          </td>
-                          <td className="py-3 text-right">
-                            <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-400 font-bold uppercase">
-                              Clean
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
+                      .map((item, idx) => {
+                        const rankNum = item.rank;
+                        const rankBadgeColor =
+                          rankNum === 1
+                            ? 'bg-amber-400/20 text-amber-300 border-amber-400/40'
+                            : rankNum === 2
+                            ? 'bg-cyan-400/20 text-cyan-300 border-cyan-400/40'
+                            : rankNum === 3
+                            ? 'bg-orange-400/20 text-orange-300 border-orange-400/40'
+                            : rankNum <= 5
+                            ? 'bg-purple-400/20 text-purple-300 border-purple-400/40'
+                            : 'bg-slate-800/60 text-slate-400 border-slate-700/50';
+
+                        return (
+                          <tr
+                            key={idx}
+                            className={`transition-colors hover:bg-slate-800/50 ${
+                              idx % 2 === 0 ? 'bg-slate-900/60' : 'bg-slate-900/25'
+                            }`}
+                          >
+                            <td className="py-3.5 px-3">
+                              <span
+                                className={`inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-lg font-display font-black text-xs border ${rankBadgeColor}`}
+                              >
+                                #{rankNum}
+                              </span>
+                            </td>
+                            <td className="py-3.5 px-3 font-semibold text-white">
+                              {item.name || item.username}
+                            </td>
+                            <td className="py-3.5 px-3 font-display font-black text-amber-300 text-sm">
+                              {(item.totalScore || item.score).toLocaleString()}
+                            </td>
+                            <td className="py-3.5 px-3 font-display font-bold text-slate-300">
+                              <span className="inline-flex items-center gap-1">
+                                <span>{item.totalStars || 0}</span>
+                                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-300 inline drop-shadow-sm" />
+                              </span>
+                            </td>
+                            <td className="py-3.5 px-3 text-right">
+                              <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[10px] text-emerald-400 font-bold uppercase tracking-wider">
+                                Clean
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
                   </tbody>
                 </table>
               )}

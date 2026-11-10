@@ -6,7 +6,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Lock, User, Mail, ArrowRight, Sparkles, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
+import { Lock, User, Mail, ArrowRight, Sparkles, AlertCircle, Loader2, Eye, EyeOff, Star } from 'lucide-react';
 import { GAME_NAME } from '../config/gameConfig.js';
 import { useUserStore } from '../store/useUserStore';
 
@@ -99,7 +99,7 @@ export const RegisterPage = () => {
         
         <div className="text-center mb-6">
           <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-amber-400 to-amber-600 flex items-center justify-center mx-auto mb-3 shadow-lg ring-4 ring-amber-400/20">
-            <img src="/assets/icons/star.png" alt="Star" className="w-9 h-9 object-contain drop-shadow" />
+            <Star className="w-9 h-9 fill-amber-200 text-amber-100 drop-shadow" />
           </div>
           <h1 className="text-2xl font-display font-black text-white text-shadow-arcade">
             Pilot Registration

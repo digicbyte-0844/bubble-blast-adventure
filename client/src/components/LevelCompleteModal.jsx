@@ -105,10 +105,8 @@ export const LevelCompleteModal = ({
                 }`}
               >
                 {isEarned && isVisible ? (
-                  <img
-                    src="/assets/icons/star.png"
-                    alt="Star"
-                    className="w-12 h-12 object-contain drop-shadow-sm animate-beacon"
+                  <Star
+                    className="w-12 h-12 fill-amber-400 text-amber-300 drop-shadow-[0_0_12px_rgba(251,191,36,0.9)] animate-beacon"
                     style={{ animationDuration: '1.2s' }}
                   />
                 ) : (
@@ -152,7 +150,7 @@ export const LevelCompleteModal = ({
             <div className="flex items-center justify-between text-xs font-body font-semibold">
               <span className="text-slate-400">Mini-Jellies Rescued</span>
               <span className="text-rose-400 font-bold font-display inline-flex items-center gap-1.5">
-                <img src="/assets/icons/star.png" alt="Star" className="w-4 h-4 object-contain inline-block drop-shadow-sm" />
+                <Star className="w-4 h-4 fill-rose-400 text-rose-300 inline-block drop-shadow-sm" />
                 <span>{rescuedCount}</span>
               </span>
             </div>

@@ -6,7 +6,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Save, Play, Download, Trash2, Sparkles, Sliders, Shield, Palette, CheckCircle2 } from 'lucide-react';
+import { Save, Play, Download, Trash2, Sparkles, Sliders, Shield, Palette, CheckCircle2, Star } from 'lucide-react';
 import { GAME_NAME } from '../config/gameConfig.js';
 import { BUBBLE_COLORS, OBJECTIVES, SPECIAL_BUBBLES } from '../game/constants.js';
 import { useGameStore } from '../store/useGameStore.js';
@@ -23,7 +23,7 @@ const PALETTE_BRUSHES = [
   { id: 'blue', label: 'Sapphire', color: '#3B82F6', border: '#2563EB' },
   { id: 'bomb', label: 'Cosmic Bomb', color: '#EA580C', border: '#C2410C', iconImg: '/assets/icons/bomb.png' },
   { id: 'rainbow', label: 'Prism Wildcard', color: '#F472B6', border: '#EC4899', iconImg: '/assets/icons/rainbow.png' },
-  { id: 'rescue', label: 'Trapped Jelly', color: '#38BDF8', border: '#0284C7', iconImg: '/assets/icons/star.png' },
+  { id: 'rescue', label: 'Trapped Jelly', color: '#38BDF8', border: '#0284C7', isStarIcon: true },
   { id: null, label: 'Eraser (Clear)', color: '#1E293B', border: '#334155' }
 ];
 
@@ -278,7 +278,11 @@ export const LevelEditorPage = () => {
                           boxShadow: isSelected ? `0 0 10px ${b.color}` : 'none'
                         }}
                       >
-                        {b.iconImg && <img src={b.iconImg} alt="" className="w-3.5 h-3.5 object-contain" />}
+                        {b.isStarIcon ? (
+                          <Star className="w-3.5 h-3.5 fill-amber-300 text-amber-200" />
+                        ) : b.iconImg ? (
+                          <img src={b.iconImg} alt="" className="w-3.5 h-3.5 object-contain" />
+                        ) : null}
                       </div>
                       <span className="truncate text-[11px] font-sans">{b.label}</span>
                     </button>
@@ -329,7 +333,7 @@ export const LevelEditorPage = () => {
                           ) : cell === 'rainbow' ? (
                             <img src="/assets/icons/rainbow.png" alt="Rainbow" className="w-4 h-4 object-contain" />
                           ) : cell === 'rescue' ? (
-                            <img src="/assets/icons/star.png" alt="Rescue" className="w-4 h-4 object-contain" />
+                            <Star className="w-4 h-4 fill-amber-300 text-amber-200" />
                           ) : null}
                         </button>
                       );

@@ -25,7 +25,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({ onNextLevel, onRepla
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
       <div className="w-full max-w-sm bg-cosmic-card border-2 border-cosmic-accent p-6 rounded-3xl text-center shadow-2xl relative overflow-hidden animate-in fade-in zoom-in duration-200">
         <div className="flex justify-center mb-2">
-          <img src="/assets/icons/star.png" alt="Victory" className="w-12 h-12 object-contain drop-shadow-sm animate-pulse" />
+          <Star className="w-12 h-12 fill-amber-400 text-amber-300 drop-shadow-[0_0_15px_rgba(251,191,36,0.9)] animate-pulse" />
         </div>
         <h2 className="text-2xl font-black text-white tracking-tight uppercase">Victory!</h2>
         <p className="text-xs text-cosmic-cyan font-bold tracking-wider uppercase mb-4">

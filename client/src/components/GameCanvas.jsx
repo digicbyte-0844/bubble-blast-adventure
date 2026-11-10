@@ -55,7 +55,7 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
   const LAUNCHER_Y = Math.max(BUBBLE_RADIUS * 8, canvasHeight - 48);
   const NEXT_BUBBLE_X = canvasWidth / 2 - Math.max(48, BUBBLE_RADIUS * 2.65);
   const NEXT_BUBBLE_Y = LAUNCHER_Y + 10;
-  const DANGER_Y = LAUNCHER_Y - BUBBLE_RADIUS * 4.2;
+  const DANGER_Y = Math.max(BUBBLE_RADIUS * 7, canvasHeight - 135);
 
   const {
     gridMatrix,
@@ -339,12 +339,12 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
       const beamPulse = Math.sin(Date.now() / pulseSpeed);
 
       // 1. Soft Outer Neon Aura
-      ctx.shadowBlur = isCritical ? 16 : (isWarning ? 12 : 8);
+      ctx.shadowBlur = isCritical ? 18 : (isWarning ? 12 : 6);
       ctx.shadowColor = isCritical
         ? 'rgba(239, 68, 68, 0.95)'
         : (isWarning ? 'rgba(244, 63, 94, 0.75)' : 'rgba(244, 63, 94, 0.35)');
 
-      // 2. Crisp Gradient Core Line
+      // 2. Primary Sci-Fi Double Energy Beam with Pulse
       const beamGrad = ctx.createLinearGradient(X_OFFSET + 8, DANGER_Y, canvasWidth - X_OFFSET - 8, DANGER_Y);
       if (isCritical) {
         beamGrad.addColorStop(0, 'rgba(239, 68, 68, 0.2)');
@@ -360,12 +360,25 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
         beamGrad.addColorStop(1, 'rgba(244, 63, 94, 0.05)');
       }
 
+      // Upper Beam Line
       ctx.strokeStyle = beamGrad;
-      ctx.lineWidth = isCritical ? 3 + beamPulse : (isWarning ? 2.5 : 1.5);
+      ctx.lineWidth = isCritical ? 2.5 + beamPulse : 1.5;
       ctx.beginPath();
-      ctx.moveTo(X_OFFSET + 10, DANGER_Y);
-      ctx.lineTo(canvasWidth - X_OFFSET - 10, DANGER_Y);
+      ctx.moveTo(X_OFFSET + 10, DANGER_Y - 2);
+      ctx.lineTo(canvasWidth - X_OFFSET - 10, DANGER_Y - 2);
       ctx.stroke();
+
+      // Lower Laser Beam (Subtle Dashed Guide)
+      ctx.save();
+      ctx.setLineDash([6, 4]);
+      ctx.lineDashOffset = (Date.now() / 40) % 10;
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = isCritical ? 'rgba(239, 68, 68, 0.6)' : 'rgba(244, 63, 94, 0.35)';
+      ctx.beginPath();
+      ctx.moveTo(X_OFFSET + 10, DANGER_Y + 2);
+      ctx.lineTo(canvasWidth - X_OFFSET - 10, DANGER_Y + 2);
+      ctx.stroke();
+      ctx.restore();
 
       // 3. Glowing Diamond Anchor Nodes on Left & Right Walls
       const drawAnchorDiamond = (dx, dy) => {
@@ -384,16 +397,24 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
       drawAnchorDiamond(X_OFFSET + 10, DANGER_Y);
       drawAnchorDiamond(canvasWidth - X_OFFSET - 10, DANGER_Y);
 
-      if (dangerSeverity >= 1) {
-        ctx.fillStyle = isCritical ? '#EF4444' : '#F43F5E';
-        ctx.font = '900 10px "Fredoka", "Nunito", sans-serif';
-        ctx.textAlign = 'right';
-        ctx.fillText(
-          isCritical ? '⚠️ CRITICAL DANGER LINE' : 'BARRIER THRESHOLD',
-          canvasWidth - X_OFFSET - 18,
-          DANGER_Y - 5
-        );
-      }
+      // Semi-transparent Danger Line Pill Badge on right wall
+      const pillLabel = isCritical ? 'CRITICAL DANGER' : 'DANGER LINE';
+      ctx.font = '900 8px "Fredoka", "Nunito", sans-serif';
+      const labelW = ctx.measureText(pillLabel).width + 12;
+      const pillX = canvasWidth - X_OFFSET - labelW - 14;
+      const pillY = DANGER_Y - 7;
+      ctx.beginPath();
+      ctx.roundRect(pillX, pillY, labelW, 14, 4);
+      ctx.fillStyle = isCritical ? 'rgba(185, 28, 28, 0.85)' : 'rgba(15, 23, 42, 0.75)';
+      ctx.strokeStyle = isCritical ? '#EF4444' : 'rgba(244, 63, 94, 0.5)';
+      ctx.lineWidth = 1;
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = isCritical ? '#FEE2E2' : '#FDA4AF';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(pillLabel, pillX + labelW / 2, pillY + 7);
       ctx.restore();
 
       // 2. Render Existing Grid Bubbles

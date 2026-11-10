@@ -56,7 +56,7 @@ export const GameHUD = ({ onPause, onRestart, onQuitToMap }) => {
       const target = targetJellies || levelData.objective.target || 3;
       return (
         <span className="inline-flex items-center gap-1.5">
-          <img src="/assets/icons/star.png" alt="Star" className="w-4 h-4 object-contain drop-shadow-sm inline-block" />
+          <Star className="w-4 h-4 fill-amber-400 text-amber-300 drop-shadow-sm inline-block" />
           <span>{currentRescued} / {target} Rescued</span>
         </span>
       );

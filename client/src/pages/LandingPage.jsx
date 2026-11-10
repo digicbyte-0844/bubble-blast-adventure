@@ -76,8 +76,16 @@ export const LandingPage = () => {
       {/* Deep Obsidian Atmospheric Background with Subtle Vignette */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_20%,rgba(30,41,59,0.5),rgba(11,15,25,0.98))] pointer-events-none" />
 
-      {/* Subtle Starfield Dust */}
+      {/* Subtle Starfield Dust & Floating Decorative Atmospheric Nebulae */}
       <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#94A3B8_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
+      <div className="absolute top-1/4 -left-16 w-64 h-64 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
+      <div className="absolute top-1/3 -right-16 w-72 h-72 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
+      <div className="absolute bottom-16 left-1/4 w-60 h-60 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
+
+      {/* Decorative Floating 3D Bubbles in Arena Margins */}
+      <div className="absolute top-16 -left-6 w-20 h-20 rounded-full bg-gradient-to-br from-cyan-400/20 via-sky-500/10 to-transparent border border-cyan-400/30 shadow-[0_0_15px_rgba(56,189,248,0.2)] pointer-events-none animate-pulse" />
+      <div className="absolute top-44 -right-8 w-24 h-24 rounded-full bg-gradient-to-br from-amber-400/20 via-orange-500/10 to-transparent border border-amber-400/30 shadow-[0_0_15px_rgba(251,191,36,0.2)] pointer-events-none" />
+      <div className="absolute bottom-32 -left-8 w-20 h-20 rounded-full bg-gradient-to-br from-purple-500/20 via-pink-500/10 to-transparent border border-purple-400/30 shadow-[0_0_15px_rgba(168,85,247,0.2)] pointer-events-none" />
 
       {/* 1. TOP ZONE: Daily Streak & Reward Pill Banner */}
       <div className="relative z-10 w-full max-w-sm flex justify-center pt-1">
@@ -101,12 +109,12 @@ export const LandingPage = () => {
         </button>
       </div>
 
-      {/* 2. CENTER ZONE: Bobbing Bloopi Mascot & 3D Title */}
-      <div className="relative z-10 flex flex-col items-center justify-center my-auto text-center">
+      {/* 2. CENTER ZONE: Bobbing Bloopi Mascot & 3D Title in Glassmorphic Arcade Showcase Frame */}
+      <div className="relative z-10 flex flex-col items-center justify-center my-auto text-center w-full max-w-sm px-4 py-4 rounded-3xl bg-slate-900/45 border border-slate-700/50 backdrop-blur-md shadow-2xl shadow-slate-950/80">
         {/* Floating Animated Bloopi Mascot with Interactive Speech & Audio */}
         <div
           onClick={handleMascotClick}
-          className={`mb-3 cursor-pointer transform transition-all select-none group flex flex-col items-center ${
+          className={`mb-2 cursor-pointer transform transition-all select-none group flex flex-col items-center ${
             isJiggling ? 'scale-110 animate-bounce' : 'animate-mascot-bob hover:scale-105 active:scale-95'
           }`}
           title="Tap Bloopi for pro tips!"
@@ -123,11 +131,12 @@ export const LandingPage = () => {
           </span>
         </div>
 
-        <h1 className="font-display font-black text-3xl sm:text-4xl md:text-5xl text-amber-400 tracking-tight leading-tight uppercase text-shadow-arcade">
+        {/* 3D Multi-Layered Title */}
+        <h1 className="font-display font-black text-3xl sm:text-4xl text-transparent bg-clip-text bg-gradient-to-b from-yellow-300 via-amber-400 to-orange-500 tracking-tight leading-tight uppercase drop-shadow-[0_4px_12px_rgba(245,158,11,0.5)]">
           {GAME_NAME}
         </h1>
 
-        <p className="font-body font-semibold text-xs text-slate-400 max-w-xs mt-1">
+        <p className="font-body font-semibold text-xs text-slate-300 max-w-xs mt-1">
           Rescue trapped Mini-Jellies in 40+ handcrafted honeycomb sectors.
         </p>
       </div>
@@ -194,38 +203,42 @@ export const LandingPage = () => {
         )}
       </div>
 
-      {/* 4. BOTTOM QUICK NAVIGATION SHELF (4 Tactile Icons) */}
+      {/* 4. BOTTOM QUICK NAVIGATION SHELF (4 Tactile 3D Color-Coded Cards) */}
       <div className="relative z-10 w-full max-w-sm grid grid-cols-4 gap-2 pt-1 pb-safe">
+        {/* Map: Emerald 3D Card */}
         <Link
           to="/levels"
-          className="flex flex-col items-center justify-center py-2 px-1 rounded-2xl bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800 hover:border-slate-700 transition-all active:scale-95 shadow-sm min-h-[48px]"
+          className="flex flex-col items-center justify-center py-2 px-1 rounded-2xl bg-gradient-to-b from-emerald-500/20 to-teal-950/70 border border-emerald-500/40 border-b-4 border-b-emerald-800 shadow-md shadow-emerald-950/40 text-emerald-300 transition-all hover:brightness-110 active:translate-y-0.5 active:border-b-2 min-h-[48px]"
         >
-          <Map className="w-5 h-5 text-sky-400 mb-0.5" />
-          <span className="font-display font-bold text-xs text-slate-300">Map</span>
+          <Map className="w-5 h-5 text-emerald-400 mb-0.5 drop-shadow" />
+          <span className="font-display font-bold text-xs text-emerald-200">Map</span>
         </Link>
 
+        {/* Ranks: Gold 3D Card */}
         <Link
           to="/leaderboard"
-          className="flex flex-col items-center justify-center py-2 px-1 rounded-2xl bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800 hover:border-slate-700 transition-all active:scale-95 shadow-sm min-h-[48px]"
+          className="flex flex-col items-center justify-center py-2 px-1 rounded-2xl bg-gradient-to-b from-amber-500/20 to-orange-950/70 border border-amber-500/40 border-b-4 border-b-amber-800 shadow-md shadow-amber-950/40 text-amber-300 transition-all hover:brightness-110 active:translate-y-0.5 active:border-b-2 min-h-[48px]"
         >
-          <Award className="w-5 h-5 text-amber-400 mb-0.5" />
-          <span className="font-display font-bold text-xs text-slate-300">Ranks</span>
+          <Award className="w-5 h-5 text-amber-400 mb-0.5 drop-shadow" />
+          <span className="font-display font-bold text-xs text-amber-200">Ranks</span>
         </Link>
 
+        {/* Badges: Amethyst 3D Card */}
         <Link
           to="/achievements"
-          className="flex flex-col items-center justify-center py-2 px-1 rounded-2xl bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800 hover:border-slate-700 transition-all active:scale-95 shadow-sm min-h-[48px]"
+          className="flex flex-col items-center justify-center py-2 px-1 rounded-2xl bg-gradient-to-b from-purple-500/20 to-indigo-950/70 border border-purple-500/40 border-b-4 border-b-purple-800 shadow-md shadow-purple-950/40 text-purple-300 transition-all hover:brightness-110 active:translate-y-0.5 active:border-b-2 min-h-[48px]"
         >
-          <Trophy className="w-5 h-5 text-emerald-400 mb-0.5" />
-          <span className="font-display font-bold text-xs text-slate-300">Badges</span>
+          <Trophy className="w-5 h-5 text-purple-400 mb-0.5 drop-shadow" />
+          <span className="font-display font-bold text-xs text-purple-200">Badges</span>
         </Link>
 
+        {/* Editor: Cyan 3D Card */}
         <Link
           to="/editor"
-          className="flex flex-col items-center justify-center py-2 px-1 rounded-2xl bg-slate-900/90 hover:bg-slate-800/90 border border-slate-800 hover:border-slate-700 transition-all active:scale-95 shadow-sm min-h-[48px]"
+          className="flex flex-col items-center justify-center py-2 px-1 rounded-2xl bg-gradient-to-b from-sky-500/20 to-blue-950/70 border border-sky-500/40 border-b-4 border-b-sky-800 shadow-md shadow-sky-950/40 text-sky-300 transition-all hover:brightness-110 active:translate-y-0.5 active:border-b-2 min-h-[48px]"
         >
-          <Sparkles className="w-5 h-5 text-amber-400 mb-0.5" />
-          <span className="font-display font-bold text-xs text-slate-300">Editor</span>
+          <Sparkles className="w-5 h-5 text-sky-400 mb-0.5 drop-shadow" />
+          <span className="font-display font-bold text-xs text-sky-200">Editor</span>
         </Link>
       </div>
     </div>
