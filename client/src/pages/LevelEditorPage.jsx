@@ -13,18 +13,18 @@ import { useGameStore } from '../store/useGameStore.js';
 import ApiService from '../services/api.js';
 
 const PALETTE_BRUSHES = [
-  { id: 'cyan', label: 'Cyan Bubble', color: '#06B6D4', border: '#0891B2', icon: '💎' },
-  { id: 'pink', label: 'Pink Bubble', color: '#EC4899', border: '#DB2777', icon: '🌸' },
-  { id: 'orange', label: 'Orange Bubble', color: '#F97316', border: '#EA580C', icon: '🍊' },
-  { id: 'green', label: 'Green Bubble', color: '#10B981', border: '#059669', icon: '🍀' },
-  { id: 'red', label: 'Ruby Bubble', color: '#EF4444', border: '#DC2626', icon: '❤️' },
-  { id: 'purple', label: 'Amethyst', color: '#A855F7', border: '#9333EA', icon: '🔮' },
-  { id: 'yellow', label: 'Amber Sun', color: '#FACC15', border: '#EAB308', icon: '⭐' },
-  { id: 'blue', label: 'Sapphire', color: '#3B82F6', border: '#2563EB', icon: '🌊' },
-  { id: 'bomb', label: 'Cosmic Bomb', color: '#EA580C', border: '#C2410C', icon: '💣' },
-  { id: 'rainbow', label: 'Prism Wildcard', color: '#F472B6', border: '#EC4899', icon: '🌈' },
-  { id: 'rescue', label: 'Trapped Jelly', color: '#38BDF8', border: '#0284C7', icon: '🌟' },
-  { id: null, label: 'Eraser (Clear)', color: '#1E293B', border: '#334155', icon: '✖' }
+  { id: 'cyan', label: 'Cyan Bubble', color: '#06B6D4', border: '#0891B2' },
+  { id: 'pink', label: 'Pink Bubble', color: '#EC4899', border: '#DB2777' },
+  { id: 'orange', label: 'Orange Bubble', color: '#F97316', border: '#EA580C' },
+  { id: 'green', label: 'Green Bubble', color: '#10B981', border: '#059669' },
+  { id: 'red', label: 'Ruby Bubble', color: '#EF4444', border: '#DC2626' },
+  { id: 'purple', label: 'Amethyst', color: '#A855F7', border: '#9333EA' },
+  { id: 'yellow', label: 'Amber Sun', color: '#FACC15', border: '#EAB308' },
+  { id: 'blue', label: 'Sapphire', color: '#3B82F6', border: '#2563EB' },
+  { id: 'bomb', label: 'Cosmic Bomb', color: '#EA580C', border: '#C2410C', iconImg: '/assets/icons/bomb.png' },
+  { id: 'rainbow', label: 'Prism Wildcard', color: '#F472B6', border: '#EC4899', iconImg: '/assets/icons/rainbow.png' },
+  { id: 'rescue', label: 'Trapped Jelly', color: '#38BDF8', border: '#0284C7', iconImg: '/assets/icons/star.png' },
+  { id: null, label: 'Eraser (Clear)', color: '#1E293B', border: '#334155' }
 ];
 
 export const LevelEditorPage = () => {
@@ -229,10 +229,10 @@ export const LevelEditorPage = () => {
                   onChange={(e) => setObjectiveType(e.target.value)}
                   className="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl px-3 py-2 text-[16px] md:text-xs text-white font-bold focus:outline-none focus:border-amber-400 transition-all min-h-[44px]"
                 >
-                  <option value="clear_all">🎯 Clear All Bubbles</option>
-                  <option value="rescue">🌟 Rescue Trapped Jellies</option>
-                  <option value="target_score">🏆 Target Score Race</option>
-                  <option value="limited_shots">⚡ Ammo Survival Mode</option>
+                  <option value="clear_all">Clear All Bubbles</option>
+                  <option value="rescue">Rescue Trapped Jellies</option>
+                  <option value="target_score">Target Score Race</option>
+                  <option value="limited_shots">Ammo Survival Mode</option>
                 </select>
               </div>
 
@@ -278,7 +278,7 @@ export const LevelEditorPage = () => {
                           boxShadow: isSelected ? `0 0 10px ${b.color}` : 'none'
                         }}
                       >
-                        {b.icon}
+                        {b.iconImg && <img src={b.iconImg} alt="" className="w-3.5 h-3.5 object-contain" />}
                       </div>
                       <span className="truncate text-[11px] font-sans">{b.label}</span>
                     </button>
@@ -324,7 +324,13 @@ export const LevelEditorPage = () => {
                           }}
                           title={`Row ${r}, Col ${c}: ${cell || 'Empty'}`}
                         >
-                          {cell === 'bomb' ? '💣' : cell === 'rainbow' ? '🌈' : cell === 'rescue' ? '🌟' : ''}
+                          {cell === 'bomb' ? (
+                            <img src="/assets/icons/bomb.png" alt="Bomb" className="w-4 h-4 object-contain" />
+                          ) : cell === 'rainbow' ? (
+                            <img src="/assets/icons/rainbow.png" alt="Rainbow" className="w-4 h-4 object-contain" />
+                          ) : cell === 'rescue' ? (
+                            <img src="/assets/icons/star.png" alt="Rescue" className="w-4 h-4 object-contain" />
+                          ) : null}
                         </button>
                       );
                     })}
@@ -333,8 +339,9 @@ export const LevelEditorPage = () => {
               })}
             </div>
 
-            <p className="text-[10px] text-slate-500 font-semibold mt-4 text-center">
-              💡 Top ceiling row (Row 0) acts as anchor. Clusters disconnected from Row 0 during gameplay fall as gravity avalanches!
+            <p className="text-[10px] text-slate-500 font-semibold mt-4 text-center flex items-center justify-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span>Top ceiling row (Row 0) acts as anchor. Clusters disconnected from Row 0 during gameplay fall as gravity avalanches!</span>
             </p>
           </div>
         </div>

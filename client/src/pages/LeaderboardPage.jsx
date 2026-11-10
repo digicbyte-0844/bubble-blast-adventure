@@ -54,9 +54,9 @@ export const LeaderboardPage = () => {
   const remainingPlayers = leaderboard.slice(3);
 
   const podiumColors = [
-    { rank: 1, badge: '🥇 1st Place', bg: 'from-amber-300 to-amber-500', textColor: 'text-slate-950', ring: 'ring-amber-400' },
-    { rank: 2, badge: '🥈 2nd Place', bg: 'from-slate-200 to-slate-400', textColor: 'text-slate-950', ring: 'ring-slate-300' },
-    { rank: 3, badge: '🥉 3rd Place', bg: 'from-amber-700 to-amber-900', textColor: 'text-amber-100', ring: 'ring-amber-600' }
+    { rank: 1, badge: '1st Place Champion', bg: 'from-amber-300 to-amber-500', textColor: 'text-slate-950', ring: 'ring-amber-400', icon: Trophy, iconColor: 'text-amber-400' },
+    { rank: 2, badge: '2nd Place Elite', bg: 'from-slate-200 to-slate-400', textColor: 'text-slate-950', ring: 'ring-slate-300', icon: Medal, iconColor: 'text-slate-300' },
+    { rank: 3, badge: '3rd Place Master', bg: 'from-amber-700 to-amber-900', textColor: 'text-amber-100', ring: 'ring-amber-600', icon: Medal, iconColor: 'text-amber-600' }
   ];
 
   return (
@@ -111,8 +111,8 @@ export const LeaderboardPage = () => {
                   className="clay-card p-5 rounded-3xl flex flex-col justify-between relative overflow-hidden"
                 >
                   <div className="flex items-center gap-3.5 mb-3">
-                    <div className={`w-12 h-12 rounded-2xl bg-slate-950 border-2 ${meta.ring} flex items-center justify-center text-xl flex-shrink-0 shadow-inner`}>
-                      {idx === 0 ? '👑' : idx === 1 ? '🌟' : '🚀'}
+                    <div className={`w-12 h-12 rounded-2xl bg-slate-950 border-2 ${meta.ring} flex items-center justify-center flex-shrink-0 shadow-inner`}>
+                      {React.createElement(meta.icon, { className: `w-6 h-6 ${meta.iconColor} drop-shadow` })}
                     </div>
                     <div className="text-left flex-1 min-w-0">
                       <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-display font-black ${meta.textColor || 'text-slate-950'} bg-gradient-to-r ${meta.bg} mb-1 shadow-sm`}>

@@ -79,8 +79,8 @@ export const LoginPage = () => {
       <div className="w-full max-w-md clay-card p-6 md:p-8 border border-slate-700/60 shadow-2xl relative">
         
         <div className="text-center mb-6">
-          <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-amber-400 to-amber-600 flex items-center justify-center text-3xl mx-auto mb-3 shadow-lg ring-4 ring-amber-400/20">
-            🫧
+          <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-amber-400 to-amber-600 flex items-center justify-center mx-auto mb-3 shadow-lg ring-4 ring-amber-400/20">
+            <img src="/assets/icons/bubble.png" alt="Bubble" className="w-9 h-9 object-contain drop-shadow" />
           </div>
           <h1 className="text-2xl font-display font-black text-white text-shadow-arcade">
             Pilot Access

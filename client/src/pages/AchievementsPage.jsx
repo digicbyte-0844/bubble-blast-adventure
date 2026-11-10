@@ -4,9 +4,24 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { Award, Lock, CheckCircle2, Sparkles, Star, Trophy } from 'lucide-react';
+import { Award, Lock, CheckCircle2, Sparkles, Star, Trophy, Target, Zap, Flame, Rocket, Calendar, Compass, Shield } from 'lucide-react';
 import { GAME_NAME } from '../config/gameConfig.js';
 import ApiService from '../services/api.js';
+
+const ACHIEVEMENT_ICONS = {
+  FIRST_POP: Sparkles,
+  BUBBLE_BEGINNER: Rocket,
+  PERFECT_AIM: Target,
+  COMBO_MASTER: Flame,
+  BUBBLE_HUNTER: Zap,
+  RESCUE_HERO: Star,
+  STAR_COLLECTOR: Trophy,
+  BOOSTER_EXPERT: Shield,
+  LEVEL_MASTER: Award,
+  BUBBLE_LEGEND: Trophy,
+  BANK_SHOT_PRO: Compass,
+  DAILY_CHAMPION: Calendar
+};
 
 export const AchievementsPage = () => {
   const [loading, setLoading] = useState(true);
@@ -22,18 +37,18 @@ export const AchievementsPage = () => {
           setAchievements(res.achievements);
         } else {
           setAchievements([
-            { id: 'FIRST_POP', title: 'First Pop', description: 'Pop your first 3-bubble cluster', isUnlocked: true, progress: 1, maxProgress: 1, rewardCoins: 50, icon: '🫧' },
-            { id: 'BUBBLE_BEGINNER', title: 'Bubble Beginner', description: 'Clear Sector 5 in the story campaign', isUnlocked: true, progress: 5, maxProgress: 5, rewardCoins: 100, icon: '🚀' },
-            { id: 'PERFECT_AIM', title: 'Perfect Aim', description: 'Complete any sector with 5+ shots remaining', isUnlocked: true, progress: 1, maxProgress: 1, rewardCoins: 150, icon: '🎯' },
-            { id: 'COMBO_MASTER', title: 'Combo Master', description: 'Achieve a x5 combo streak in one session', isUnlocked: true, progress: 5, maxProgress: 5, rewardCoins: 200, icon: '🔥' },
-            { id: 'BUBBLE_HUNTER', title: 'Bubble Hunter', description: 'Pop 500 total bubbles across all sectors', isUnlocked: false, progress: 340, maxProgress: 500, rewardCoins: 250, icon: '⚡' },
-            { id: 'RESCUE_HERO', title: 'Rescue Hero', description: 'Free 25 trapped Starlight Mini-Jellies', isUnlocked: false, progress: 18, maxProgress: 25, rewardCoins: 300, icon: '🌟' },
-            { id: 'STAR_COLLECTOR', title: 'Star Collector', description: 'Collect 50 total golden stars', isUnlocked: false, progress: 38, maxProgress: 50, rewardCoins: 350, icon: '⭐' },
-            { id: 'BOOSTER_EXPERT', title: 'Booster Expert', description: 'Deploy 10 tactical boosters during gameplay', isUnlocked: true, progress: 10, maxProgress: 10, rewardCoins: 200, icon: '💣' },
-            { id: 'LEVEL_MASTER', title: 'Level Master', description: 'Clear all 40 handcrafted story sectors', isUnlocked: false, progress: 24, maxProgress: 40, rewardCoins: 500, icon: '👑' },
-            { id: 'BUBBLE_LEGEND', title: 'Bubble Legend', description: 'Accumulate over 500,000 cumulative score points', isUnlocked: true, progress: 500000, maxProgress: 500000, rewardCoins: 600, icon: '🏆' },
-            { id: 'BANK_SHOT_PRO', title: 'Bank Shot Pro', description: 'Score 15 pops directly from wall ricochet reflections', isUnlocked: false, progress: 9, maxProgress: 15, rewardCoins: 250, icon: '📐' },
-            { id: 'DAILY_CHAMPION', title: 'Daily Champion', description: 'Maintain a 5-day Daily Challenge completion streak', isUnlocked: false, progress: 3, maxProgress: 5, rewardCoins: 400, icon: '📅' }
+            { id: 'FIRST_POP', title: 'First Pop', description: 'Pop your first 3-bubble cluster', isUnlocked: true, progress: 1, maxProgress: 1, rewardCoins: 50 },
+            { id: 'BUBBLE_BEGINNER', title: 'Bubble Beginner', description: 'Clear Sector 5 in the story campaign', isUnlocked: true, progress: 5, maxProgress: 5, rewardCoins: 100 },
+            { id: 'PERFECT_AIM', title: 'Perfect Aim', description: 'Complete any sector with 5+ shots remaining', isUnlocked: true, progress: 1, maxProgress: 1, rewardCoins: 150 },
+            { id: 'COMBO_MASTER', title: 'Combo Master', description: 'Achieve a x5 combo streak in one session', isUnlocked: true, progress: 5, maxProgress: 5, rewardCoins: 200 },
+            { id: 'BUBBLE_HUNTER', title: 'Bubble Hunter', description: 'Pop 500 total bubbles across all sectors', isUnlocked: false, progress: 340, maxProgress: 500, rewardCoins: 250 },
+            { id: 'RESCUE_HERO', title: 'Rescue Hero', description: 'Free 25 trapped Starlight Mini-Jellies', isUnlocked: false, progress: 18, maxProgress: 25, rewardCoins: 300 },
+            { id: 'STAR_COLLECTOR', title: 'Star Collector', description: 'Collect 50 total golden stars', isUnlocked: false, progress: 38, maxProgress: 50, rewardCoins: 350 },
+            { id: 'BOOSTER_EXPERT', title: 'Booster Expert', description: 'Deploy 10 tactical boosters during gameplay', isUnlocked: true, progress: 10, maxProgress: 10, rewardCoins: 200 },
+            { id: 'LEVEL_MASTER', title: 'Level Master', description: 'Clear all 40 handcrafted story sectors', isUnlocked: false, progress: 24, maxProgress: 40, rewardCoins: 500 },
+            { id: 'BUBBLE_LEGEND', title: 'Bubble Legend', description: 'Accumulate over 500,000 cumulative score points', isUnlocked: true, progress: 500000, maxProgress: 500000, rewardCoins: 600 },
+            { id: 'BANK_SHOT_PRO', title: 'Bank Shot Pro', description: 'Score 15 pops directly from wall ricochet reflections', isUnlocked: false, progress: 9, maxProgress: 15, rewardCoins: 250 },
+            { id: 'DAILY_CHAMPION', title: 'Daily Champion', description: 'Maintain a 5-day Daily Challenge completion streak', isUnlocked: false, progress: 3, maxProgress: 5, rewardCoins: 400 }
           ]);
         }
       } catch (e) {
@@ -97,8 +112,11 @@ export const AchievementsPage = () => {
             >
               <div>
                 <div className="flex items-start justify-between mb-2">
-                  <div className="w-11 h-11 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center text-xl shadow-inner">
-                    {item.icon}
+                  <div className="w-11 h-11 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center text-amber-400 shadow-inner">
+                    {(() => {
+                      const IconComponent = ACHIEVEMENT_ICONS[item.id] || Award;
+                      return <IconComponent className="w-5 h-5 drop-shadow" />;
+                    })()}
                   </div>
                   {item.isUnlocked ? (
                     <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-display font-black text-[10px] uppercase flex items-center gap-1">
@@ -143,8 +161,9 @@ export const AchievementsPage = () => {
                 {/* Reward Coin Pill */}
                 <div className="mt-3 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-display font-bold">
                   <span className="text-slate-500 uppercase text-[9px]">Bounty</span>
-                  <span className="text-amber-400 flex items-center gap-1 font-black">
-                    🪙 +{item.rewardCoins} Coins
+                  <span className="text-amber-400 flex items-center gap-1.5 font-black">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                    <span>+{item.rewardCoins} Coins</span>
                   </span>
                 </div>
               </div>

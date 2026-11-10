@@ -47,8 +47,8 @@ export const CookieConsent: React.FC = () => {
     >
       <div className="clay-card p-4 rounded-3xl border border-amber-400/40 shadow-2xl bg-slate-950/95 backdrop-blur-xl flex flex-col gap-3">
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-amber-400/15 border border-amber-400/30 flex items-center justify-center text-xl flex-shrink-0">
-            🍪
+          <div className="w-10 h-10 rounded-2xl bg-amber-400/15 border border-amber-400/30 flex items-center justify-center flex-shrink-0">
+            <Shield className="w-5 h-5 text-amber-400" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 mb-0.5">

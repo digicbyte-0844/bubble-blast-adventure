@@ -96,8 +96,8 @@ export const Navbar: React.FC = () => {
           aria-label="Go to Homepage"
           className="flex items-center gap-1.5 sm:gap-2 group flex-shrink-0 min-h-[44px]"
         >
-          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-2xl bg-gradient-to-b from-amber-400 to-amber-500 border border-amber-300 shadow-md shadow-black/40 flex items-center justify-center text-base sm:text-lg transform group-hover:scale-105 active:scale-95 transition-all flex-shrink-0">
-            🫧
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-2xl bg-gradient-to-b from-amber-400 to-amber-500 border border-amber-300 shadow-md shadow-black/40 flex items-center justify-center transform group-hover:scale-105 active:scale-95 transition-all flex-shrink-0">
+            <img src="/assets/icons/bubble.png" alt="Bubble" className="w-5 h-5 sm:w-5.5 sm:h-5.5 object-contain drop-shadow" />
           </div>
           <div className="flex flex-col min-w-0">
             <span className="font-display font-black text-xs sm:text-sm md:text-base text-amber-400 tracking-tight leading-none text-shadow-arcade truncate max-w-[110px] xs:max-w-[150px] sm:max-w-none">
@@ -214,8 +214,8 @@ export const Navbar: React.FC = () => {
               {/* Header */}
               <div className="flex items-center justify-between pb-4 border-b border-slate-800/80 mb-4">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-amber-400 flex items-center justify-center text-sm">
-                    🫧
+                  <div className="w-8 h-8 rounded-xl bg-amber-400 flex items-center justify-center">
+                    <img src="/assets/icons/bubble.png" alt="Bubble" className="w-5 h-5 object-contain drop-shadow" />
                   </div>
                   <span className="font-display font-black text-amber-400 text-sm">
                     {GAME_NAME}

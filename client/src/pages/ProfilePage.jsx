@@ -38,8 +38,8 @@ export const ProfilePage = () => {
         {/* Pilot ID Card */}
         <div className="clay-card p-6 md:p-8 border border-slate-700/60 shadow-2xl relative overflow-hidden">
           <div className="flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
-            <div className="w-24 h-24 rounded-3xl bg-gradient-to-tr from-amber-400 to-amber-600 flex items-center justify-center text-5xl shadow-xl ring-4 ring-amber-400/30 flex-shrink-0">
-              🧑‍🚀
+            <div className="w-24 h-24 rounded-3xl bg-gradient-to-tr from-amber-400 to-amber-600 flex items-center justify-center shadow-xl ring-4 ring-amber-400/30 flex-shrink-0">
+              <User className="w-12 h-12 text-slate-950 stroke-[2.5]" />
             </div>
             <div className="flex-1">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/30 text-[10px] font-display font-black uppercase tracking-wider mb-2">

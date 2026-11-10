@@ -28,7 +28,9 @@ import {
   ShieldCheck,
   Lock,
   Key,
-  LogIn
+  LogIn,
+  Bot,
+  Star
 } from 'lucide-react';
 import { API_URL } from '../config/gameConfig';
 import ApiService from '../services/api';
@@ -601,7 +603,7 @@ export const AdminPage = () => {
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center font-display font-black text-xs ${
                             isTestUser ? 'bg-slate-800 text-slate-400' : 'bg-gradient-to-tr from-amber-400 to-amber-500 text-slate-950 shadow-md'
                           }`}>
-                            {isTestUser ? '🤖' : '⭐'}
+                            {isTestUser ? <Bot className="w-4 h-4" /> : <Star className="w-4 h-4 fill-slate-950" />}
                           </div>
                           <div>
                             <div className="font-display font-black text-slate-100 flex items-center gap-1.5">
@@ -660,15 +662,15 @@ export const AdminPage = () => {
 
                       {/* Booster Inventory */}
                       <td className="py-3.5 px-4">
-                        <div className="flex items-center justify-center gap-1.5 text-[11px] font-mono">
+                        <div className="flex items-center justify-center gap-1.5 text-[10px] font-mono">
                           <span className="bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800 text-cyan-300" title="Super Aim">
-                            🎯{inventory.SUPER_AIM ?? inventory.aimGuide ?? 0}
+                            AIM:{inventory.SUPER_AIM ?? inventory.aimGuide ?? 0}
                           </span>
                           <span className="bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800 text-amber-300" title="Bomb">
-                            💣{inventory.BOMB ?? inventory.bomb ?? 0}
+                            BOMB:{inventory.BOMB ?? inventory.bomb ?? 0}
                           </span>
                           <span className="bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800 text-pink-300" title="Rainbow">
-                            🌈{inventory.RAINBOW ?? inventory.rainbow ?? 0}
+                            RAINBOW:{inventory.RAINBOW ?? inventory.rainbow ?? 0}
                           </span>
                           <span className="bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800 text-emerald-300" title="+5 Shots">
                             +5:{inventory.EXTRA_SHOTS ?? inventory.extraShots ?? 0}

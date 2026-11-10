@@ -21,7 +21,7 @@ const BIOMES = [
     subtitle: 'Rich Forest Teal & Luminescent Waters',
     range: [1, 10],
     accent: '#10B981',
-    badge: '🌿 Biome 1',
+    badge: 'BIOME 1',
     themeBg: 'from-emerald-950/60 via-teal-900/30 to-transparent',
     border: 'border-emerald-500/40'
   },
@@ -31,7 +31,7 @@ const BIOMES = [
     subtitle: 'Deep Sapphire & Amethyst Geodes',
     range: [11, 20],
     accent: '#6366F1',
-    badge: '💎 Biome 2',
+    badge: 'BIOME 2',
     themeBg: 'from-indigo-950/60 via-blue-900/30 to-transparent',
     border: 'border-indigo-500/40'
   },
@@ -41,7 +41,7 @@ const BIOMES = [
     subtitle: 'Warm Amber & Molten Embers',
     range: [21, 30],
     accent: '#F97316',
-    badge: '🔥 Biome 3',
+    badge: 'BIOME 3',
     themeBg: 'from-orange-950/60 via-red-900/30 to-transparent',
     border: 'border-orange-500/40'
   },
@@ -51,7 +51,7 @@ const BIOMES = [
     subtitle: 'Cosmic Indigo & Prismatic Aurora',
     range: [31, 40],
     accent: '#EC4899',
-    badge: '🌌 Biome 4',
+    badge: 'BIOME 4',
     themeBg: 'from-fuchsia-950/60 via-purple-900/30 to-transparent',
     border: 'border-pink-500/40'
   }
@@ -375,8 +375,8 @@ export const LevelSelectPage = () => {
                 </div>
               )}
 
-              {/* LOCKED LEVEL: FROSTED INDIGO CRYSTAL TREASURE CARD */}
-              {!isUnlocked && (
+              {/* LOCKED / UPCOMING LEVEL: FROSTED INDIGO CRYSTAL TREASURE CARD */}
+              {!isCurrent && !isCompleted && (
                 <div
                   className="w-full h-full rounded-2xl bg-gradient-to-b from-indigo-950/90 via-slate-900 to-slate-950 border-2 border-indigo-500/30 border-b-4 border-b-slate-950 shadow-inner flex flex-col items-center justify-between p-2 opacity-80 cursor-not-allowed select-none"
                   title={`Sector ${levelId} Locked`}

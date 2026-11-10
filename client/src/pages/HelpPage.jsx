@@ -6,7 +6,7 @@
 
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { HelpCircle, Play, Sparkles, Target, Zap, Shield, ArrowRight, Compass, ChevronDown } from 'lucide-react';
+import { HelpCircle, Play, Sparkles, Target, Zap, Shield, ArrowRight, Compass, ChevronDown, Mail, Phone } from 'lucide-react';
 import { GAME_NAME } from '../config/gameConfig.js';
 import CharacterMascot from '../components/CharacterMascot.jsx';
 
@@ -205,13 +205,15 @@ export const HelpPage = () => {
               href="mailto:prabhutejakoda@gmail.com"
               className="btn-arcade-slate px-4 py-2.5 rounded-xl text-xs font-display font-bold text-sky-300 hover:text-white flex items-center gap-2 min-h-[44px]"
             >
-              <span>📧 prabhutejakoda@gmail.com</span>
+              <Mail className="w-4 h-4 text-sky-300" />
+              <span>prabhutejakoda@gmail.com</span>
             </a>
             <a
               href="tel:+919177160897"
               className="btn-arcade-slate px-4 py-2.5 rounded-xl text-xs font-display font-bold text-emerald-300 hover:text-white flex items-center gap-2 min-h-[44px]"
             >
-              <span>📞 +91 9177160897</span>
+              <Phone className="w-4 h-4 text-emerald-300" />
+              <span>+91 9177160897</span>
             </a>
           </div>
         </div>
