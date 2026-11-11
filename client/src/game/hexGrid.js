@@ -154,6 +154,33 @@ export function getHexNeighbors(row, col) {
 }
 
 /**
+ * Checks if any active bubble in the grid breaches the Danger Line threshold.
+ * A breach occurs if any active bubble has its bottom edge (y + radius) >= dangerLineY.
+ *
+ * @param {Array<Array>} grid - The Odd-R grid matrix
+ * @param {number} dangerLineY - The Y-coordinate threshold of the danger line
+ * @param {number} radius - Bubble radius in pixels
+ * @param {number} xOffset - Canvas horizontal offset
+ * @param {number} yOffset - Canvas vertical offset
+ * @returns {boolean} True if any bubble crosses or touches the danger line
+ */
+export function checkDangerBreach(grid, dangerLineY, radius = PHYSICS.DEFAULT_BUBBLE_RADIUS, xOffset = 0, yOffset = 0) {
+  if (!grid || dangerLineY === null || dangerLineY === undefined) return false;
+  for (let r = 0; r < grid.length; r++) {
+    if (!grid[r]) continue;
+    for (let c = 0; c < grid[r].length; c++) {
+      if (grid[r][c] !== null && grid[r][c] !== undefined) {
+        const pos = gridToPixel(r, c, radius, xOffset, yOffset);
+        if (pos.y + radius >= dangerLineY) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+/**
  * Creates an empty 14-row Odd-R grid matrix filled with null
  */
 export function createEmptyGrid() {
@@ -223,6 +250,10 @@ export class HexGrid {
 
   cloneGrid(grid) {
     return cloneGrid(grid);
+  }
+
+  checkDangerBreach(grid, dangerLineY) {
+    return checkDangerBreach(grid, dangerLineY, this.radius, this.xOffset, this.yOffset);
   }
 }
 

@@ -16,7 +16,7 @@ import {
   getBalancedAmmoColor,
   generateBubbleQueue
 } from '../game/levelGenerator.js';
-import { cloneGrid, isGridEmpty } from '../game/hexGrid.js';
+import { cloneGrid, isGridEmpty, checkDangerBreach } from '../game/hexGrid.js';
 import { calculateTrajectory } from '../game/collision.js';
 import { findConnectedMatch } from '../game/matchDetector.js';
 import { calculateTurnScore, calculateEndLevelBonus, calculateStars } from '../game/scoreManager.js';
@@ -107,10 +107,18 @@ export const useGameStore = create((set, get) => ({
 
   // Booster Inventory & Active States
   boosters: getPersistedBoosters(),
+  boosterInventory: getPersistedBoosters(),
   activeBooster: null,
   superAimActive: false,
   previousBubble: null,
   bannerNotice: null,
+
+  // Danger Line & Board Geometry Tracking
+  failureReason: null,
+  dangerLineY: null,
+  bubbleRadius: PHYSICS.DEFAULT_BUBBLE_RADIUS,
+  xOffset: 0,
+  yOffset: 0,
 
   // Hint angle & target coordinates
   hintData: null,
@@ -166,6 +174,8 @@ export const useGameStore = create((set, get) => ({
       gridMatrix: matrix,
       board: matrix,
       boosters: ensuredBoosters,
+      boosterInventory: ensuredBoosters,
+      failureReason: null,
       gameStatus: GAME_STATES.READY,
       gameState: GAME_STATES.READY,
       aimAngle: -Math.PI / 2,
@@ -321,6 +331,7 @@ export const useGameStore = create((set, get) => ({
     };
     set({
       boosters: updated,
+      boosterInventory: updated,
       recentBombReward: Date.now(),
       bannerNotice: { text: '+1 BOMB EARNED!', color: '#F97316', id: Date.now() }
     });
@@ -483,7 +494,7 @@ export const useGameStore = create((set, get) => ({
   /**
    * Evaluates level victory or failure against objective criteria
    */
-  evaluateLevelEnd: async (overrideGrid = null) => {
+  evaluateLevelEnd: async (overrideGrid = null, customDangerY = null, customRadius = null) => {
     const {
       gridMatrix: storeGrid,
       levelData,
@@ -495,11 +506,35 @@ export const useGameStore = create((set, get) => ({
       sessionToken,
       bubblesPopped,
       bestCombo,
-      sessionStartTime
+      sessionStartTime,
+      dangerLineY: storeDangerY,
+      bubbleRadius: storeRadius,
+      xOffset,
+      yOffset
     } = get();
 
     const gridMatrix = overrideGrid || storeGrid;
     if (!levelData) return;
+
+    // 1. DANGER LINE LOSS CONDITION (MANDATORY GAME MECHANIC):
+    // If any active bubble on the board has its bottom edge (y + radius) >= dangerLineY:
+    // Immediately transition game status to LEVEL_FAILED with failureReason: "Breached the Danger Line!"
+    const effectiveDangerY = customDangerY ?? storeDangerY;
+    const effectiveRadius = customRadius ?? storeRadius ?? PHYSICS.DEFAULT_BUBBLE_RADIUS;
+
+    if (effectiveDangerY !== null && effectiveDangerY !== undefined) {
+      const isBreached = checkDangerBreach(gridMatrix, effectiveDangerY, effectiveRadius, xOffset || 0, yOffset || 0);
+      if (isBreached) {
+        set({
+          gameStatus: GAME_STATES.LEVEL_FAILED,
+          gameState: 'GAME_OVER',
+          failureReason: 'Breached the Danger Line!',
+          mascotEmotion: 'sad'
+        });
+        soundEngine.play('levelFail');
+        return;
+      }
+    }
 
     const objType = levelData.objective.type;
     let isVictory = false;
@@ -556,6 +591,7 @@ export const useGameStore = create((set, get) => ({
       set({
         gameStatus: GAME_STATES.LEVEL_FAILED,
         gameState: 'GAME_OVER',
+        failureReason: 'Out of Shots!',
         mascotEmotion: 'sad'
       });
       soundEngine.play('levelFail');
@@ -602,6 +638,7 @@ export const useGameStore = create((set, get) => ({
         superAimActive: false,
         activeBooster: null,
         boosters: updated,
+        boosterInventory: updated,
         bannerNotice: { text: 'AIM CANCELLED', color: '#94A3B8', id: Date.now() }
       });
       savePersistedBoosters(updated);
@@ -617,6 +654,7 @@ export const useGameStore = create((set, get) => ({
         currentBubble: restored,
         previousBubble: null,
         boosters: updated,
+        boosterInventory: updated,
         bannerNotice: { text: 'BOMB CANCELLED', color: '#94A3B8', id: Date.now() }
       });
       savePersistedBoosters(updated);
@@ -632,6 +670,7 @@ export const useGameStore = create((set, get) => ({
         currentBubble: restored,
         previousBubble: null,
         boosters: updated,
+        boosterInventory: updated,
         bannerNotice: { text: 'RAINBOW CANCELLED', color: '#94A3B8', id: Date.now() }
       });
       savePersistedBoosters(updated);
@@ -658,6 +697,7 @@ export const useGameStore = create((set, get) => ({
         superAimActive: true,
         activeBooster: 'superAim',
         boosters: updated,
+        boosterInventory: updated,
         bannerNotice: { text: 'SUPER AIM ACTIVE!', color: '#00F0FF', id: Date.now() }
       });
       savePersistedBoosters(updated);
@@ -673,6 +713,7 @@ export const useGameStore = create((set, get) => ({
         currentBubble: 'bomb',
         previousBubble: prev,
         boosters: updated,
+        boosterInventory: updated,
         bannerNotice: { text: 'BOMB LOADED!', color: '#F97316', id: Date.now() }
       });
       savePersistedBoosters(updated);
@@ -688,6 +729,7 @@ export const useGameStore = create((set, get) => ({
         currentBubble: 'rainbow',
         previousBubble: prev,
         boosters: updated,
+        boosterInventory: updated,
         bannerNotice: { text: 'RAINBOW LOADED!', color: '#EC4899', id: Date.now() }
       });
       savePersistedBoosters(updated);
@@ -700,6 +742,7 @@ export const useGameStore = create((set, get) => ({
       set((state) => ({
         shotsRemaining: state.shotsRemaining + 5,
         boosters: updated,
+        boosterInventory: updated,
         mascotEmotion: 'cheering',
         bannerNotice: { text: '+5 EXTRA SHOTS!', color: '#10B981', id: Date.now() }
       }));
@@ -713,6 +756,7 @@ export const useGameStore = create((set, get) => ({
       get().shuffleGrid();
       set({
         boosters: updated,
+        boosterInventory: updated,
         bannerNotice: { text: 'BOARD SHUFFLED!', color: '#38BDF8', id: Date.now() }
       });
       savePersistedBoosters(updated);

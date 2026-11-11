@@ -242,7 +242,13 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.scale(dpr, dpr);
     }
-  }, [canvasWidth, canvasHeight]);
+    useGameStore.setState({
+      dangerLineY: DANGER_Y,
+      bubbleRadius: BUBBLE_RADIUS,
+      xOffset: X_OFFSET,
+      yOffset: Y_OFFSET
+    });
+  }, [canvasWidth, canvasHeight, DANGER_Y, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET]);
 
   /**
    * Main 60 FPS Render & Physics Loop
@@ -710,7 +716,11 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
 
             recordTurnResolution(uniquePops.length, dropped.length, 0);
             spawnFloatingText(impactX, impactY - 25, `BOMB BLAST! +${uniquePops.length * 60}`, '#FF4500');
-            evaluateLevelEnd(newGrid);
+            evaluateLevelEnd(newGrid, DANGER_Y, BUBBLE_RADIUS);
+            const postBombStatus = useGameStore.getState().gameStatus;
+            if (postBombStatus === GAME_STATES.LEVEL_FAILED || postBombStatus === GAME_STATES.LEVEL_COMPLETE) {
+              gameStatusRef.current = postBombStatus;
+            }
           } else if (!snapTarget) {
             // Safety fallback: projectile went out of bounds or board had no open slot
             activeBoosterRef.current = null;
@@ -718,7 +728,11 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
             replenishBubbles();
             currentBubbleRef.current = useGameStore.getState().currentBubble;
             nextBubbleRef.current = useGameStore.getState().nextBubble;
-            evaluateLevelEnd();
+            evaluateLevelEnd(null, DANGER_Y, BUBBLE_RADIUS);
+            const postOobStatus = useGameStore.getState().gameStatus;
+            if (postOobStatus === GAME_STATES.LEVEL_FAILED || postOobStatus === GAME_STATES.LEVEL_COMPLETE) {
+              gameStatusRef.current = postOobStatus;
+            }
           } else {
             const { row, col } = snapTarget;
 
@@ -812,7 +826,11 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
             replenishBubbles();
             currentBubbleRef.current = useGameStore.getState().currentBubble;
             nextBubbleRef.current = useGameStore.getState().nextBubble;
-            evaluateLevelEnd();
+            evaluateLevelEnd(newGrid, DANGER_Y, BUBBLE_RADIUS);
+            const postMatchStatus = useGameStore.getState().gameStatus;
+            if (postMatchStatus === GAME_STATES.LEVEL_FAILED || postMatchStatus === GAME_STATES.LEVEL_COMPLETE) {
+              gameStatusRef.current = postMatchStatus;
+            }
           }
         }
       }

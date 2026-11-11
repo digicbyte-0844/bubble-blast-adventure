@@ -128,8 +128,9 @@ export const ProfilePage = () => {
             </div>
             <div className="clay-card p-4 text-center border border-slate-700/60">
               <span className="text-[10px] uppercase font-sans font-bold text-slate-400 block mb-1">Golden Stars</span>
-              <span className="text-xl font-display font-black text-amber-400 flex items-center justify-center gap-1">
-                ⭐ {stars || 3}
+              <span className="text-xl font-display font-black text-amber-400 flex items-center justify-center gap-1.5">
+                <Star className="w-4 h-4 fill-amber-400 text-amber-300 drop-shadow inline-block" />
+                <span>{stars || 3}</span>
               </span>
             </div>
             <div className="clay-card p-4 text-center border border-slate-700/60">

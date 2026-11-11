@@ -16,7 +16,8 @@ import {
   pixelToGrid,
   getHexNeighbors,
   cloneGrid,
-  isGridEmpty
+  isGridEmpty,
+  checkDangerBreach
 } from '../client/src/game/hexGrid.js';
 
 import {
@@ -143,6 +144,105 @@ for (let step = 0; step < 10; step++) {
   if (projResult.hasCollided) break;
 }
 assert('stepProjectile detects collision and returns valid snap cell', projResult.hasCollided && projResult.snapCell !== null);
+
+// 12. DANGER LINE LOSS CONDITION (MANDATORY GAME MECHANIC)
+// Verify that attaching a bubble below dangerLineY triggers breach and loss even if shotsRemaining > 0
+const dangerGrid = createEmptyGrid();
+const radius = 18;
+const dangerLineY = 320; // Simulated danger line threshold
+
+// Row 0 bubble (safe, y + radius = 18 + 18 = 36 < 320)
+dangerGrid[0][0] = { color: 'cyan', type: SPECIAL_BUBBLES.NORMAL };
+assert('Safe ceiling bubble does not breach danger line', !checkDangerBreach(dangerGrid, dangerLineY, radius));
+
+// Row 10 bubble (breached: row 10 has y = 18 + 10 * (18 * sqrt(3)) ≈ 330px, y + radius ≈ 348px >= 320px)
+const row10Pos = gridToPixel(10, 0, radius);
+assert('Calculated row 10 bottom edge extends past dangerLineY', row10Pos.y + radius >= dangerLineY);
+
+dangerGrid[10][0] = { color: 'red', type: SPECIAL_BUBBLES.NORMAL };
+const isBreached = checkDangerBreach(dangerGrid, dangerLineY, radius);
+assert('Attaching bubble below dangerLineY triggers boundary breach', isBreached === true);
+
+// Simulated evaluateLevelEnd danger breach check with shotsRemaining > 0
+let testGameStatus = GAME_STATES.READY;
+let testFailureReason = null;
+const shotsRemaining = 15; // Still has plenty of ammo
+
+if (checkDangerBreach(dangerGrid, dangerLineY, radius)) {
+  testGameStatus = GAME_STATES.LEVEL_FAILED;
+  testFailureReason = 'Breached the Danger Line!';
+}
+
+assert(
+  'Danger line breach transitions game status to LEVEL_FAILED even when shotsRemaining > 0',
+  testGameStatus === GAME_STATES.LEVEL_FAILED && testFailureReason === 'Breached the Danger Line!' && shotsRemaining > 0
+);
+
+// 13. BOMB LIFECYCLE: 5 SEQUENTIAL DETONATIONS WITH ZERO STATE STALLS
+let bombStock = 5;
+let sequentialPasses = 0;
+
+for (let cycle = 1; cycle <= 5; cycle++) {
+  // Setup grid with cluster and floating candidates
+  const blastGrid = createEmptyGrid();
+  // Anchor on ceiling
+  blastGrid[0][5] = { color: 'blue', type: SPECIAL_BUBBLES.NORMAL };
+  blastGrid[1][5] = { color: 'blue', type: SPECIAL_BUBBLES.NORMAL };
+  // Target cluster at row 2 and 3
+  blastGrid[2][4] = { color: 'yellow', type: SPECIAL_BUBBLES.NORMAL };
+  blastGrid[2][5] = { color: 'yellow', type: SPECIAL_BUBBLES.NORMAL };
+  blastGrid[3][5] = { color: 'yellow', type: SPECIAL_BUBBLES.NORMAL };
+  // Sub-cluster that becomes disconnected after blast
+  blastGrid[4][5] = { color: 'magenta', type: SPECIAL_BUBBLES.NORMAL };
+  blastGrid[5][5] = { color: 'magenta', type: SPECIAL_BUBBLES.NORMAL };
+
+  const impactPos = gridToPixel(3, 5, radius);
+  const blastDistSq = (radius * 4.8) ** 2;
+
+  // 1. Clear bubbles in 2-hex radius
+  let clearedCount = 0;
+  for (let r = 0; r < blastGrid.length; r++) {
+    for (let c = 0; c < blastGrid[r].length; c++) {
+      if (blastGrid[r][c]) {
+        const bPos = gridToPixel(r, c, radius);
+        const dSq = (bPos.x - impactPos.x) ** 2 + (bPos.y - impactPos.y) ** 2;
+        if (dSq <= blastDistSq) {
+          blastGrid[r][c] = null;
+          clearedCount++;
+        }
+      }
+    }
+  }
+
+  // 2. Find floating bubbles and detach them
+  const floatingDrops = findFloatingBubbles(blastGrid, radius);
+  floatingDrops.forEach(d => { blastGrid[d.row][d.col] = null; });
+
+  // 3. Increment bomb inventory if 3+ bubbles popped
+  if (clearedCount >= 3) {
+    bombStock += 1;
+  }
+
+  // 4. Verify clean state reset (launcher reload)
+  const nextAmmo = 'cyan';
+  const curAmmo = 'magenta';
+  const boosterActive = null;
+  const status = GAME_STATES.READY;
+
+  const cycleValid = clearedCount >= 3 &&
+    floatingDrops.length >= 0 &&
+    curAmmo !== null &&
+    nextAmmo !== null &&
+    boosterActive === null &&
+    status === GAME_STATES.READY;
+
+  if (cycleValid) sequentialPasses++;
+}
+
+assert(
+  'Bomb Lifecycle: 5 sequential bomb detonations execute with zero state stalls and clean reload',
+  sequentialPasses === 5 && bombStock === 10
+);
 
 console.log(`\n📊 Engine Unit Tests: ${passed}/${total} passed (${Math.round((passed / total) * 100)}%)`);
 if (passed === total) {

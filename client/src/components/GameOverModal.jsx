@@ -5,10 +5,12 @@
  */
 
 import React from 'react';
-import { RotateCcw, Home, PlusCircle, Coins, AlertCircle } from 'lucide-react';
+import { RotateCcw, Home, PlusCircle, Coins, AlertCircle, Bomb } from 'lucide-react';
 import { useGameStore } from '../store/useGameStore.js';
 import { useUserStore } from '../store/useUserStore';
 import CharacterMascot from './CharacterMascot.jsx';
+import { cloneGrid, gridToPixel } from '../game/hexGrid.js';
+import { findFloatingBubbles } from '../game/floatingDetector.js';
 
 export const GameOverModal = ({ onRetry, onBackToMap, onSelectLevel, onQuit }) => {
   const handleMapAction = onBackToMap || onSelectLevel || onQuit || (() => {
@@ -23,7 +25,8 @@ export const GameOverModal = ({ onRetry, onBackToMap, onSelectLevel, onQuit }) =
     activateBooster,
     bubblesPopped,
     rescuedCount,
-    targetJellies
+    targetJellies,
+    failureReason
   } = useGameStore();
 
   const { coins } = useUserStore();
@@ -32,21 +35,63 @@ export const GameOverModal = ({ onRetry, onBackToMap, onSelectLevel, onQuit }) =
   const remainingJellies = Math.max(0, targetJellyCount - (rescuedCount || 0));
 
   const hasExtraShots = (boosters.extraShots || 0) > 0;
+  const hasBombs = (boosters.bomb || 0) > 0;
   const canBuyShots = (coins || 0) >= 100;
 
   const handleUseExtraShots = () => {
     if (activateBooster('extraShots')) {
+      useGameStore.setState({ failureReason: null });
       useGameStore.getState().setGameStatus('READY');
     }
+  };
+
+  const handleDeployBomb = () => {
+    const store = useGameStore.getState();
+    const currentGrid = cloneGrid(store.gridMatrix);
+    // Clear lower encroaching bubbles within 3 rows of danger line
+    const thresholdY = (store.dangerLineY || 450) - (store.bubbleRadius || 18) * 3;
+    for (let r = 0; r < currentGrid.length; r++) {
+      if (!currentGrid[r]) continue;
+      for (let c = 0; c < currentGrid[r].length; c++) {
+        if (currentGrid[r][c]) {
+          const pos = gridToPixel(r, c, store.bubbleRadius || 18, store.xOffset || 0, store.yOffset || 0);
+          if (pos.y + (store.bubbleRadius || 18) >= thresholdY) {
+            currentGrid[r][c] = null;
+          }
+        }
+      }
+    }
+    const dropped = findFloatingBubbles(currentGrid);
+    dropped.forEach(d => { currentGrid[d.row][d.col] = null; });
+
+    const updatedBoosters = {
+      ...boosters,
+      bomb: Math.max(0, (boosters.bomb || 1) - 1)
+    };
+
+    useGameStore.setState({
+      gridMatrix: currentGrid,
+      board: currentGrid,
+      boosters: updatedBoosters,
+      boosterInventory: updatedBoosters,
+      activeBooster: 'bomb',
+      currentBubble: 'bomb',
+      gameStatus: 'READY',
+      gameState: 'READY',
+      failureReason: null,
+      bannerNotice: { text: 'BOMB DEPLOYED! DANGER CLEARED!', color: '#F97316', id: Date.now() }
+    });
   };
 
   const handleBuyAndContinue = () => {
     if (canBuyShots) {
       useUserStore.setState((state) => ({ coins: state.coins - 100 }));
-      useGameStore.setState((state) => ({ shotsRemaining: state.shotsRemaining + 5 }));
+      useGameStore.setState((state) => ({ shotsRemaining: state.shotsRemaining + 5, failureReason: null }));
       useGameStore.getState().setGameStatus('READY');
     }
   };
+
+  const isDangerBreach = failureReason === 'Breached the Danger Line!';
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 select-none animate-in fade-in duration-200">
@@ -56,16 +101,20 @@ export const GameOverModal = ({ onRetry, onBackToMap, onSelectLevel, onQuit }) =
 
         {/* Sympathetic Mascot Expression */}
         <div className="flex justify-center mb-1">
-          <CharacterMascot emotion="sad" size="md" speech="So close! We can do it!" />
+          <CharacterMascot emotion="sad" size="md" speech={isDangerBreach ? "Watch the danger line! Clear it!" : "So close! We can do it!"} />
         </div>
 
         <h2 className="font-display font-black text-2xl text-rose-400 uppercase tracking-tight text-shadow-arcade mt-1">
-          OUT OF SHOTS!
+          {isDangerBreach ? 'DANGER LINE BREACHED!' : 'OUT OF SHOTS!'}
         </h2>
 
         {/* Objective Progress Status */}
         <p className="font-body text-xs font-semibold text-slate-300 mt-1 mb-4">
-          {levelData?.objective?.type === 'rescue' || levelData?.objective?.type === 'RESCUE_JELLIES' ? (
+          {isDangerBreach ? (
+            <span className="text-rose-300 font-bold">
+              Bubbles crossed the barrier line! Deploy a Cosmic Bomb or retry.
+            </span>
+          ) : levelData?.objective?.type === 'rescue' || levelData?.objective?.type === 'RESCUE_JELLIES' ? (
             <span className="text-amber-300 font-bold">
               Only {remainingJellies} {remainingJellies === 1 ? 'Jelly' : 'Jellies'} left to rescue!
             </span>
@@ -77,9 +126,21 @@ export const GameOverModal = ({ onRetry, onBackToMap, onSelectLevel, onQuit }) =
         {/* Quick Revive / Continue Offer Card */}
         <div className="bg-slate-950/90 p-3.5 rounded-2xl border border-slate-800 mb-4 flex flex-col gap-2 shadow-inner">
           <span className="text-[10px] font-display font-black text-amber-400 uppercase tracking-wider block">
-            Emergency Revive
+            Emergency Revive & Boosters
           </span>
 
+          {/* Option A: Deploy Bomb Booster */}
+          {hasBombs ? (
+            <button
+              onClick={handleDeployBomb}
+              className="w-full min-h-[48px] py-2.5 px-3 btn-arcade-gold rounded-xl flex items-center justify-center gap-2 text-slate-950 font-display font-black text-xs border-b-4 border-amber-700 active:translate-y-1 active:border-b-0 shadow-lg"
+            >
+              <img src="/assets/icons/bomb.png" alt="Bomb" className="w-4 h-4 object-contain" />
+              <span>Deploy Cosmic Bomb ({boosters.bomb} in bag)</span>
+            </button>
+          ) : null}
+
+          {/* Option B: Use Extra Shots */}
           {hasExtraShots ? (
             <button
               onClick={handleUseExtraShots}
@@ -88,7 +149,7 @@ export const GameOverModal = ({ onRetry, onBackToMap, onSelectLevel, onQuit }) =
               <img src="/assets/icons/plus.png" alt="Plus" className="w-4 h-4 object-contain" />
               <span>Use +5 Extra Shots ({boosters.extraShots} in bag)</span>
             </button>
-          ) : (
+          ) : !hasBombs ? (
             <button
               onClick={handleBuyAndContinue}
               disabled={!canBuyShots}
@@ -101,7 +162,7 @@ export const GameOverModal = ({ onRetry, onBackToMap, onSelectLevel, onQuit }) =
               <img src="/assets/icons/coin.png" alt="Coins" className="w-4 h-4 object-contain" />
               <span>Get +5 Extra Shots for 100 Coins</span>
             </button>
-          )}
+          ) : null}
         </div>
 
         {/* Stats Preview Card */}
