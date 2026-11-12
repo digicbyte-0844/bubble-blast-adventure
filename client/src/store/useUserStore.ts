@@ -22,6 +22,7 @@ interface UserState {
   logout: () => void;
   loadProgress: () => Promise<void>;
   updateLevelSuccess: (levelId: number, score: number, stars: number) => void;
+  unlockAllDevLevels: () => void;
   consumeBooster: (boosterType: string) => boolean;
 }
 
@@ -121,6 +122,11 @@ export const useUserStore = create<UserState>((set, get) => {
 
     loadProgress: async () => {
       try {
+        if (typeof window !== 'undefined' && (window.location.search.includes('dev=all') || window.location.search.includes('unlock=all'))) {
+          get().unlockAllDevLevels();
+          return;
+        }
+
         const token = localStorage.getItem('bba_token');
         if (token && !get().user) {
           const profileRes = await ApiService.getProfile();
@@ -178,6 +184,20 @@ export const useUserStore = create<UserState>((set, get) => {
 
       localStorage.setItem('bba_player_progress', JSON.stringify(current));
       set({ progress: current, coins: get().coins + 100 });
+    },
+
+    unlockAllDevLevels: () => {
+      const allLevels: ProgressRecord[] = [];
+      for (let i = 1; i <= 40; i++) {
+        allLevels.push({
+          levelId: i,
+          stars: 3,
+          highScore: 12000,
+          isUnlocked: true
+        });
+      }
+      localStorage.setItem('bba_player_progress', JSON.stringify(allLevels));
+      set({ progress: allLevels });
     },
 
     consumeBooster: (boosterType: string) => {

@@ -22,6 +22,7 @@ import { findConnectedMatch } from '../game/matchDetector.js';
 import { calculateTurnScore, calculateEndLevelBonus, calculateStars } from '../game/scoreManager.js';
 import { soundEngine } from '../game/soundEngine.js';
 import ApiService from '../services/api.js';
+import { useUserStore } from './useUserStore';
 
 // Booster inventory defaults persisted to localStorage
 const DEFAULT_BOOSTERS = {
@@ -238,14 +239,39 @@ export const useGameStore = create((set, get) => ({
 
   /**
    * Swaps Current Bubble with Next Bubble
+   * Allowed ONLY when gameStatus === 'READY' || gameStatus === 'AIMING'
+   * NEVER fires or releases a shot
+   * If a booster (like Bomb) is active, cancels booster smoothly, refunds stock, and restores standard ammo
    */
   swapBubbles: () => {
-    const { gameStatus, currentBubble, nextBubble, activeBooster } = get();
-    // Cannot swap while shot is in motion
+    const { gameStatus, currentBubble, nextBubble, activeBooster, previousBubble, boosters } = get();
+    // Cannot swap while shot is in motion or resolving
     if (gameStatus !== GAME_STATES.READY && gameStatus !== GAME_STATES.AIMING) return;
-    if (activeBooster === 'bomb' || activeBooster === 'rainbow') return;
 
     soundEngine.play('click');
+
+    // If a booster (e.g. Bomb or Rainbow) is loaded, cancel the booster, restore previous ammo, and swap
+    if (activeBooster === 'bomb' || activeBooster === 'rainbow') {
+      const restored = previousBubble || 'cyan';
+      const updated = { ...boosters };
+      if (activeBooster === 'bomb') updated.bomb = (updated.bomb || 0) + 1;
+      if (activeBooster === 'rainbow') updated.rainbow = (updated.rainbow || 0) + 1;
+      savePersistedBoosters(updated);
+
+      const nextB = (nextBubble === 'bomb' || nextBubble === 'rainbow') ? 'yellow' : nextBubble;
+      set({
+        activeBooster: null,
+        previousBubble: null,
+        boosters: updated,
+        boosterInventory: updated,
+        currentBubble: nextB,
+        nextBubble: restored,
+        bannerNotice: { text: 'BOOSTER CANCELLED', color: '#94A3B8', id: Date.now() }
+      });
+      return;
+    }
+
+    // Standard swap: instantaneous swap without firing
     set({
       currentBubble: nextBubble,
       nextBubble: currentBubble
@@ -566,6 +592,13 @@ export const useGameStore = create((set, get) => ({
       });
 
       soundEngine.play('levelWin');
+
+      // CRITICAL PROGRESSION SYNC: Unlocks next level in User Store & localStorage
+      try {
+        useUserStore.getState().updateLevelSuccess(levelId, finalScore, stars);
+      } catch (err) {
+        console.error('Error syncing level completion progress:', err);
+      }
 
       // Sync submission with anti-cheat API or queue locally
       const payload = {

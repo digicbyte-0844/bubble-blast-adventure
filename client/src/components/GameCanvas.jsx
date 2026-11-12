@@ -58,6 +58,7 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
   const DANGER_Y = Math.max(BUBBLE_RADIUS * 7, canvasHeight - 135);
 
   const {
+    levelId,
     gridMatrix,
     gameStatus,
     aimAngle,
@@ -147,6 +148,17 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
 
   // Mouse / Touch Aim tracking state
   const isAimingRef = useRef(false);
+
+  // Level transition cleanup: purge transient physics arrays and projectiles on level change
+  useEffect(() => {
+    particlesRef.current = [];
+    shockwavesRef.current = [];
+    floatingBubblesRef.current = [];
+    floatingTextsRef.current = [];
+    activeProjectileRef.current = null;
+    isAimingRef.current = false;
+    gameStatusRef.current = GAME_STATES.READY;
+  }, [levelId]);
 
   /**
    * Helper to map color ID to color definition
@@ -1172,8 +1184,15 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
 
     ctx.restore();
 
-    // 3. Current Loaded Bubble Glowing in Chamber
+    // 3. Current Loaded Bubble Glowing in Chamber (with 120ms swap pop scale animation)
     ctx.save();
+    if (Date.now() - lastSwapTimeRef.current < 120) {
+      const swapProgress = (Date.now() - lastSwapTimeRef.current) / 120;
+      const swapScale = 0.85 + Math.sin(swapProgress * Math.PI) * 0.28;
+      ctx.translate(x, y);
+      ctx.scale(swapScale, swapScale);
+      ctx.translate(-x, -y);
+    }
     ctx.shadowColor = 'rgba(0, 240, 255, 0.6)';
     ctx.shadowBlur = 10;
     const resolvedLoadedColor = (current === 'bomb' && activeBoosterRef.current !== 'bomb') ? 'cyan' : (current || 'cyan');
@@ -1304,7 +1323,13 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
 
     // Check if clicked the next bubble satellite ring specifically to trigger swap
     const distToNext = Math.hypot(pointerX - NEXT_BUBBLE_X, pointerY - NEXT_BUBBLE_Y);
-    if (distToNext < BUBBLE_RADIUS * 1.5) {
+    if (distToNext < BUBBLE_RADIUS * 1.65) {
+      return 'SWAP_TRIGGERED';
+    }
+
+    // Check if tapped directly on the launcher base (also triggers swap, NEVER fires downward)
+    const distToLauncher = Math.hypot(pointerX - LAUNCHER_X, pointerY - LAUNCHER_Y);
+    if (distToLauncher < BUBBLE_RADIUS * 1.35) {
       return 'SWAP_TRIGGERED';
     }
 
@@ -1365,6 +1390,7 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
 
     const result = updateAimFromPointer(e.clientX, e.clientY);
     if (result === 'SWAP_TRIGGERED') {
+      isAimingRef.current = false;
       lastSwapTimeRef.current = Date.now();
       try { soundEngine.play('booster'); } catch {}
       swapBubbles();
@@ -1412,6 +1438,7 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
     const touch = e.touches[0];
     const result = updateAimFromPointer(touch.clientX, touch.clientY);
     if (result === 'SWAP_TRIGGERED') {
+      isAimingRef.current = false;
       lastSwapTimeRef.current = Date.now();
       try { soundEngine.play('booster'); } catch {}
       swapBubbles();
@@ -1451,16 +1478,13 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
     };
 
     const handleKeyDown = (e) => {
-      if (e.code === 'Space') {
+      // Space or 'S' / 's' trigger immediate bubble ammo swap (MUST NOT fire a shot)
+      if (e.code === 'Space' || e.code === 'KeyS' || e.key === 's' || e.key === 'S') {
         e.preventDefault();
         if (gameStatusRef.current === GAME_STATES.READY || gameStatusRef.current === GAME_STATES.AIMING) {
-          shootProjectile();
+          lastSwapTimeRef.current = Date.now();
+          swapBubbles();
         }
-      } else if (e.code === 'KeyS' || e.key === 's' || e.key === 'S') {
-        e.preventDefault();
-        lastSwapTimeRef.current = Date.now();
-        try { soundEngine.play('booster'); } catch {}
-        swapBubbles();
       }
     };
 

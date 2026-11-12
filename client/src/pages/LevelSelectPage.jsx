@@ -64,7 +64,7 @@ const BIOMES = [
 
 export const LevelSelectPage = () => {
   const navigate = useNavigate();
-  const { progress } = useUserStore();
+  const { progress, unlockAllDevLevels } = useUserStore();
   const heroRef = useRef(null);
 
   useEffect(() => {
@@ -100,13 +100,13 @@ export const LevelSelectPage = () => {
   }, [unlockedUpTo]);
 
   // Sinusoidal Math & Node Coordinate Calculation
-  // Container width = 380, center = 190, amplitude = 48, stepY = 160, startY = 260, chapter gap = 180
+  // Container width = 380, center = 190, amplitude = 48, stepY = 160, startY = 210, chapter gap = 260
   const MAP_WIDTH = 380;
   const CENTER_X = MAP_WIDTH / 2;
   const AMPLITUDE = 48;
   const STEP_Y = 160;
-  const START_Y = 260;
-  const BIOME_CHAPTER_GAP = 180;
+  const START_Y = 210;
+  const BIOME_CHAPTER_GAP = 260;
   const TOTAL_LEVELS = 40;
 
   const nodePositions = useMemo(() => {
@@ -162,7 +162,7 @@ export const LevelSelectPage = () => {
   };
 
   return (
-    <div className="min-h-[calc(100dvh-56px)] bg-[#0B0F19] text-slate-100 flex flex-col items-center select-none pt-14 pb-44 relative overflow-x-hidden">
+    <div className="min-h-[calc(100dvh-56px)] bg-[#0B0F19] text-slate-100 flex flex-col items-center select-none pt-14 pb-52 relative overflow-x-hidden">
       {/* Background Star Ambient Dust & Atmospheric Glowing Nebulas */}
       <div className="fixed inset-0 opacity-25 bg-[radial-gradient(#94A3B8_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
       <div className="fixed top-1/4 -left-20 w-80 h-80 rounded-full bg-emerald-600/15 blur-3xl pointer-events-none" />
@@ -190,11 +190,24 @@ export const LevelSelectPage = () => {
           </div>
         </div>
 
-        {/* Cumulative Stars Counter with Authentic 5-Point Star */}
-        <div className="flex items-center gap-1.5 bg-slate-950 border border-amber-400/40 px-3 py-1.5 rounded-full shadow-inner">
-          <Star className="w-4 h-4 fill-amber-400 text-amber-300 drop-shadow-sm" />
-          <span className="font-display font-black text-sm text-amber-300">{totalStars}</span>
-          <span className="font-display font-bold text-xs text-slate-400">/ 120</span>
+        <div className="flex items-center gap-2">
+          {/* Dev Mode Unlock All 40 Button */}
+          <button
+            onClick={() => unlockAllDevLevels()}
+            className="px-2.5 py-1 rounded-full bg-violet-600/30 hover:bg-violet-600/60 border border-violet-400/40 text-[10px] font-display font-black text-violet-200 transition-colors uppercase tracking-wider shadow-sm flex items-center gap-1 active:scale-95"
+            title="Unlock All 40 Sectors for Testing & Verification"
+          >
+            <Sparkles className="w-3 h-3 text-violet-300" />
+            <span className="hidden sm:inline">Dev:</span>
+            <span>Unlock 40</span>
+          </button>
+
+          {/* Cumulative Stars Counter with Authentic 5-Point Star */}
+          <div className="flex items-center gap-1.5 bg-slate-950 border border-amber-400/40 px-3 py-1.5 rounded-full shadow-inner">
+            <Star className="w-4 h-4 fill-amber-400 text-amber-300 drop-shadow-sm" />
+            <span className="font-display font-black text-sm text-amber-300">{totalStars}</span>
+            <span className="font-display font-bold text-xs text-slate-400">/ 120</span>
+          </div>
         </div>
       </div>
 
@@ -268,7 +281,7 @@ export const LevelSelectPage = () => {
           if (!node) return null;
 
           // Generous vertical margin so the banner is NEVER touched by any node or floating badge
-          const bannerTop = firstLevelInBiome === 1 ? 28 : node.y - 130;
+          const bannerTop = firstLevelInBiome === 1 ? 18 : node.y - 165;
 
           return (
             <div

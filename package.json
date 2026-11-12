@@ -7,7 +7,7 @@
     "dev:server": "npm --prefix server run dev",
     "dev:client": "npm --prefix client run dev",
     "build:client": "npm --prefix client run build",
-    "test": "node scripts/test_engine.mjs && node scripts/test_backend.mjs",
+    "test": "node scripts/test_engine.mjs && node scripts/testAllLevels.js && node scripts/test_backend.mjs",
     "test:db": "npm --prefix server run test:db"
   },
   "keywords": [

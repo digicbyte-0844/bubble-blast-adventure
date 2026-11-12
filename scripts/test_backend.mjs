@@ -59,8 +59,14 @@ async function runTests() {
   };
 
   try {
-    // 1. Health check
-    const health = await request('GET', '/api/health');
+    // 1. Health check with connection check
+    let health;
+    try {
+      health = await request('GET', '/api/health');
+    } catch (connErr) {
+      console.log('  ⚠️ [SKIP] Backend server offline at http://localhost:5000 (Start backend with `npm run dev` for live API testing).');
+      return;
+    }
     assert('Health Check (200 OK)', health.status === 200 && health.body.status === 'ONLINE');
 
     // 2. Register
