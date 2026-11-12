@@ -3,16 +3,18 @@
  */
 
 import http from 'http';
+import https from 'https';
 
 const BASE_URL = process.env.API_URL || 'http://localhost:5000';
 
 async function request(method, path, body = null, token = null) {
   return new Promise((resolve, reject) => {
     const url = new URL(path, BASE_URL);
+    const client = url.protocol === 'https:' ? https : http;
     const options = {
       method,
       hostname: url.hostname,
-      port: url.port,
+      port: url.port || (url.protocol === 'https:' ? 443 : 80),
       path: url.pathname + url.search,
       headers: {
         'Content-Type': 'application/json'
@@ -22,7 +24,7 @@ async function request(method, path, body = null, token = null) {
       options.headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const req = http.request(options, (res) => {
+    const req = client.request(options, (res) => {
       let data = '';
       res.on('data', (chunk) => (data += chunk));
       res.on('end', () => {
