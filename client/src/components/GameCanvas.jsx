@@ -157,6 +157,13 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
     floatingTextsRef.current = [];
     activeProjectileRef.current = null;
     isAimingRef.current = false;
+    const storeState = useGameStore.getState();
+    gridMatrixRef.current = storeState.gridMatrix;
+    currentBubbleRef.current = storeState.currentBubble;
+    nextBubbleRef.current = storeState.nextBubble;
+    shotsRemainingRef.current = storeState.shotsRemaining;
+    activeBoosterRef.current = null;
+    superAimActiveRef.current = false;
     gameStatusRef.current = GAME_STATES.READY;
   }, [levelId]);
 
@@ -726,7 +733,20 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
             currentBubbleRef.current = curB;
             nextBubbleRef.current = nextB;
 
-            recordTurnResolution(uniquePops.length, dropped.length, 0);
+            // Track any jellies caught in bomb explosion or dropped avalanche
+            let bombJellies = 0;
+            uniquePops.forEach((p) => {
+              if (p.bubble?.type === SPECIAL_BUBBLES.STARLIGHT_JELLY_RESCUE) bombJellies++;
+            });
+            dropped.forEach((d) => {
+              if (d.bubble?.type === SPECIAL_BUBBLES.STARLIGHT_JELLY_RESCUE) bombJellies++;
+            });
+            if (bombJellies > 0) {
+              try { soundEngine.playRescue(); } catch (e) {}
+              spawnFloatingText(impactX, impactY - 50, `+${bombJellies * 100} JELLY FREED!`, '#38BDF8');
+            }
+
+            recordTurnResolution(uniquePops.length, dropped.length, bombJellies);
             spawnFloatingText(impactX, impactY - 25, `BOMB BLAST! +${uniquePops.length * 60}`, '#FF4500');
             evaluateLevelEnd(newGrid, DANGER_Y, BUBBLE_RADIUS);
             const postBombStatus = useGameStore.getState().gameStatus;
@@ -803,9 +823,13 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
 
                 // Check for Floating Bubbles to Detach
                 const floating = findFloatingBubbles(newGrid, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
+                let floatingJellies = 0;
                 if (floating.length > 0) {
                   soundEngine.playDrop();
                   floating.forEach((cell) => {
+                    if (cell.bubble?.type === SPECIAL_BUBBLES.STARLIGHT_JELLY_RESCUE) {
+                      floatingJellies++;
+                    }
                     const pos = gridToPixel(cell.row, cell.col, BUBBLE_RADIUS, X_OFFSET, Y_OFFSET);
                     floatingBubblesRef.current.push(createDroppingBubble(cell.bubble, pos.x, pos.y, BUBBLE_RADIUS));
                     newGrid[cell.row][cell.col] = null;
@@ -813,10 +837,16 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
                   spawnFloatingText(LAUNCHER_X, LAUNCHER_Y - 50, `+${floating.length * 20} AVALANCHE!`, '#10B981');
                 }
 
+                const totalRescuedThisTurn = rescuedCount + floatingJellies;
+                if (floatingJellies > 0) {
+                  try { soundEngine.playRescue(); } catch (e) {}
+                  spawnFloatingText(LAUNCHER_X, LAUNCHER_Y - 110, `+${floatingJellies * 100} JELLY DROPPED & SAVED!`, '#38BDF8');
+                }
+
                 // Commit new grid and compute turn score
                 gridMatrixRef.current = newGrid;
                 setGridMatrix(newGrid);
-                recordTurnResolution(matchedCluster.length, floating.length, rescuedCount);
+                recordTurnResolution(matchedCluster.length, floating.length, totalRescuedThisTurn);
 
                 // REWARD A BOMB ON SUCCESSFUL MATCH-3+ SHOT
                 useGameStore.getState().rewardBombOnSuccess();

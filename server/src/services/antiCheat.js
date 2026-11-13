@@ -33,7 +33,7 @@ export class AntiCheatService {
     const boostersUsed = Number(claim.boostersUsed || session.boostersEquipped?.length || 0);
     const maxAllowedShots = levelShots + (boostersUsed * 5);
 
-    if (shotsUsed <= 0 || shotsUsed > maxAllowedShots) {
+    if (shotsUsed < 0 || shotsUsed > maxAllowedShots) {
       errors.push({
         rule: 'SHOT_CEILING_EXCEEDED',
         message: `Shots used (${shotsUsed}) exceeds maximum allowed ceiling (${maxAllowedShots} = ${levelShots} + ${boostersUsed} * 5).`

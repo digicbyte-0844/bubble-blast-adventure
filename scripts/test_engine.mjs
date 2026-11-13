@@ -244,6 +244,34 @@ assert(
   sequentialPasses === 5 && bombStock === 10
 );
 
+// 20. isGridEmpty robust evaluation
+const emptyBoard = createEmptyGrid();
+const populatedBoard = createEmptyGrid();
+populatedBoard[0][0] = { color: 'cyan', type: SPECIAL_BUBBLES.NORMAL };
+const rockOnlyBoard = createEmptyGrid();
+rockOnlyBoard[2][2] = { color: 'rock', type: SPECIAL_BUBBLES.ROCK };
+const sparseUndefinedBoard = [[undefined, null], [null]];
+
+assert(
+  'isGridEmpty evaluates empty grid as true',
+  isGridEmpty(emptyBoard) === true
+);
+
+assert(
+  'isGridEmpty evaluates populated grid as false',
+  isGridEmpty(populatedBoard) === false
+);
+
+assert(
+  'isGridEmpty evaluates rock-only obstacle grid as true (all pop-able bubbles cleared)',
+  isGridEmpty(rockOnlyBoard) === true
+);
+
+assert(
+  'isGridEmpty safely handles sparse or undefined array rows without crashing',
+  isGridEmpty(sparseUndefinedBoard) === true && isGridEmpty(null) === true
+);
+
 console.log(`\n📊 Engine Unit Tests: ${passed}/${total} passed (${Math.round((passed / total) * 100)}%)`);
 if (passed === total) {
   console.log('🎉 ALL ENGINE MATHEMATICAL INVARIANTS SATISFIED!');

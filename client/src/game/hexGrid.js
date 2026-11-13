@@ -3,7 +3,7 @@
  * 11 columns on even rows, 10 columns on odd rows, 14 total rows.
  */
 
-import { PHYSICS } from './constants.js';
+import { PHYSICS, SPECIAL_BUBBLES } from './constants.js';
 
 export const TOTAL_ROWS = PHYSICS.GRID_ROWS; // 14
 export const COLS_EVEN = PHYSICS.GRID_COLS_EVEN; // 11
@@ -203,9 +203,14 @@ export function cloneGrid(grid) {
  * Checks if the entire grid has zero active bubbles
  */
 export function isGridEmpty(grid) {
+  if (!grid || !Array.isArray(grid)) return true;
   for (let r = 0; r < grid.length; r++) {
+    if (!grid[r] || !Array.isArray(grid[r])) continue;
     for (let c = 0; c < grid[r].length; c++) {
-      if (grid[r][c] !== null) return false;
+      const cell = grid[r][c];
+      if (cell && (cell.color || cell.type) && cell.type !== SPECIAL_BUBBLES?.ROCK && cell.type !== 'rock') {
+        return false;
+      }
     }
   }
   return true;

@@ -102,6 +102,7 @@ export const useGameStore = create((set, get) => ({
   // Session & Anti-Cheat
   sessionToken: null,
   sessionStartTime: null,
+  isSubmittingCompletion: false,
 
   // Undo Functionality (Snapshots stack)
   undoStack: [],
@@ -201,6 +202,7 @@ export const useGameStore = create((set, get) => ({
       previousBubble: null,
       bannerNotice: null,
       hintData: null,
+      isSubmittingCompletion: false,
       mascotEmotion: 'idle'
     });
 
@@ -522,6 +524,8 @@ export const useGameStore = create((set, get) => ({
    */
   evaluateLevelEnd: async (overrideGrid = null, customDangerY = null, customRadius = null) => {
     const {
+      gameStatus,
+      isSubmittingCompletion,
       gridMatrix: storeGrid,
       levelData,
       rescuedCount,
@@ -539,8 +543,11 @@ export const useGameStore = create((set, get) => ({
       yOffset
     } = get();
 
-    const gridMatrix = overrideGrid || storeGrid;
     if (!levelData) return;
+    if (gameStatus === GAME_STATES.LEVEL_COMPLETE || gameStatus === GAME_STATES.LEVEL_FAILED) return;
+    if (isSubmittingCompletion) return;
+
+    const gridMatrix = overrideGrid || storeGrid;
 
     // 1. DANGER LINE LOSS CONDITION (MANDATORY GAME MECHANIC):
     // If any active bubble on the board has its bottom edge (y + radius) >= dangerLineY:
@@ -563,19 +570,32 @@ export const useGameStore = create((set, get) => ({
     }
 
     const objType = levelData.objective.type;
+    const emptyGrid = isGridEmpty(gridMatrix);
     let isVictory = false;
 
-    if (objType === 'clear_all' || objType === 'CLEAR_ALL' || objType === 'limited_shots' || objType === 'LIMITED_SHOT') {
-      isVictory = isGridEmpty(gridMatrix);
+    // In a bubble shooter, clearing all bubbles on the board guarantees victory on ANY level
+    if (emptyGrid) {
+      isVictory = true;
+    } else if (objType === 'clear_all' || objType === 'CLEAR_ALL' || objType === 'limited_shots' || objType === 'LIMITED_SHOT') {
+      isVictory = emptyGrid;
     } else if (objType === 'rescue' || objType === 'RESCUE_JELLIES') {
       isVictory = rescuedCount >= (targetJellies || levelData.objective.target || 1);
     } else if (objType === 'target_score' || objType === 'TARGET_SCORE') {
       isVictory = score >= (levelData.objective.target || 10000);
+    } else if (objType === 'drop_bubbles' || objType === 'DROP_TARGETS') {
+      isVictory = emptyGrid || (get().totalDropped || 0) >= (levelData.objective.target || 5);
     } else {
-      isVictory = isGridEmpty(gridMatrix) || (shotsRemaining > 0 && score >= (levelData.starScoreThresholds?.oneStar || 2000));
+      isVictory = emptyGrid || (shotsRemaining > 0 && score >= (levelData.starScoreThresholds?.oneStar || 2000));
     }
 
     if (isVictory) {
+      set({
+        isSubmittingCompletion: true,
+        gameStatus: GAME_STATES.LEVEL_COMPLETE,
+        gameState: 'VICTORY',
+        mascotEmotion: 'cheering'
+      });
+
       const bonus = calculateEndLevelBonus(shotsRemaining);
       const finalScore = score + bonus;
       const stars = calculateStars(finalScore, [
@@ -584,13 +604,7 @@ export const useGameStore = create((set, get) => ({
         levelData.starScoreThresholds?.threeStar || 7000
       ]);
 
-      set({
-        score: finalScore,
-        gameStatus: GAME_STATES.LEVEL_COMPLETE,
-        gameState: 'VICTORY',
-        mascotEmotion: 'cheering'
-      });
-
+      set({ score: finalScore });
       soundEngine.play('levelWin');
 
       // CRITICAL PROGRESSION SYNC: Unlocks next level in User Store & localStorage
@@ -601,24 +615,32 @@ export const useGameStore = create((set, get) => ({
       }
 
       // Sync submission with anti-cheat API or queue locally
+      const shotsFired = Math.max(1, levelData.maxShots - shotsRemaining);
+      const remaining = Math.max(0, shotsRemaining);
+      const elapsed = Math.max(3500, Date.now() - (sessionStartTime || Date.now()));
+
       const payload = {
         sessionId: sessionToken,
         sessionToken,
         levelId,
-        shotsUsed: levelData.maxShots - shotsRemaining,
+        shotsUsed: shotsFired,
+        shotsFired: shotsFired,
+        remainingShots: remaining,
         bubblesPopped,
         bestCombo,
         rescuedCount,
         score: finalScore,
         completed: true,
-        durationSeconds: (Date.now() - (sessionStartTime || Date.now())) / 1000,
-        elapsedDurationMs: Date.now() - (sessionStartTime || Date.now())
+        durationSeconds: elapsed / 1000,
+        elapsedDurationMs: elapsed
       };
 
       try {
         await ApiService.completeGameSession(payload);
       } catch (err) {
         queueOfflineProgress(payload);
+      } finally {
+        set({ isSubmittingCompletion: false });
       }
     } else if (shotsRemaining <= 0) {
       set({

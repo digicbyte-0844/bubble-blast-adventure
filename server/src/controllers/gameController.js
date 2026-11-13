@@ -73,6 +73,19 @@ export const completeSession = async (req, res) => {
     }
 
     if (session.status !== 'ACTIVE') {
+      if (session.status === 'VERIFIED') {
+        return res.status(200).json({
+          success: true,
+          status: 'VERIFIED',
+          message: 'Session already finalized and verified.',
+          data: {
+            sessionToken,
+            levelId: session.levelId,
+            score: session.clientStatistics?.score || req.body.score,
+            verified: true
+          }
+        });
+      }
       return res.status(400).json({
         success: false,
         message: `Session is already finalized with status: ${session.status}`

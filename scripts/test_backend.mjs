@@ -108,6 +108,30 @@ async function runTests() {
     }, authToken);
     assert('Anti-Cheat: Speedrun Rejection (<3.5s -> 400)', fastComplete.status === 400 && fastComplete.body.error === 'ANTI_CHEAT_VIOLATION');
 
+    // 6b. Anti-Cheat: Valid Session Completion & Idempotent Retry
+    const startRes2 = await request('POST', '/api/games/start', { levelId: 2 }, authToken);
+    const validComplete = await request('POST', '/api/games/complete', {
+      sessionToken: startRes2.body.sessionToken,
+      levelId: 2,
+      shotsUsed: 6,
+      shotsFired: 6,
+      remainingShots: 18,
+      bubblesPopped: 20,
+      score: 4500,
+      completed: true,
+      elapsedDurationMs: 4000
+    }, authToken);
+    assert('Anti-Cheat: Valid Completion (200 OK & VERIFIED)', validComplete.status === 200 && (validComplete.body.success || validComplete.body.status === 'VERIFIED'));
+
+    const duplicateComplete = await request('POST', '/api/games/complete', {
+      sessionToken: startRes2.body.sessionToken,
+      levelId: 2,
+      shotsUsed: 6,
+      score: 4500,
+      completed: true
+    }, authToken);
+    assert('Anti-Cheat: Idempotent Completion Retry (200 OK without 400 crash)', duplicateComplete.status === 200);
+
     // 7. Global Leaderboard
     const lbRes = await request('GET', '/api/leaderboard?type=global&limit=10', null, authToken);
     assert('Global Leaderboard Projection (200 OK)', lbRes.status === 200 && Array.isArray(lbRes.body.leaderboard));
