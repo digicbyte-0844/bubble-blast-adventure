@@ -9,7 +9,7 @@
 
 import React, { useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Star, Lock, Play, ChevronRight, Compass, Sparkles, Target, Trophy } from 'lucide-react';
+import { Star, Lock, Play, ChevronRight, Compass, Sparkles, Target, Trophy, RotateCcw } from 'lucide-react';
 import { GAME_NAME } from '../config/gameConfig.js';
 import { useUserStore } from '../store/useUserStore';
 import CharacterMascot from '../components/CharacterMascot.jsx';
@@ -64,7 +64,7 @@ const BIOMES = [
 
 export const LevelSelectPage = () => {
   const navigate = useNavigate();
-  const { progress, unlockAllDevLevels } = useUserStore();
+  const { progress, unlockAllDevLevels, resetProgress } = useUserStore();
   const heroRef = useRef(null);
 
   useEffect(() => {
@@ -86,6 +86,22 @@ export const LevelSelectPage = () => {
     return Math.min(40, maxUnlocked);
   }, [progress]);
 
+  // Determine active hero node: first incomplete level, or level 1 if all 40 completed
+  const activeHeroLevel = useMemo(() => {
+    const incomplete = (progress || []).find((p) => p.isUnlocked && (!p.stars || p.stars === 0));
+    if (incomplete) return incomplete.levelId;
+
+    let maxUnlocked = 1;
+    (progress || []).forEach((p) => {
+      if (p.isUnlocked && p.levelId > maxUnlocked) maxUnlocked = p.levelId;
+    });
+
+    if (maxUnlocked >= 40 && (progress || []).length >= 40 && (progress || []).every((p) => (p.stars || 0) >= 1)) {
+      return 1;
+    }
+    return Math.min(40, maxUnlocked);
+  }, [progress]);
+
   // Total stars earned
   const totalStars = useMemo(() => {
     return (progress || []).reduce((acc, p) => acc + (p.stars || 0), 0);
@@ -97,7 +113,7 @@ export const LevelSelectPage = () => {
       heroRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 200);
     return () => clearTimeout(timer);
-  }, [unlockedUpTo]);
+  }, [activeHeroLevel]);
 
   // Sinusoidal Math & Node Coordinate Calculation
   // Container width = 380, center = 190, amplitude = 48, stepY = 160, startY = 210, chapter gap = 260
@@ -191,6 +207,17 @@ export const LevelSelectPage = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Reset to Level 1 Button */}
+          <button
+            onClick={() => resetProgress()}
+            className="px-2.5 py-1 rounded-full bg-slate-800/80 hover:bg-slate-700/80 border border-slate-600/80 text-[10px] font-display font-black text-slate-300 transition-colors uppercase tracking-wider shadow-sm flex items-center gap-1 active:scale-95"
+            title="Reset Progress to Start Fresh from Sector 1"
+          >
+            <RotateCcw className="w-3 h-3 text-amber-400" />
+            <span className="hidden sm:inline">Reset:</span>
+            <span>Lvl 1</span>
+          </button>
+
           {/* Dev Mode Unlock All 40 Button */}
           <button
             onClick={() => unlockAllDevLevels()}
@@ -311,8 +338,8 @@ export const LevelSelectPage = () => {
           const { levelId, x, y } = pos;
           const record = progressMap.get(levelId);
           const isUnlocked = levelId <= unlockedUpTo || (record && record.isUnlocked);
-          const isCurrent = levelId === unlockedUpTo;
-          const isCompleted = levelId < unlockedUpTo || (record && record.stars > 0);
+          const isCurrent = levelId === activeHeroLevel;
+          const isCompleted = (record && record.stars > 0) || (levelId < activeHeroLevel);
           const starsEarned = record?.stars || (isCompleted ? 3 : 0);
           const ObjIcon = getObjectiveIcon(levelId);
 

@@ -23,6 +23,7 @@ interface UserState {
   loadProgress: () => Promise<void>;
   updateLevelSuccess: (levelId: number, score: number, stars: number) => void;
   unlockAllDevLevels: () => void;
+  resetProgress: () => void;
   consumeBooster: (boosterType: string) => boolean;
 }
 
@@ -198,6 +199,12 @@ export const useUserStore = create<UserState>((set, get) => {
       }
       localStorage.setItem('bba_player_progress', JSON.stringify(allLevels));
       set({ progress: allLevels });
+    },
+
+    resetProgress: () => {
+      const initial: ProgressRecord[] = [{ levelId: 1, stars: 0, highScore: 0, isUnlocked: true }];
+      localStorage.setItem('bba_player_progress', JSON.stringify(initial));
+      set({ progress: initial });
     },
 
     consumeBooster: (boosterType: string) => {

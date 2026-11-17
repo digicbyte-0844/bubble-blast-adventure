@@ -50,14 +50,19 @@ export const LandingPage = () => {
     setTimeout(() => setIsJiggling(false), 500);
   };
 
-  // Highest unlocked level calculation
-  const highestUnlocked = Math.max(
-    1,
-    ...progress.filter((p) => p.isUnlocked).map((p) => p.levelId || 1)
-  );
+  // Target playable level: find the first uncompleted unlocked level, or Sector 1
+  const targetLevel = React.useMemo(() => {
+    const incomplete = (progress || []).find((p) => p.isUnlocked && (!p.stars || p.stars === 0));
+    if (incomplete) return incomplete.levelId;
+    const maxUnlocked = Math.max(1, ...(progress || []).filter((p) => p.isUnlocked).map((p) => p.levelId || 1));
+    if (maxUnlocked >= 40 && (progress || []).length >= 40 && (progress || []).every((p) => (p.stars || 0) >= 1)) {
+      return 1;
+    }
+    return Math.min(40, maxUnlocked);
+  }, [progress]);
 
-  const highestProgress = progress.find((p) => p.levelId === highestUnlocked) || {
-    levelId: 1,
+  const targetProgress = progress.find((p) => p.levelId === targetLevel) || {
+    levelId: targetLevel,
     stars: 0
   };
 
@@ -145,11 +150,11 @@ export const LandingPage = () => {
       <div className="relative z-10 w-full max-w-xs sm:max-w-sm flex flex-col gap-2.5 mb-2">
         {/* Giant Tactile Play Button (Amber Gold Push-Down State) */}
         <button
-          onClick={() => navigate(`/game/${highestUnlocked}`)}
+          onClick={() => navigate(`/game/${targetLevel}`)}
           className="w-full h-14 btn-arcade-gold rounded-2xl flex items-center justify-center gap-2.5 text-slate-950 font-display font-black text-lg tracking-wide uppercase shadow-lg shadow-amber-500/20 border-b-4 border-amber-700 active:translate-y-1 active:border-b-0"
         >
           <Play className="w-6 h-6 fill-slate-950 text-slate-950" />
-          <span>PLAY NOW</span>
+          <span>PLAY NOW {targetLevel > 1 ? `(SECTOR ${targetLevel})` : ''}</span>
         </button>
 
         {/* Continue Level Secondary Card */}
@@ -159,18 +164,18 @@ export const LandingPage = () => {
         >
           <div className="flex items-center gap-2">
             <span className="w-6 h-6 rounded-lg bg-sky-500/20 text-sky-400 border border-sky-400/30 flex items-center justify-center font-display font-black text-xs">
-              {highestUnlocked}
+              {targetLevel}
             </span>
             <div className="text-left font-display">
               <span className="font-bold text-white block leading-none">
-                Continue Sector {highestUnlocked}
+                Play Sector {targetLevel} • Explore Saga Map
               </span>
               <div className="flex items-center gap-0.5 mt-0.5">
                 {[1, 2, 3].map((s) => (
                   <Star
                     key={s}
                     className={`w-2.5 h-2.5 ${
-                      s <= (highestProgress.stars || 0)
+                      s <= (targetProgress.stars || 0)
                         ? 'text-amber-400 fill-amber-400'
                         : 'text-slate-600'
                     }`}

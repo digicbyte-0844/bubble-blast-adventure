@@ -30,6 +30,14 @@ export const DashboardPage = () => {
 
   // Calculate stats from progress
   const highestLevel = Math.max(1, ...(progress || []).filter(p => p.isUnlocked).map(p => p.levelId || 1));
+  const activePlayableLevel = React.useMemo(() => {
+    const incomplete = (progress || []).find((p) => p.isUnlocked && (!p.stars || p.stars === 0));
+    if (incomplete) return incomplete.levelId;
+    if (highestLevel >= 40 && (progress || []).length >= 40 && (progress || []).every((p) => (p.stars || 0) >= 1)) {
+      return 1;
+    }
+    return Math.min(40, highestLevel);
+  }, [progress, highestLevel]);
   const cumulativeStars = (progress || []).reduce((acc, p) => acc + (p.stars || 0), 0);
   const totalScore = (progress || []).reduce((acc, p) => acc + (p.highScore || 0), 0);
 
@@ -140,17 +148,17 @@ export const DashboardPage = () => {
               Welcome, {user?.username || 'Star Pilot'}!
             </h1>
             <p className="font-body text-xs text-slate-400 font-semibold mt-0.5">
-              Sector {highestLevel} is ready for dispatch.
+              Sector {activePlayableLevel} is ready for dispatch.
             </p>
           </div>
         </div>
 
         <button
-          onClick={() => navigate(`/game/${highestLevel}`)}
+          onClick={() => navigate(`/game/${activePlayableLevel}`)}
           className="w-full md:w-auto h-12 px-6 btn-arcade-gold rounded-2xl flex items-center justify-center gap-2 text-slate-950 font-display font-black text-sm tracking-wide uppercase active:translate-y-1"
         >
           <Play className="w-4 h-4 fill-slate-950 text-slate-950" />
-          <span>Launch Sector {highestLevel}</span>
+          <span>Launch Sector {activePlayableLevel}</span>
         </button>
       </div>
 
