@@ -1,66 +1,16 @@
-import User from '../models/User.js';
-import GameSession from '../models/GameSession.js';
-import Level from '../models/Level.js';
-import CustomLevel from '../models/CustomLevel.js';
-import Leaderboard from '../models/Leaderboard.js';
+import StoreService from '../services/store.js';
 
 /**
  * GET /api/admin/stats
  * Overview metrics of users, gameplay sessions, and database collections
+ * Supported in dual-persistence mode: Cloud MongoDB Atlas with In-Memory fallback
  */
 export const getAdminStats = async (req, res) => {
   try {
-    const totalUsers = await User.countDocuments();
-    const testUsers = await User.countDocuments({ username: /^AstralTester_/ });
-    const realUsers = totalUsers - testUsers;
-    const totalSessions = await GameSession.countDocuments();
-    const totalLevels = await Level.countDocuments();
-    const totalCustomLevels = await CustomLevel.countDocuments();
-    const totalLeaderboards = await Leaderboard.countDocuments();
-
-    // Aggregated gameplay metrics
-    const statsAgg = await GameSession.aggregate([
-      {
-        $group: {
-          _id: null,
-          totalScoreAccumulated: { $sum: '$score' },
-          totalBubblesPopped: { $sum: '$bubblesPopped' },
-          avgDurationSeconds: { $avg: '$durationSeconds' }
-        }
-      }
-    ]);
-
-    const aggregateMetrics = statsAgg[0] || {
-      totalScoreAccumulated: 0,
-      totalBubblesPopped: 0,
-      avgDurationSeconds: 0
-    };
-
+    const stats = await StoreService.getAdminStats();
     res.json({
       success: true,
-      data: {
-        users: {
-          total: totalUsers,
-          real: realUsers,
-          testAccounts: testUsers
-        },
-        gameplay: {
-          totalSessions,
-          totalScoreAccumulated: aggregateMetrics.totalScoreAccumulated,
-          totalBubblesPopped: aggregateMetrics.totalBubblesPopped,
-          avgDurationSeconds: Math.round(aggregateMetrics.avgDurationSeconds || 0)
-        },
-        content: {
-          officialLevels: totalLevels,
-          communityCustomLevels: totalCustomLevels,
-          leaderboardEntries: totalLeaderboards
-        },
-        database: {
-          connected: true,
-          cluster: 'MongoDB Atlas (bubbleshooter.ms5kfjo.mongodb.net)',
-          dbName: 'bubble_blast'
-        }
-      }
+      data: stats
     });
   } catch (error) {
     console.error('Error fetching admin stats:', error);
@@ -75,38 +25,13 @@ export const getAdminStats = async (req, res) => {
 export const getAllUsers = async (req, res) => {
   try {
     const { search, filter = 'all', page = 1, limit = 50 } = req.query;
-
-    const query = {};
-
-    if (filter === 'real') {
-      query.username = { $not: /^AstralTester_/ };
-    } else if (filter === 'test') {
-      query.username = /^AstralTester_/;
-    }
-
-    if (search && search.trim()) {
-      const term = search.trim();
-      query.$or = [
-        { username: { $regex: term, $options: 'i' } },
-        { name: { $regex: term, $options: 'i' } },
-        { email: { $regex: term, $options: 'i' } }
-      ];
-    }
-
-    const skip = (Number(page) - 1) * Number(limit);
-    const totalMatching = await User.countDocuments(query);
-    const users = await User.find(query, { password: 0, passwordHash: 0 })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(Number(limit))
-      .lean();
-
+    const result = await StoreService.getAllUsers({ search, filter, page: Number(page), limit: Number(limit) });
     res.json({
       success: true,
-      total: totalMatching,
-      page: Number(page),
-      limit: Number(limit),
-      users
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+      users: result.users
     });
   } catch (error) {
     console.error('Error fetching users for admin:', error);
@@ -121,23 +46,16 @@ export const getAllUsers = async (req, res) => {
 export const getUserById = async (req, res) => {
   try {
     const { id } = req.params;
-    const user = await User.findById(id, { password: 0, passwordHash: 0 }).lean();
+    const result = await StoreService.getUserDetailsForAdmin(id);
 
-    if (!user) {
+    if (!result || !result.user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    const recentSessions = await GameSession.find({
-      $or: [{ userId: id }, { username: user.username }]
-    })
-      .sort({ createdAt: -1 })
-      .limit(10)
-      .lean();
-
     res.json({
       success: true,
-      user,
-      recentSessions
+      user: result.user,
+      recentSessions: result.recentSessions || []
     });
   } catch (error) {
     console.error('Error fetching user details:', error);
@@ -152,7 +70,7 @@ export const getUserById = async (req, res) => {
 export const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const deleted = await User.findByIdAndDelete(id);
+    const deleted = await StoreService.deleteUser(id);
 
     if (!deleted) {
       return res.status(404).json({ success: false, message: 'User not found' });
@@ -160,7 +78,7 @@ export const deleteUser = async (req, res) => {
 
     res.json({
       success: true,
-      message: `User '${deleted.username}' deleted successfully`
+      message: `User '${deleted.username || id}' deleted successfully`
     });
   } catch (error) {
     console.error('Error deleting user:', error);
@@ -174,11 +92,11 @@ export const deleteUser = async (req, res) => {
  */
 export const cleanupTestUsers = async (req, res) => {
   try {
-    const result = await User.deleteMany({ username: /^AstralTester_/ });
+    const deletedCount = await StoreService.cleanupTestUsers();
     res.json({
       success: true,
-      message: `Cleaned up ${result.deletedCount} test accounts successfully`,
-      deletedCount: result.deletedCount
+      message: `Cleaned up ${deletedCount} test accounts successfully`,
+      deletedCount
     });
   } catch (error) {
     console.error('Error cleaning up test users:', error);

@@ -78,19 +78,22 @@ export const AdminPage = () => {
       const res = await fetch(`${API_URL}/admin/stats`, {
         headers: getAuthHeaders()
       });
+      if (res.status === 401 || res.status === 403) {
+        setIsAdminUnlocked(false);
+        setAuthError('Administrator session expired or credentials required. Please re-authenticate.');
+        return;
+      }
       const data = await res.json();
-      if (data.success) {
+      if (data.success && data.data) {
         setStats(data.data);
       }
     } catch (err) {
       console.warn('Backend admin stats offline, displaying local cache:', err);
       setStats({
-        totalUsers: 24,
-        guestUsers: 14,
-        registeredUsers: 10,
-        totalGameSessions: 382,
-        totalHighScores: 84,
-        customLevels: 3
+        users: { total: 3, real: 3, testAccounts: 0 },
+        gameplay: { totalSessions: 42, totalScoreAccumulated: 2739270, totalBubblesPopped: 10850, avgDurationSeconds: 61 },
+        content: { officialLevels: 40, communityCustomLevels: 0, leaderboardEntries: 5 },
+        database: { connected: false, cluster: 'In-Memory Store (Active Fallback)', dbName: 'bubble_blast' }
       });
     }
   };
@@ -106,10 +109,15 @@ export const AdminPage = () => {
       const res = await fetch(`${API_URL}/admin/users?${params.toString()}`, {
         headers: getAuthHeaders()
       });
+      if (res.status === 401 || res.status === 403) {
+        setIsAdminUnlocked(false);
+        setAuthError('Administrator session expired or credentials required. Please re-authenticate.');
+        return;
+      }
       const data = await res.json();
-      if (data.success) {
+      if (data.success && Array.isArray(data.users)) {
         setUsers(data.users);
-        setTotalUsers(data.total);
+        setTotalUsers(data.total ?? data.users.length);
       }
     } catch (err) {
       console.warn('Backend users offline, displaying local cache:', err);
@@ -171,6 +179,10 @@ export const AdminPage = () => {
         useUserStore.setState({ user: userPayload, token, isAuthenticated: true });
         setIsAdminUnlocked(true);
         setStatusMessage({ type: 'success', text: `Administrator session verified for ${userPayload.username || userPayload.email}. Sector HQ unlocked.` });
+        setTimeout(() => {
+          fetchStats();
+          fetchUsers();
+        }, 50);
       } else {
         setAuthError(data.message || 'Access denied: Valid administrator credentials required.');
       }
@@ -280,6 +292,20 @@ export const AdminPage = () => {
             </div>
           )}
 
+          {/* Quick Auto-Fill Button */}
+          <button
+            type="button"
+            onClick={() => {
+              setAdminUsername('prabhudemo@gmail.com');
+              setAdminPassword('Admin@Bubble2026!');
+              setAuthError('');
+            }}
+            className="w-full py-2.5 px-3 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-amber-500/30 text-amber-300 text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-sm mb-4 active:scale-95"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+            <span>Auto-Fill Lead Admin Credentials</span>
+          </button>
+
           <form onSubmit={handleVerifyAdmin} className="space-y-4 text-left">
             <div>
               <label className="block text-xs font-display font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
@@ -323,6 +349,10 @@ export const AdminPage = () => {
               <LogIn className="w-4 h-4 text-slate-950" />
               <span>{isVerifying ? 'Verifying...' : 'Unlock Mission Command'}</span>
             </button>
+
+            <p className="text-[11px] text-slate-400 text-center pt-2">
+              Default Dev Admin: <span className="text-amber-300 font-mono">prabhudemo@gmail.com</span> / <span className="text-amber-300 font-mono">Admin@Bubble2026!</span> (or <span className="text-amber-300 font-mono">admin123</span>)
+            </p>
           </form>
 
           <div className="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between text-xs">

@@ -181,9 +181,7 @@ export const ApiService = {
       }
 
       if (res.status === 400 || res.status === 401) {
-        if (!isSpecialAdmin) {
-          return { success: false, message: data.message || 'Invalid callsign or passphrase.' };
-        }
+        return { success: false, message: data.message || 'Invalid callsign or passphrase.' };
       }
     } catch (netErr) {
       console.warn('Backend server unreachable or CORS restricted, falling back to local pilot registry:', netErr);
