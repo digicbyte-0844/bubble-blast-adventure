@@ -119,6 +119,32 @@ export const LevelCompleteModal = ({
           })}
         </div>
 
+        {/* Performance Tier Review Badge */}
+        <div className="mb-3 px-1">
+          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-display font-black tracking-wide uppercase border ${
+            totalStars >= 3
+              ? 'bg-amber-400/20 border-amber-400/80 text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]'
+              : totalStars === 2
+              ? 'bg-sky-400/20 border-sky-400/80 text-sky-300 drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]'
+              : 'bg-emerald-400/20 border-emerald-400/80 text-emerald-300'
+          }`}>
+            <span>
+              {totalStars >= 3
+                ? '★★★ COSMIC MASTERY! (3 STARS)'
+                : totalStars === 2
+                ? '★★ GREAT ACCURACY! (2 STARS)'
+                : '★ ALL BUBBLES BLASTED! (1 STAR)'}
+            </span>
+          </div>
+          <p className="text-[11px] font-body text-slate-400 mt-1 font-medium leading-tight">
+            {totalStars >= 3
+              ? 'Flawless run! Incredible shot conservation and combo execution.'
+              : totalStars === 2
+              ? 'Excellent clear! Save even more shots or trigger avalanches for 3 Stars.'
+              : 'Great job blasting all bubbles! Conserve more ammo to reach 2 or 3 Stars.'}
+          </p>
+        </div>
+
         {/* Stats Breakdown Card */}
         <div className="bg-slate-950/80 p-4 rounded-2xl border border-slate-800 mb-5 flex flex-col gap-2 shadow-inner font-display">
           <div className="flex items-center justify-between text-xs">

@@ -569,23 +569,14 @@ export const useGameStore = create((set, get) => ({
       }
     }
 
-    const objType = levelData.objective.type;
     const emptyGrid = isGridEmpty(gridMatrix);
     let isVictory = false;
 
-    // In a bubble shooter, clearing all bubbles on the board guarantees victory on ANY level
+    // MANDATORY BUBBLE SHOOTER MECHANIC:
+    // The level is completed ONLY when ALL bubbles on the board are blasted!
+    // Never trigger early completion while bubbles remain on the board.
     if (emptyGrid) {
       isVictory = true;
-    } else if (objType === 'clear_all' || objType === 'CLEAR_ALL' || objType === 'limited_shots' || objType === 'LIMITED_SHOT') {
-      isVictory = emptyGrid;
-    } else if (objType === 'rescue' || objType === 'RESCUE_JELLIES') {
-      isVictory = rescuedCount >= (targetJellies || levelData.objective.target || 1);
-    } else if (objType === 'target_score' || objType === 'TARGET_SCORE') {
-      isVictory = score >= (levelData.objective.target || 10000);
-    } else if (objType === 'drop_bubbles' || objType === 'DROP_TARGETS') {
-      isVictory = emptyGrid || (get().totalDropped || 0) >= (levelData.objective.target || 5);
-    } else {
-      isVictory = emptyGrid || (shotsRemaining > 0 && score >= (levelData.starScoreThresholds?.oneStar || 2000));
     }
 
     if (isVictory) {
@@ -598,11 +589,12 @@ export const useGameStore = create((set, get) => ({
 
       const bonus = calculateEndLevelBonus(shotsRemaining);
       const finalScore = score + bonus;
-      const stars = calculateStars(finalScore, [
-        levelData.starScoreThresholds?.oneStar || 2000,
-        levelData.starScoreThresholds?.twoStar || 4000,
-        levelData.starScoreThresholds?.threeStar || 7000
+      const rawStars = calculateStars(finalScore, [
+        levelData.starScoreThresholds?.oneStar || 1600,
+        levelData.starScoreThresholds?.twoStar || 3300,
+        levelData.starScoreThresholds?.threeStar || 4900
       ]);
+      const stars = Math.max(1, rawStars); // Blasting all bubbles guarantees at least 1 star!
 
       set({ score: finalScore });
       soundEngine.play('levelWin');
@@ -630,6 +622,9 @@ export const useGameStore = create((set, get) => ({
         bestCombo,
         rescuedCount,
         score: finalScore,
+        starsAwarded: stars,
+        starsEarned: stars,
+        stars,
         completed: true,
         durationSeconds: elapsed / 1000,
         elapsedDurationMs: elapsed

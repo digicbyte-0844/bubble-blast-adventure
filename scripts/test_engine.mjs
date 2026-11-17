@@ -272,6 +272,31 @@ assert(
   isGridEmpty(sparseUndefinedBoard) === true && isGridEmpty(null) === true
 );
 
+// 21. Win Condition Integrity: Level requires all bubbles blasted (emptyGrid === true)
+const level3 = getLevel(3);
+const partialGridWithJellyRescued = cloneGrid(level3.matrix);
+// Remove jelly only (row 3, col 4)
+partialGridWithJellyRescued[3][4] = null;
+assert(
+  'Level 3 does NOT trigger victory when jelly is freed but remaining bubbles still exist on grid',
+  isGridEmpty(partialGridWithJellyRescued) === false
+);
+
+// 22. Star Review Performance Evaluation
+const lvl3Thresholds = level3.starScoreThresholds;
+assert(
+  'Level 3 Star Review: 1 Star awarded for completing clear with low shots left',
+  calculateStars(lvl3Thresholds.oneStar + 100, [lvl3Thresholds.oneStar, lvl3Thresholds.twoStar, lvl3Thresholds.threeStar]) === 1
+);
+assert(
+  'Level 3 Star Review: 2 Stars awarded for proficient clear with good shot conservation',
+  calculateStars(lvl3Thresholds.twoStar + 100, [lvl3Thresholds.oneStar, lvl3Thresholds.twoStar, lvl3Thresholds.threeStar]) === 2
+);
+assert(
+  'Level 3 Star Review: 3 Stars awarded for mastery clear with high shot conservation and combos',
+  calculateStars(lvl3Thresholds.threeStar + 100, [lvl3Thresholds.oneStar, lvl3Thresholds.twoStar, lvl3Thresholds.threeStar]) === 3
+);
+
 console.log(`\n📊 Engine Unit Tests: ${passed}/${total} passed (${Math.round((passed / total) * 100)}%)`);
 if (passed === total) {
   console.log('🎉 ALL ENGINE MATHEMATICAL INVARIANTS SATISFIED!');

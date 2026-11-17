@@ -321,9 +321,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 2000,
-      "twoStar": 4000,
-      "threeStar": 7000
+      "oneStar": 1650,
+      "twoStar": 3600,
+      "threeStar": 5450
     }
   },
   {
@@ -645,9 +645,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 2500,
-      "twoStar": 4500,
-      "threeStar": 7500
+      "oneStar": 1650,
+      "twoStar": 3350,
+      "threeStar": 4950
     }
   },
   {
@@ -987,9 +987,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 3000,
-      "twoStar": 5500,
-      "threeStar": 8500
+      "oneStar": 1750,
+      "twoStar": 3350,
+      "threeStar": 4850
     }
   },
   {
@@ -1279,9 +1279,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 3200,
-      "twoStar": 6000,
-      "threeStar": 9000
+      "oneStar": 1400,
+      "twoStar": 3000,
+      "threeStar": 4500
     }
   },
   {
@@ -1595,9 +1595,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 3500,
-      "twoStar": 6500,
-      "threeStar": 9500
+      "oneStar": 1600,
+      "twoStar": 3300,
+      "threeStar": 4900
     }
   },
   {
@@ -1908,9 +1908,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 3800,
-      "twoStar": 6800,
-      "threeStar": 10000
+      "oneStar": 1550,
+      "twoStar": 3150,
+      "threeStar": 4650
     }
   },
   {
@@ -2239,9 +2239,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 4000,
-      "twoStar": 7200,
-      "threeStar": 10500
+      "oneStar": 1700,
+      "twoStar": 3300,
+      "threeStar": 4800
     }
   },
   {
@@ -2564,9 +2564,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 4500,
-      "twoStar": 7500,
-      "threeStar": 11000
+      "oneStar": 1650,
+      "twoStar": 3150,
+      "threeStar": 4600
     }
   },
   {
@@ -2901,9 +2901,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 4800,
-      "twoStar": 8000,
-      "threeStar": 11500
+      "oneStar": 1700,
+      "twoStar": 3300,
+      "threeStar": 4800
     }
   },
   {
@@ -3268,9 +3268,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 5200,
-      "twoStar": 8500,
-      "threeStar": 12500
+      "oneStar": 1900,
+      "twoStar": 3600,
+      "threeStar": 5200
     }
   },
   {
@@ -3618,9 +3618,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 5500,
-      "twoStar": 9000,
-      "threeStar": 13000
+      "oneStar": 1800,
+      "twoStar": 3300,
+      "threeStar": 4750
     }
   },
   {
@@ -3968,9 +3968,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 5800,
-      "twoStar": 9500,
-      "threeStar": 13500
+      "oneStar": 1800,
+      "twoStar": 3400,
+      "threeStar": 4900
     }
   },
   {
@@ -4294,9 +4294,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 6000,
-      "twoStar": 9800,
-      "threeStar": 14000
+      "oneStar": 1650,
+      "twoStar": 3150,
+      "threeStar": 4600
     }
   },
   {
@@ -4644,9 +4644,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 6200,
-      "twoStar": 10200,
-      "threeStar": 14500
+      "oneStar": 1800,
+      "twoStar": 3300,
+      "threeStar": 4750
     }
   },
   {
@@ -4971,9 +4971,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 6500,
-      "twoStar": 10500,
-      "threeStar": 15000
+      "oneStar": 1650,
+      "twoStar": 3250,
+      "threeStar": 4750
     }
   },
   {
@@ -5321,9 +5321,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 6800,
-      "twoStar": 11000,
-      "threeStar": 15500
+      "oneStar": 1800,
+      "twoStar": 3400,
+      "threeStar": 4900
     }
   },
   {
@@ -5647,9 +5647,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 7200,
-      "twoStar": 11500,
-      "threeStar": 16000
+      "oneStar": 1650,
+      "twoStar": 3150,
+      "threeStar": 4600
     }
   },
   {
@@ -5997,9 +5997,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 7500,
-      "twoStar": 12000,
-      "threeStar": 16500
+      "oneStar": 1800,
+      "twoStar": 3300,
+      "threeStar": 4750
     }
   },
   {
@@ -6296,9 +6296,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 7800,
-      "twoStar": 12500,
-      "threeStar": 17000
+      "oneStar": 1450,
+      "twoStar": 3050,
+      "threeStar": 4550
     }
   },
   {
@@ -6664,9 +6664,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 8200,
-      "twoStar": 13000,
-      "threeStar": 18000
+      "oneStar": 1900,
+      "twoStar": 3500,
+      "threeStar": 5000
     }
   },
   {
@@ -7015,9 +7015,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 8500,
-      "twoStar": 13500,
-      "threeStar": 18500
+      "oneStar": 1800,
+      "twoStar": 3300,
+      "threeStar": 4750
     }
   },
   {
@@ -7360,9 +7360,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 9000,
-      "twoStar": 14000,
-      "threeStar": 19000
+      "oneStar": 1750,
+      "twoStar": 3250,
+      "threeStar": 4700
     }
   },
   {
@@ -7687,9 +7687,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 9500,
-      "twoStar": 14500,
-      "threeStar": 19500
+      "oneStar": 1650,
+      "twoStar": 3150,
+      "threeStar": 4600
     }
   },
   {
@@ -8038,9 +8038,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 10000,
-      "twoStar": 15000,
-      "threeStar": 20000
+      "oneStar": 1800,
+      "twoStar": 3400,
+      "threeStar": 4900
     }
   },
   {
@@ -8389,9 +8389,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 10500,
-      "twoStar": 15500,
-      "threeStar": 21000
+      "oneStar": 1800,
+      "twoStar": 3300,
+      "threeStar": 4750
     }
   },
   {
@@ -8716,9 +8716,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 11000,
-      "twoStar": 16000,
-      "threeStar": 21500
+      "oneStar": 1650,
+      "twoStar": 3150,
+      "threeStar": 4600
     }
   },
   {
@@ -9043,9 +9043,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 11500,
-      "twoStar": 16500,
-      "threeStar": 22000
+      "oneStar": 1650,
+      "twoStar": 3150,
+      "threeStar": 4600
     }
   },
   {
@@ -9394,9 +9394,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 12000,
-      "twoStar": 17000,
-      "threeStar": 22500
+      "oneStar": 1800,
+      "twoStar": 3400,
+      "threeStar": 4900
     }
   },
   {
@@ -9745,9 +9745,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 12500,
-      "twoStar": 17500,
-      "threeStar": 23000
+      "oneStar": 1800,
+      "twoStar": 3300,
+      "threeStar": 4750
     }
   },
   {
@@ -10114,9 +10114,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 13000,
-      "twoStar": 18000,
-      "threeStar": 24000
+      "oneStar": 1900,
+      "twoStar": 3500,
+      "threeStar": 5000
     }
   },
   {
@@ -10466,9 +10466,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 13500,
-      "twoStar": 18500,
-      "threeStar": 25000
+      "oneStar": 1800,
+      "twoStar": 3300,
+      "threeStar": 4750
     }
   },
   {
@@ -10818,9 +10818,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 14000,
-      "twoStar": 19000,
-      "threeStar": 26000
+      "oneStar": 1800,
+      "twoStar": 3400,
+      "threeStar": 4900
     }
   },
   {
@@ -11146,9 +11146,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 14500,
-      "twoStar": 19500,
-      "threeStar": 27000
+      "oneStar": 1650,
+      "twoStar": 3150,
+      "threeStar": 4600
     }
   },
   {
@@ -11498,9 +11498,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 15000,
-      "twoStar": 20000,
-      "threeStar": 28000
+      "oneStar": 1800,
+      "twoStar": 3300,
+      "threeStar": 4750
     }
   },
   {
@@ -11799,9 +11799,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 15500,
-      "twoStar": 20500,
-      "threeStar": 29000
+      "oneStar": 1450,
+      "twoStar": 2950,
+      "threeStar": 4400
     }
   },
   {
@@ -12151,9 +12151,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 16000,
-      "twoStar": 21000,
-      "threeStar": 30000
+      "oneStar": 1800,
+      "twoStar": 3400,
+      "threeStar": 4900
     }
   },
   {
@@ -12479,9 +12479,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 16500,
-      "twoStar": 21500,
-      "threeStar": 31000
+      "oneStar": 1650,
+      "twoStar": 3150,
+      "threeStar": 4600
     }
   },
   {
@@ -12831,9 +12831,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 17000,
-      "twoStar": 22000,
-      "threeStar": 32000
+      "oneStar": 1800,
+      "twoStar": 3300,
+      "threeStar": 4750
     }
   },
   {
@@ -13183,9 +13183,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 17500,
-      "twoStar": 22500,
-      "threeStar": 33000
+      "oneStar": 1800,
+      "twoStar": 3200,
+      "threeStar": 4600
     }
   },
   {
@@ -13553,9 +13553,9 @@ export const levels = [
       ]
     ],
     "starScoreThresholds": {
-      "oneStar": 18000,
-      "twoStar": 23500,
-      "threeStar": 35000
+      "oneStar": 1900,
+      "twoStar": 3600,
+      "threeStar": 5200
     }
   }
 ];

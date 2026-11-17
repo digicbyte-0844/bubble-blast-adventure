@@ -135,6 +135,20 @@ function countTotalBubbles(grid) {
 }
 
 /**
+ * Calculates fair, performance-based 1-star, 2-star, and 3-star score thresholds
+ * 1 Star (Cleared): Earned by clearing all bubbles on the board!
+ * 2 Stars (Proficient): Earned with good accuracy and ~30% shot conservation.
+ * 3 Stars (Mastery): Earned with high accuracy, saving 50%+ shot budget, and combo cascades.
+ */
+export function calculateLevelStarThresholds(grid, maxShots) {
+  const bubbleCount = countTotalBubbles(grid);
+  const oneStar = Math.round((bubbleCount * 20 + 800) / 50) * 50;
+  const twoStar = Math.round((oneStar + (maxShots * 0.3) * 150 + 600) / 50) * 50;
+  const threeStar = Math.round((oneStar + (maxShots * 0.55) * 150 + 1300) / 50) * 50;
+  return { oneStar, twoStar, threeStar };
+}
+
+/**
  * Handcrafted Level Catalog (Levels 1 to 40)
  */
 function createHandcraftedLevels() {
@@ -928,6 +942,11 @@ function createHandcraftedLevels() {
     starScoreThresholds: { oneStar: 18000, twoStar: 23500, threeStar: 35000 }
   });
 
+  // Calibrate fair, performance-driven 1-star, 2-star, and 3-star thresholds across all 40 levels
+  catalog.forEach((level) => {
+    level.starScoreThresholds = calculateLevelStarThresholds(level.matrix, level.maxShots);
+  });
+
   return catalog;
 }
 
@@ -1007,11 +1026,7 @@ export function generateProceduralLevel(levelId, seed = null) {
     maxShots,
     palette,
     matrix: grid,
-    starScoreThresholds: {
-      oneStar: baseScore,
-      twoStar: Math.round(baseScore * 1.7),
-      threeStar: Math.round(baseScore * 2.6)
-    }
+    starScoreThresholds: calculateLevelStarThresholds(grid, maxShots)
   };
 }
 
@@ -1070,5 +1085,6 @@ export default {
   generateProceduralLevel,
   getBalancedAmmoColor,
   generateBubbleQueue,
+  calculateLevelStarThresholds,
   SeededPRNG
 };
