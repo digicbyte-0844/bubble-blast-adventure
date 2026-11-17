@@ -510,36 +510,45 @@ export const StoreService = {
           avgDurationSeconds: 0
         };
 
-        return {
-          users: {
-            total: totalUsers,
-            real: realUsers,
-            testAccounts: testUsers
-          },
-          gameplay: {
-            totalSessions,
-            totalScoreAccumulated: aggregateMetrics.totalScoreAccumulated,
-            totalBubblesPopped: aggregateMetrics.totalBubblesPopped,
-            avgDurationSeconds: Math.round(aggregateMetrics.avgDurationSeconds || 0)
-          },
-          content: {
-            officialLevels: totalLevels || seedLevels.length,
-            communityCustomLevels: totalCustomLevels,
-            leaderboardEntries: totalLeaderboards
-          },
-          database: {
-            connected: true,
-            cluster: 'MongoDB Atlas (bubbleshooter.ms5kfjo.mongodb.net)',
-            dbName: 'bubble_blast'
-          }
-        };
+        // If MongoDB has real users, return live stats
+        if (totalUsers > 0) {
+          return {
+            users: {
+              total: totalUsers,
+              real: realUsers,
+              testAccounts: testUsers
+            },
+            gameplay: {
+              totalSessions,
+              totalScoreAccumulated: aggregateMetrics.totalScoreAccumulated,
+              totalBubblesPopped: aggregateMetrics.totalBubblesPopped,
+              avgDurationSeconds: Math.round(aggregateMetrics.avgDurationSeconds || 0)
+            },
+            content: {
+              officialLevels: totalLevels || seedLevels.length,
+              communityCustomLevels: totalCustomLevels,
+              leaderboardEntries: totalLeaderboards
+            },
+            database: {
+              connected: true,
+              cluster: 'MongoDB Atlas (bubbleshooter.ms5kfjo.mongodb.net)',
+              dbName: 'bubble_blast'
+            }
+          };
+        }
+        // MongoDB connected but no users yet — fall through to in-memory seed
       } catch (e) {
         console.warn('MongoDB stats query timed out, returning in-memory stats:', e.message);
       }
     }
 
-    // In-memory fallback
-    const allUsers = Array.from(new Set(memUsers.values()));
+    // In-memory fallback (also supplements empty MongoDB)
+    const seen2 = new Set();
+    const allUsers = [];
+    for (const u of memUsers.values()) {
+      const key = u.id || u._id;
+      if (!seen2.has(key)) { seen2.add(key); allUsers.push(u); }
+    }
     const testAccounts = allUsers.filter(u => u.username && u.username.startsWith('AstralTester_')).length;
     const realUsers = allUsers.length - testAccounts;
     const allSessions = Array.from(memSessions.values());
@@ -603,19 +612,32 @@ export const StoreService = {
           .lean()
           .maxTimeMS(3000);
 
-        return {
-          total: totalMatching,
-          page: Number(page),
-          limit: Number(limit),
-          users
-        };
+        // If MongoDB has real data, return it
+        if (totalMatching > 0) {
+          return {
+            total: totalMatching,
+            page: Number(page),
+            limit: Number(limit),
+            users
+          };
+        }
+        // MongoDB connected but empty — fall through to in-memory seed data
       } catch (e) {
         console.warn('MongoDB getAllUsers query timed out, falling back to in-memory store:', e.message);
       }
     }
 
-    // In-memory fallback
-    let all = Array.from(new Set(memUsers.values()));
+    // In-memory fallback (also used to supplement empty MongoDB results)
+    // Deduplicate: memUsers may store same object under id AND username keys
+    const seen = new Set();
+    let all = [];
+    for (const u of memUsers.values()) {
+      const key = u.id || u._id;
+      if (!seen.has(key)) {
+        seen.add(key);
+        all.push(u);
+      }
+    }
 
     if (filter === 'real') {
       all = all.filter(u => !u.username || !u.username.startsWith('AstralTester_'));
