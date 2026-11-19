@@ -713,8 +713,8 @@ export const GameCanvas = ({ width = 380, height = 580 }) => {
 
             // Synchronously update Zustand state with nextBoard and reset launcher & booster
             const store = useGameStore.getState();
-            const nextB = store.generateNextBubble ? store.generateNextBubble() : 'yellow';
             const curB = (store.nextBubble && store.nextBubble !== 'bomb' && store.nextBubble !== 'rainbow') ? store.nextBubble : 'cyan';
+            const nextB = store.generateNextBubble ? store.generateNextBubble(curB) : 'yellow';
 
             useGameStore.setState({
               gridMatrix: newGrid,

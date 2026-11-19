@@ -1071,36 +1071,54 @@ export function getLevel(levelId) {
 }
 
 /**
- * Scans active grid bubbles and generates controlled ammo
+ * Scans active grid bubbles and generates controlled ammo.
  * Guarantees ammo colors match bubbles remaining on the grid to prevent unwinnable deadlocks.
+ * When excludeColor is provided and >= 2 colors remain, guarantees a DIFFERENT color is returned.
  */
-export function getBalancedAmmoColor(grid, fallbackPalette = ['red', 'blue', 'green', 'yellow']) {
+export function getBalancedAmmoColor(grid, fallbackPalette = ['red', 'blue', 'green', 'yellow'], excludeColor = null) {
   const remainingColors = new Set();
 
-  for (let r = 0; r < grid.length; r++) {
-    for (let c = 0; c < grid[r].length; c++) {
-      const b = grid[r][c];
-      if (b && b.color && b.type === SPECIAL_BUBBLES.NORMAL) {
-        remainingColors.add(b.color);
+  if (Array.isArray(grid)) {
+    for (let r = 0; r < grid.length; r++) {
+      if (!grid[r]) continue;
+      for (let c = 0; c < grid[r].length; c++) {
+        const b = grid[r][c];
+        if (b && b.color && b.color !== 'rock' && (b.type === SPECIAL_BUBBLES.NORMAL || !b.type)) {
+          remainingColors.add(b.color);
+        }
       }
     }
   }
 
-  const colorArray = Array.from(remainingColors);
-  if (colorArray.length > 0) {
-    return colorArray[Math.floor(Math.random() * colorArray.length)];
+  let candidates = Array.from(remainingColors);
+  if (candidates.length === 0) {
+    candidates = Array.isArray(fallbackPalette) && fallbackPalette.length > 0
+      ? fallbackPalette
+      : ['red', 'blue', 'green', 'yellow'];
   }
 
-  return fallbackPalette[Math.floor(Math.random() * fallbackPalette.length)];
+  // SWAP DIVERSITY: If excludeColor is provided and >= 2 candidates exist, pick a different color!
+  if (excludeColor && candidates.length >= 2) {
+    const diverseCandidates = candidates.filter(c => c !== excludeColor);
+    if (diverseCandidates.length > 0) {
+      candidates = diverseCandidates;
+    }
+  }
+
+  return candidates[Math.floor(Math.random() * candidates.length)];
 }
 
 /**
- * Generates an initial controlled bubble queue for launcher
+ * Generates an initial controlled bubble queue for launcher.
+ * Enforces color diversity between consecutive slots so launcher cannon and swap are never identical.
  */
-export function generateBubbleQueue(level, count = 2) {
+export function generateBubbleQueue(level, count = 4) {
   const queue = [];
+  const matrix = level.matrix || [];
+  const palette = level.palette || ['red', 'blue', 'green', 'yellow'];
   for (let i = 0; i < count; i++) {
-    queue.push(getBalancedAmmoColor(level.matrix, level.palette));
+    const prev = i > 0 ? queue[i - 1] : null;
+    queue.push(getBalancedAmmoColor(matrix, palette, prev));
   }
   return queue;
 }

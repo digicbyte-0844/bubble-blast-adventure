@@ -172,8 +172,13 @@ export const useGameStore = create((set, get) => ({
     }
 
     const queue = generateBubbleQueue(level, 4);
-    const initialCurrent = queue[0] || level.palette[0] || 'cyan';
-    const initialNext = queue[1] || level.palette[1] || 'magenta';
+    const activeColors = getRemainingBoardColors(matrix);
+    let initialCurrent = queue[0] || level.palette[0] || 'cyan';
+    let initialNext = queue[1] || level.palette[1] || 'magenta';
+    // SWAP DIVERSITY GUARANTEE: If 2 or more colors exist on board, launcher slots MUST NOT be identical!
+    if (activeColors.length >= 2 && initialNext === initialCurrent) {
+      initialNext = getBalancedAmmoColor(matrix, activeColors, initialCurrent);
+    }
 
     // Anti-cheat session token
     let token = `local_session_${Date.now()}`;
@@ -298,11 +303,20 @@ export const useGameStore = create((set, get) => ({
       return;
     }
 
-    // Standard swap: instantaneous swap without firing
+    // Standard swap: instantaneous swap with diversity guarantee
+    const { gridMatrix } = get();
+    const activeColors = getRemainingBoardColors(gridMatrix);
+    let targetCurrent = nextBubble;
+    let targetNext = currentBubble;
+    if (activeColors.length >= 2 && targetCurrent === targetNext) {
+      targetNext = getBalancedAmmoColor(gridMatrix, activeColors, targetCurrent);
+    }
+
     set({
-      currentBubble: nextBubble,
-      nextBubble: currentBubble
+      currentBubble: targetCurrent,
+      nextBubble: targetNext
     });
+    try { soundEngine.play('swap'); } catch (e) {}
   },
 
   /**
@@ -439,8 +453,9 @@ export const useGameStore = create((set, get) => ({
 
     let newQueue = [...bubbleQueue];
     if (newQueue.length < 2) {
-      newQueue.push(getBalancedAmmoColor(gridMatrix, validPalette));
-      newQueue.push(getBalancedAmmoColor(gridMatrix, validPalette));
+      const q1 = getBalancedAmmoColor(gridMatrix, validPalette);
+      const q2 = getBalancedAmmoColor(gridMatrix, validPalette, q1);
+      newQueue.push(q1, q2);
     }
 
     // Advance: next → current, queue → next
@@ -456,10 +471,13 @@ export const useGameStore = create((set, get) => ({
 
     let nextNext = newQueue.shift();
     if (!nextNext || nextNext === 'bomb' || nextNext === 'rainbow') {
-      nextNext = getBalancedAmmoColor(gridMatrix, validPalette);
+      nextNext = getBalancedAmmoColor(gridMatrix, validPalette, nextCurrent);
     } else if (activeColors.length > 0 && !activeColors.includes(nextNext)) {
       // Dead color in queue — morph it
-      nextNext = getBalancedAmmoColor(gridMatrix, validPalette);
+      nextNext = getBalancedAmmoColor(gridMatrix, validPalette, nextCurrent);
+    } else if (activeColors.length >= 2 && nextNext === nextCurrent) {
+      // SWAP DIVERSITY ENFORCEMENT: Guarantee Cannon and Swap do NOT hold the same color!
+      nextNext = getBalancedAmmoColor(gridMatrix, validPalette, nextCurrent);
     }
 
     set({
@@ -494,24 +512,30 @@ export const useGameStore = create((set, get) => ({
   /**
    * Generates a balanced next bubble color from ACTIVE board colors only.
    * Prevents dead-color ammo when only 1 color remains on the board.
+   * When excludeColor is provided and >= 2 colors remain, guarantees a DIFFERENT color is returned.
    */
-  generateNextBubble: () => {
-    const { bubbleQueue, gridMatrix, levelData } = get();
+  generateNextBubble: (excludeColor = null) => {
+    const { bubbleQueue, gridMatrix, levelData, currentBubble } = get();
     const fallbackPalette = levelData?.palette || PRIMARY_COLOR_IDS;
     const activeColors = getRemainingBoardColors(gridMatrix);
     const validPalette = activeColors.length > 0 ? activeColors : fallbackPalette;
+    const avoidColor = excludeColor !== undefined && excludeColor !== null ? excludeColor : currentBubble;
 
     if (bubbleQueue && bubbleQueue.length > 0) {
       const next = bubbleQueue[0];
       if (next && next !== 'bomb' && next !== 'rainbow') {
         // Morph if dead color
         if (activeColors.length > 0 && !activeColors.includes(next)) {
-          return getBalancedAmmoColor(gridMatrix, validPalette);
+          return getBalancedAmmoColor(gridMatrix, validPalette, avoidColor);
+        }
+        // SWAP DIVERSITY: If 2+ colors on board, avoid duplicate color
+        if (activeColors.length >= 2 && next === avoidColor) {
+          return getBalancedAmmoColor(gridMatrix, validPalette, avoidColor);
         }
         return next;
       }
     }
-    return getBalancedAmmoColor(gridMatrix, validPalette);
+    return getBalancedAmmoColor(gridMatrix, validPalette, avoidColor);
   },
 
   /**
@@ -528,7 +552,7 @@ export const useGameStore = create((set, get) => ({
       const newPopped = bubblesPopped + poppedCount + droppedCount;
       const newRescued = rescuedCount + freedJellies;
 
-      // === ACTIVE COLOR MORPH: After every pop, check if launcher holds dead colors ===
+      // === ACTIVE COLOR MORPH & SWAP DIVERSITY ENFORCEMENT ===
       const fallbackPalette = levelData?.palette || PRIMARY_COLOR_IDS;
       const activeColors = getRemainingBoardColors(gridMatrix);
       let morphedCurrent = currentBubble;
@@ -538,7 +562,11 @@ export const useGameStore = create((set, get) => ({
           morphedCurrent = getBalancedAmmoColor(gridMatrix, activeColors);
         }
         if (morphedNext && morphedNext !== 'bomb' && morphedNext !== 'rainbow' && !activeColors.includes(morphedNext)) {
-          morphedNext = getBalancedAmmoColor(gridMatrix, activeColors);
+          morphedNext = getBalancedAmmoColor(gridMatrix, activeColors, morphedCurrent);
+        }
+        // SWAP DIVERSITY GUARANTEE: Never allow Cannon and Swap to hold identical colors if >= 2 colors remain!
+        if (activeColors.length >= 2 && morphedNext === morphedCurrent && morphedCurrent !== 'bomb' && morphedCurrent !== 'rainbow') {
+          morphedNext = getBalancedAmmoColor(gridMatrix, activeColors, morphedCurrent);
         }
       }
 

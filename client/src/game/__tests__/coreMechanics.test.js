@@ -9,7 +9,7 @@
 
 import { getRemainingBoardColors, countBoardBubbles, insertNewTopRow, createEmptyGrid } from '../hexGrid.js';
 import { calculateStars, calculateDynamicStarThresholds, calculateEndLevelBonus } from '../scoreManager.js';
-import { getLevel, LEVELS } from '../levelGenerator.js';
+import { getLevel, LEVELS, getBalancedAmmoColor, generateBubbleQueue } from '../levelGenerator.js';
 
 let passed = 0;
 let total = 0;
@@ -41,6 +41,23 @@ assert(
 assert(
   'Dead colors like "red" and "yellow" are excluded when not present on board',
   !remainingColors.includes('red') && !remainingColors.includes('yellow')
+);
+
+// Swap diversity test: multi-color grid
+const multiColorGrid = createEmptyGrid();
+multiColorGrid[0][0] = { color: 'blue', type: 'normal' };
+multiColorGrid[0][1] = { color: 'red', type: 'normal' };
+multiColorGrid[0][2] = { color: 'yellow', type: 'normal' };
+
+let duplicateCount = 0;
+for (let trial = 0; trial < 50; trial++) {
+  const diverseColor = getBalancedAmmoColor(multiColorGrid, ['blue', 'red', 'yellow'], 'blue');
+  if (diverseColor === 'blue') duplicateCount++;
+}
+
+assert(
+  'Swap Diversity: getBalancedAmmoColor with excludeColor="blue" NEVER returns "blue" when other colors exist (50 trials)',
+  duplicateCount === 0
 );
 
 // 2. ACCURATE WINNING CONDITION & 3-STAR SCORING ENGINE (ISSUES #2 & #6)
