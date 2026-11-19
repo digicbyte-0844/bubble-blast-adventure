@@ -23,7 +23,8 @@ export const GameHUD = ({ onPause, onRestart, onQuitToMap }) => {
     targetJellies,
     undoStack,
     undoShot,
-    gameStatus
+    gameStatus,
+    reserveCeilingQueue
   } = useGameStore();
 
   const activeCombo = combo || comboCount || 0;
@@ -98,9 +99,16 @@ export const GameHUD = ({ onPause, onRestart, onQuitToMap }) => {
               {levelId}
             </span>
             <div className="flex flex-col text-left leading-none">
-              <span className="font-display font-black text-xs text-white">
-                LVL {levelId}
-              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="font-display font-black text-xs text-white">
+                  LVL {levelId}
+                </span>
+                {reserveCeilingQueue && reserveCeilingQueue.length > 0 && (
+                  <span className="px-1.5 py-0.5 rounded bg-amber-500/20 border border-amber-400/40 text-[8px] font-black font-display text-amber-300 uppercase tracking-tighter" title="Reserve Ceiling Waves Remaining">
+                    +WAVE {reserveCeilingQueue.length}
+                  </span>
+                )}
+              </div>
               <span className="font-display text-[9px] text-amber-400 font-black tracking-tight mt-0.5">
                 ‹ MAP
               </span>

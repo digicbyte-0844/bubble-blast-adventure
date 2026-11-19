@@ -61,6 +61,43 @@ export function calculateTurnScore(poppedCount, floatingCount, rescuedCount = 0,
 }
 
 /**
+ * Calculates PERFORMANCE-CALIBRATED per-level star thresholds based on
+ * the actual bubble count on the board and the shot budget.
+ *
+ * Star philosophy:
+ *   1 Star = clearing the board guarantees this (completion reward)
+ *   2 Stars = good accuracy with ~25% shots conserved and decent combos
+ *   3 Stars = masterful play with ~45%+ shots conserved and avalanche chains
+ *
+ * Formula: thresholds scale with totalBubbles to prevent hardcoded values
+ * from being too high (the core bug causing 0-star display on level clear).
+ *
+ * @param {number} totalBubbles - Poppable bubble count on the starting board
+ * @param {number} maxShots - Total shot budget for the level
+ * @returns {{ oneStar: number, twoStar: number, threeStar: number }}
+ */
+export function calculateDynamicStarThresholds(totalBubbles, maxShots) {
+  const bubbles = Math.max(1, totalBubbles);
+  const shots = Math.max(1, maxShots);
+
+  // Base pop score if player just barely clears (1 bubble per shot, no combos):
+  // bubbles * BASE_POP(10) + LEVEL_COMPLETE_BONUS(1000) + tiny shot bonus
+  const baseCleanClear = bubbles * 10 + 1000 + Math.round(shots * 0.1) * 150;
+
+  // 1 Star: achievable by just clearing the board (always guaranteed on win)
+  const oneStar = Math.max(500, Math.round(baseCleanClear * 0.5 / 50) * 50);
+
+  // 2 Stars: good play — roughly 60% of theoretical clean clear + some combos
+  const twoStar = Math.max(oneStar + 500, Math.round(baseCleanClear * 0.85 / 50) * 50);
+
+  // 3 Stars: mastery — high combos, avalanche drops, or 45%+ shots remaining
+  // Formula: bubbles * 20 + 45% shot bonus + level complete bonus
+  const threeStar = Math.max(twoStar + 800, Math.round((bubbles * 20 + shots * 0.45 * 150 + 1000) / 50) * 50);
+
+  return { oneStar, twoStar, threeStar };
+}
+
+/**
  * Calculates end-of-level victory bonus based on unused ammo budget
  *
  * @param {number} remainingShots - Unused shot budget
@@ -165,5 +202,6 @@ export default {
   calculateEndLevelBonus,
   calculateStars,
   calculateStarProgress,
+  calculateDynamicStarThresholds,
   ScoreManager
 };

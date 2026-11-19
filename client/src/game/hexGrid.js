@@ -200,6 +200,101 @@ export function cloneGrid(grid) {
 }
 
 /**
+ * Returns the set of unique active bubble colors currently on the board.
+ * Only counts NORMAL bubbles (not rocks, jellies, etc.) — these are the colors
+ * the player can match with their launcher ammo.
+ *
+ * @param {Array<Array>} grid - The Odd-R grid matrix
+ * @returns {string[]} Sorted unique color IDs present on the board
+ */
+export function getRemainingBoardColors(grid) {
+  if (!grid || !Array.isArray(grid)) return [];
+  const colors = new Set();
+  for (let r = 0; r < grid.length; r++) {
+    if (!grid[r]) continue;
+    for (let c = 0; c < grid[r].length; c++) {
+      const cell = grid[r][c];
+      if (
+        cell &&
+        cell.color &&
+        cell.color !== 'rock' &&
+        (cell.type === 'normal' || !cell.type)
+      ) {
+        colors.add(cell.color);
+      }
+    }
+  }
+  return Array.from(colors);
+}
+
+/**
+ * Counts total poppable (non-rock) bubbles on the board.
+ * Used to calibrate per-level star thresholds dynamically.
+ *
+ * @param {Array<Array>} grid - The Odd-R grid matrix
+ * @returns {number} Count of active, poppable bubbles
+ */
+export function countBoardBubbles(grid) {
+  if (!grid || !Array.isArray(grid)) return 0;
+  let count = 0;
+  for (let r = 0; r < grid.length; r++) {
+    if (!grid[r]) continue;
+    for (let c = 0; c < grid[r].length; c++) {
+      const cell = grid[r][c];
+      if (cell && (cell.color || cell.type) && cell.type !== 'rock') {
+        count++;
+      }
+    }
+  }
+  return count;
+}
+
+/**
+ * Inserts a new row of bubbles at the top of the grid (row 0),
+ * shifting all existing rows downward by 1 row while preserving Odd-R hex geometry.
+ *
+ * @param {Array<Array>} grid - The current 14-row grid matrix
+ * @param {Array<string|object>} newRowItems - Items for row 0 (strings or bubble objects)
+ * @returns {Array<Array>} Brand new grid matrix with new top row inserted
+ */
+export function insertNewTopRow(grid, newRowItems = []) {
+  const newGrid = createEmptyGrid();
+
+  // Shift rows down: r moves to r + 1
+  for (let r = 0; r < TOTAL_ROWS - 1; r++) {
+    const targetRow = r + 1;
+    const targetCols = getColsInRow(targetRow);
+    const sourceCols = getColsInRow(r);
+    for (let c = 0; c < targetCols; c++) {
+      if (c < sourceCols && grid && grid[r] && grid[r][c]) {
+        newGrid[targetRow][c] = { ...grid[r][c] };
+      }
+    }
+    // Handle even (11) -> odd (10) edge case: ensure cell 10 bubble isn't lost if cell 9 is free
+    if (sourceCols > targetCols && grid && grid[r] && grid[r][targetCols]) {
+      if (!newGrid[targetRow][targetCols - 1]) {
+        newGrid[targetRow][targetCols - 1] = { ...grid[r][targetCols] };
+      }
+    }
+  }
+
+  // Populate row 0
+  const topCols = getColsInRow(0);
+  for (let c = 0; c < topCols; c++) {
+    const item = newRowItems ? newRowItems[c] : null;
+    if (!item) {
+      newGrid[0][c] = null;
+    } else if (typeof item === 'string') {
+      newGrid[0][c] = { color: item, type: 'normal' };
+    } else {
+      newGrid[0][c] = { color: item.color || 'cyan', type: item.type || 'normal' };
+    }
+  }
+
+  return newGrid;
+}
+
+/**
  * Checks if the entire grid has zero active bubbles
  */
 export function isGridEmpty(grid) {

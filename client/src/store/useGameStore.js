@@ -16,10 +16,10 @@ import {
   getBalancedAmmoColor,
   generateBubbleQueue
 } from '../game/levelGenerator.js';
-import { cloneGrid, isGridEmpty, checkDangerBreach } from '../game/hexGrid.js';
+import { cloneGrid, isGridEmpty, checkDangerBreach, getRemainingBoardColors, countBoardBubbles, insertNewTopRow } from '../game/hexGrid.js';
 import { calculateTrajectory } from '../game/collision.js';
 import { findConnectedMatch } from '../game/matchDetector.js';
-import { calculateTurnScore, calculateEndLevelBonus, calculateStars } from '../game/scoreManager.js';
+import { calculateTurnScore, calculateEndLevelBonus, calculateStars, calculateDynamicStarThresholds } from '../game/scoreManager.js';
 import { soundEngine } from '../game/soundEngine.js';
 import ApiService from '../services/api.js';
 import { useUserStore } from './useUserStore';
@@ -122,6 +122,12 @@ export const useGameStore = create((set, get) => ({
   xOffset: 0,
   yOffset: 0,
 
+  // Dynamic Upper-Section Wave / Ceiling Feed System
+  reserveCeilingQueue: [],
+  totalReserveWaves: 0,
+  missedShotsCounter: 0,
+  missThresholdForCeilingDrop: 5,
+
   // Hint angle & target coordinates
   hintData: null,
 
@@ -139,6 +145,21 @@ export const useGameStore = create((set, get) => ({
 
     // Deep clone the matrix
     const matrix = cloneGrid(level.matrix);
+
+    // Calibrate fair dynamic 3-star thresholds for GameHUD and victory screens
+    const boardBubbleCount = countBoardBubbles(level.matrix) + (level.waveRows ? level.waveRows.reduce((acc, row) => acc + (row.filter(Boolean).length), 0) : 0);
+    const dynamicThresholds = calculateDynamicStarThresholds(boardBubbleCount, level.maxShots);
+    const patchedLevel = {
+      ...level,
+      starScoreThresholds: {
+        oneStar: Math.min(level.starScoreThresholds?.oneStar || 9999, dynamicThresholds.oneStar),
+        twoStar: Math.min(level.starScoreThresholds?.twoStar || 9999, dynamicThresholds.twoStar),
+        threeStar: Math.min(level.starScoreThresholds?.threeStar || 9999, dynamicThresholds.threeStar)
+      }
+    };
+
+    const waveQueue = level.waveRows ? [...level.waveRows] : [];
+    const missThreshold = numericId <= 5 ? 5 : numericId <= 15 ? 4 : 3;
 
     // Count trapped jellies if rescue objective
     let jellyCount = 0;
@@ -172,9 +193,13 @@ export const useGameStore = create((set, get) => ({
     // SET FSM STATE TO READY IMMEDIATELY - Zero render lag, zero network blocking
     set({
       levelId: numericId,
-      levelData: level,
+      levelData: patchedLevel,
       gridMatrix: matrix,
       board: matrix,
+      reserveCeilingQueue: waveQueue,
+      totalReserveWaves: waveQueue.length,
+      missedShotsCounter: 0,
+      missThresholdForCeilingDrop: missThreshold,
       boosters: ensuredBoosters,
       boosterInventory: ensuredBoosters,
       failureReason: null,
@@ -399,26 +424,42 @@ export const useGameStore = create((set, get) => ({
   },
 
   /**
-   * Replenishes Current and Next bubbles from the controlled queue
+   * Replenishes Current and Next bubbles from the controlled queue.
+   * CRITICAL: Samples ONLY from colors still present on the board (endgame color-lock fix).
+   * If currentBubble or nextBubble holds a dead color (not on board), it is immediately
+   * morphed to a valid board color so the player is never stuck with unmatchable ammo.
    */
   replenishBubbles: () => {
     const { nextBubble, bubbleQueue, gridMatrix, levelData } = get();
     const fallbackPalette = levelData?.palette || PRIMARY_COLOR_IDS;
 
+    // === ENDGAME COLOR LOCK FIX: Only sample from colors present on board ===
+    const activeColors = getRemainingBoardColors(gridMatrix);
+    const validPalette = activeColors.length > 0 ? activeColors : fallbackPalette;
+
     let newQueue = [...bubbleQueue];
     if (newQueue.length < 2) {
-      newQueue.push(getBalancedAmmoColor(gridMatrix, fallbackPalette));
-      newQueue.push(getBalancedAmmoColor(gridMatrix, fallbackPalette));
+      newQueue.push(getBalancedAmmoColor(gridMatrix, validPalette));
+      newQueue.push(getBalancedAmmoColor(gridMatrix, validPalette));
     }
 
+    // Advance: next → current, queue → next
     let nextCurrent = nextBubble;
-    // CRITICAL: Ensure currentBubble is NEVER null or undefined, and NEVER a booster ID
+    // Auto-morph if nextBubble is a dead color (not on board) and not a special bubble
     if (!nextCurrent || nextCurrent === 'bomb' || nextCurrent === 'rainbow') {
-      nextCurrent = newQueue.shift() || getBalancedAmmoColor(gridMatrix, fallbackPalette);
+      nextCurrent = newQueue.shift() || getBalancedAmmoColor(gridMatrix, validPalette);
+    } else if (activeColors.length > 0 && !activeColors.includes(nextCurrent)) {
+      // Dead color — morph to a valid board color
+      nextCurrent = getBalancedAmmoColor(gridMatrix, validPalette);
+      newQueue.shift(); // consume one from queue
     }
+
     let nextNext = newQueue.shift();
     if (!nextNext || nextNext === 'bomb' || nextNext === 'rainbow') {
-      nextNext = getBalancedAmmoColor(gridMatrix, fallbackPalette);
+      nextNext = getBalancedAmmoColor(gridMatrix, validPalette);
+    } else if (activeColors.length > 0 && !activeColors.includes(nextNext)) {
+      // Dead color in queue — morph it
+      nextNext = getBalancedAmmoColor(gridMatrix, validPalette);
     }
 
     set({
@@ -451,23 +492,34 @@ export const useGameStore = create((set, get) => ({
   },
 
   /**
-   * Generates a balanced next bubble color from active board colors
+   * Generates a balanced next bubble color from ACTIVE board colors only.
+   * Prevents dead-color ammo when only 1 color remains on the board.
    */
   generateNextBubble: () => {
     const { bubbleQueue, gridMatrix, levelData } = get();
     const fallbackPalette = levelData?.palette || PRIMARY_COLOR_IDS;
+    const activeColors = getRemainingBoardColors(gridMatrix);
+    const validPalette = activeColors.length > 0 ? activeColors : fallbackPalette;
+
     if (bubbleQueue && bubbleQueue.length > 0) {
       const next = bubbleQueue[0];
-      if (next && next !== 'bomb' && next !== 'rainbow') return next;
+      if (next && next !== 'bomb' && next !== 'rainbow') {
+        // Morph if dead color
+        if (activeColors.length > 0 && !activeColors.includes(next)) {
+          return getBalancedAmmoColor(gridMatrix, validPalette);
+        }
+        return next;
+      }
     }
-    return getBalancedAmmoColor(gridMatrix, fallbackPalette);
+    return getBalancedAmmoColor(gridMatrix, validPalette);
   },
 
   /**
-   * Records match resolution and increments score
+   * Records match resolution and increments score.
+   * After every board mutation, auto-morphs dead-color ammo to valid board colors.
    */
   recordTurnResolution: (poppedCount, droppedCount, freedJellies = 0) => {
-    const { score, combo, bestCombo, bubblesPopped, rescuedCount } = get();
+    const { score, combo, bestCombo, bubblesPopped, rescuedCount, gridMatrix, levelData, currentBubble, nextBubble } = get();
 
     if (poppedCount > 0) {
       const newCombo = combo + 1;
@@ -475,6 +527,20 @@ export const useGameStore = create((set, get) => ({
       const newScore = score + turnScore.totalTurnScore;
       const newPopped = bubblesPopped + poppedCount + droppedCount;
       const newRescued = rescuedCount + freedJellies;
+
+      // === ACTIVE COLOR MORPH: After every pop, check if launcher holds dead colors ===
+      const fallbackPalette = levelData?.palette || PRIMARY_COLOR_IDS;
+      const activeColors = getRemainingBoardColors(gridMatrix);
+      let morphedCurrent = currentBubble;
+      let morphedNext = nextBubble;
+      if (activeColors.length > 0) {
+        if (morphedCurrent && morphedCurrent !== 'bomb' && morphedCurrent !== 'rainbow' && !activeColors.includes(morphedCurrent)) {
+          morphedCurrent = getBalancedAmmoColor(gridMatrix, activeColors);
+        }
+        if (morphedNext && morphedNext !== 'bomb' && morphedNext !== 'rainbow' && !activeColors.includes(morphedNext)) {
+          morphedNext = getBalancedAmmoColor(gridMatrix, activeColors);
+        }
+      }
 
       set({
         score: newScore,
@@ -484,6 +550,8 @@ export const useGameStore = create((set, get) => ({
         bubblesPopped: newPopped,
         rescuedCount: newRescued,
         rescuedJellies: newRescued,
+        currentBubble: morphedCurrent,
+        nextBubble: morphedNext,
         mascotEmotion: newCombo >= 2 || freedJellies > 0 ? 'cheering' : 'idle'
       });
 
@@ -494,14 +562,64 @@ export const useGameStore = create((set, get) => ({
       } else {
         soundEngine.play('pop', 0);
       }
+
+      // === DYNAMIC WAVE CEILING FEED CHECK ===
+      // Check if board bubbles have diminished to fewer than 3 occupied rows
+      let occupiedRows = 0;
+      for (const r of gridMatrix) {
+        if (r && r.some(c => c && (c.color || c.type) && c.type !== 'rock')) occupiedRows++;
+      }
+      const { reserveCeilingQueue } = get();
+      if (occupiedRows < 3 && reserveCeilingQueue && reserveCeilingQueue.length > 0) {
+        get().insertCeilingWave();
+      }
     } else {
-      // Missed shot breaks combo streak
-      set({
-        combo: 0,
-        comboCount: 0,
-        mascotEmotion: get().shotsRemaining <= 5 ? 'worried' : 'idle'
-      });
+      // Missed shot breaks combo streak and ticks ceiling drop counter
+      const newMissed = (get().missedShotsCounter || 0) + 1;
+      const { reserveCeilingQueue, missThresholdForCeilingDrop } = get();
+      if (newMissed >= (missThresholdForCeilingDrop || 5) && reserveCeilingQueue && reserveCeilingQueue.length > 0) {
+        get().insertCeilingWave();
+        set({
+          combo: 0,
+          comboCount: 0,
+          missedShotsCounter: 0,
+          mascotEmotion: get().shotsRemaining <= 5 ? 'worried' : 'idle'
+        });
+      } else {
+        set({
+          combo: 0,
+          comboCount: 0,
+          missedShotsCounter: newMissed,
+          mascotEmotion: get().shotsRemaining <= 5 ? 'worried' : 'idle'
+        });
+      }
     }
+  },
+
+  /**
+   * Inserts the next reserve wave from the ceiling queue at row 0,
+   * shifting existing rows downward and checking for danger line breach.
+   */
+  insertCeilingWave: () => {
+    const { reserveCeilingQueue, gridMatrix, dangerLineY, bubbleRadius } = get();
+    if (!reserveCeilingQueue || reserveCeilingQueue.length === 0) return false;
+
+    const nextQueue = [...reserveCeilingQueue];
+    const nextRow = nextQueue.shift();
+    const newGrid = insertNewTopRow(gridMatrix, nextRow);
+
+    set({
+      reserveCeilingQueue: nextQueue,
+      gridMatrix: newGrid,
+      board: newGrid
+    });
+
+    // Morph ammo if colors on board changed
+    get().replenishBubbles();
+
+    // Check danger breach immediately
+    get().evaluateLevelEnd(newGrid, dangerLineY, bubbleRadius);
+    return true;
   },
 
   addScore: (points, comboStreak = 0) => {
@@ -570,12 +688,19 @@ export const useGameStore = create((set, get) => ({
     }
 
     const emptyGrid = isGridEmpty(gridMatrix);
+    const { reserveCeilingQueue } = get();
+
+    // Dynamic wave progression: if visible board cleared but reserve ceiling rows remain, feed next wave!
+    if (emptyGrid && reserveCeilingQueue && reserveCeilingQueue.length > 0) {
+      get().insertCeilingWave();
+      return;
+    }
+
     let isVictory = false;
 
     // MANDATORY BUBBLE SHOOTER MECHANIC:
-    // The level is completed ONLY when ALL bubbles on the board are blasted!
-    // Never trigger early completion while bubbles remain on the board.
-    if (emptyGrid) {
+    // The level is completed ONLY when ALL bubbles on the board are blasted AND all reserve waves cleared!
+    if (emptyGrid && (!reserveCeilingQueue || reserveCeilingQueue.length === 0)) {
       isVictory = true;
     }
 
@@ -589,12 +714,29 @@ export const useGameStore = create((set, get) => ({
 
       const bonus = calculateEndLevelBonus(shotsRemaining);
       const finalScore = score + bonus;
+
+      // === DYNAMIC STAR THRESHOLD FIX ===
+      // Use per-level calibrated thresholds. If the level has hardcoded thresholds,
+      // also compute dynamic ones and use whichever gives a fairer result.
+      const bubbleCount = countBoardBubbles(levelData?.matrix || gridMatrix) || 30;
+      const dynamicThresholds = calculateDynamicStarThresholds(bubbleCount, levelData?.maxShots || 30);
+
+      // If hardcoded thresholds exist, use the lower (more lenient) of the two for 3-stars
+      const hardThresholds = levelData?.starScoreThresholds;
+      const thresholds = hardThresholds
+        ? {
+            oneStar: Math.min(hardThresholds.oneStar || 9999, dynamicThresholds.oneStar),
+            twoStar: Math.min(hardThresholds.twoStar || 9999, dynamicThresholds.twoStar),
+            threeStar: Math.min(hardThresholds.threeStar || 9999, dynamicThresholds.threeStar)
+          }
+        : dynamicThresholds;
+
       const rawStars = calculateStars(finalScore, [
-        levelData.starScoreThresholds?.oneStar || 1600,
-        levelData.starScoreThresholds?.twoStar || 3300,
-        levelData.starScoreThresholds?.threeStar || 4900
+        thresholds.oneStar,
+        thresholds.twoStar,
+        thresholds.threeStar
       ]);
-      const stars = Math.max(1, rawStars); // Blasting all bubbles guarantees at least 1 star!
+      const stars = Math.max(1, rawStars); // Clearing all bubbles guarantees at least 1 star!
 
       set({ score: finalScore });
       soundEngine.play('levelWin');

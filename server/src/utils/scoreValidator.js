@@ -92,11 +92,23 @@ export function validateGameScore(session, level, submission) {
     });
   }
 
-  // 5. Authoritative Star Calculation from Database Thresholds
-  const thresholds = level.starThresholds || level.starScoreThresholds || {
-    oneStar: 2000,
-    twoStar: 4000,
-    threeStar: 7000
+  // 5. Authoritative Star Calculation from Calibrated Thresholds
+  const totalBubbles = level.bubbleCount || (level.matrix ? level.matrix.reduce((sum, r) => sum + (r ? r.filter(Boolean).length : 0), 0) : 30);
+  const maxShots = level.maxShots || 30;
+  const baseClear = totalBubbles * 10 + 1000;
+  const dynOne = Math.max(500, Math.round((baseClear * 0.5) / 50) * 50);
+  const dynTwo = Math.max(dynOne + 500, Math.round((baseClear * 0.85) / 50) * 50);
+  const dynThree = Math.max(dynTwo + 1000, Math.round((totalBubbles * 40 + maxShots * 0.45 * 150 + 2000) / 50) * 50);
+
+  const rawThresholds = level.starThresholds || level.starScoreThresholds;
+  const thresholds = rawThresholds ? {
+    oneStar: Math.min(rawThresholds.oneStar || dynOne, dynOne),
+    twoStar: Math.min(rawThresholds.twoStar || dynTwo, dynTwo),
+    threeStar: Math.min(rawThresholds.threeStar || dynThree, dynThree)
+  } : {
+    oneStar: dynOne,
+    twoStar: dynTwo,
+    threeStar: dynThree
   };
 
   let verifiedStars = 0;

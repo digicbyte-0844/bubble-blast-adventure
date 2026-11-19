@@ -142,10 +142,35 @@ function countTotalBubbles(grid) {
  */
 export function calculateLevelStarThresholds(grid, maxShots) {
   const bubbleCount = countTotalBubbles(grid);
-  const oneStar = Math.round((bubbleCount * 20 + 800) / 50) * 50;
-  const twoStar = Math.round((oneStar + (maxShots * 0.3) * 150 + 600) / 50) * 50;
-  const threeStar = Math.round((oneStar + (maxShots * 0.55) * 150 + 1300) / 50) * 50;
+  const baseCleanClear = bubbleCount * 10 + 1000;
+  const oneStar = Math.max(500, Math.round((baseCleanClear * 0.5) / 50) * 50);
+  const twoStar = Math.max(oneStar + 500, Math.round((baseCleanClear * 0.85) / 50) * 50);
+  const threeStar = Math.max(
+    twoStar + 1000,
+    Math.round((bubbleCount * 40 + maxShots * 0.45 * 150 + 2000) / 50) * 50
+  );
   return { oneStar, twoStar, threeStar };
+}
+
+/**
+ * Generates deterministic reserve ceiling wave rows for dynamic top-row replenishment.
+ * As players blast through bubbles, these reserve rows descend from the ceiling.
+ */
+export function generateLevelWaveRows(palette, count, levelId) {
+  const waves = [];
+  const prng = new SeededPRNG((levelId || 1) * 4391 + 17);
+  for (let w = 0; w < count; w++) {
+    const row = [];
+    for (let c = 0; c < 11; c++) {
+      if (prng.next() > 0.15) {
+        row.push(prng.pick(palette));
+      } else {
+        row.push(null);
+      }
+    }
+    waves.push(row);
+  }
+  return waves;
 }
 
 /**
@@ -943,8 +968,11 @@ function createHandcraftedLevels() {
   });
 
   // Calibrate fair, performance-driven 1-star, 2-star, and 3-star thresholds across all 40 levels
+  // Also attach reserve ceiling wave rows for dynamic top-row replenishment
   catalog.forEach((level) => {
     level.starScoreThresholds = calculateLevelStarThresholds(level.matrix, level.maxShots);
+    const waveCount = level.id <= 2 ? 1 : level.id <= 5 ? 2 : level.id <= 15 ? 2 : level.id <= 30 ? 3 : 4;
+    level.waveRows = generateLevelWaveRows(level.palette, waveCount, level.id);
   });
 
   return catalog;
@@ -1026,6 +1054,7 @@ export function generateProceduralLevel(levelId, seed = null) {
     maxShots,
     palette,
     matrix: grid,
+    waveRows: generateLevelWaveRows(palette, Math.min(6, 3 + Math.floor((levelId - 40) / 10)), levelId),
     starScoreThresholds: calculateLevelStarThresholds(grid, maxShots)
   };
 }
@@ -1086,5 +1115,6 @@ export default {
   getBalancedAmmoColor,
   generateBubbleQueue,
   calculateLevelStarThresholds,
+  generateLevelWaveRows,
   SeededPRNG
 };
